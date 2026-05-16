@@ -50,6 +50,9 @@ export default function CompeticoesPage() {
               <Link className="btn secondary" href="/competicoes/pontuacao">
                 <Calculator size={18} /> Sistema de pontuação
               </Link>
+              <Link className="btn secondary" href="/calendario-tracados">
+                <MapPin size={18} /> Traçados da pista
+              </Link>
               <a className="btn secondary" href={legendsPdf} target="_blank" rel="noreferrer">
                 <Download size={18} /> Regulamento
               </a>

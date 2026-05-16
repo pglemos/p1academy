@@ -2,6 +2,7 @@ import { MediaFrame } from "@/components/MediaFrame";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
 import { iconHighlights } from "@/data/site";
+import Link from "next/link";
 
 export const metadata = {
   title: "Sobre | P1 Academy",
@@ -26,6 +27,14 @@ export default function SobrePage() {
             <p>
               A P1 Academy combina linguagem de competição com acolhimento para iniciantes. Cada piloto recebe orientação clara, contexto de segurança e metas possíveis para evoluir sem improviso.
             </p>
+            <div className="button-row section-actions">
+              <Link className="btn primary" href="/andre-felisberto">
+                Conhecer André Felisberto
+              </Link>
+              <Link className="btn secondary" href="/aulas">
+                Ver aulas
+              </Link>
+            </div>
           </Reveal>
         </div>
       </section>

@@ -32,6 +32,9 @@ export default function Home() {
               <Link className="btn secondary" href="/competicoes">
                 <Trophy size={18} /> Entrar em campeonato
               </Link>
+              <Link className="btn ghost" href="/andre-felisberto">
+                <Flag size={18} /> Conhecer André
+              </Link>
             </div>
           </Reveal>
 
@@ -116,8 +119,8 @@ export default function Home() {
               <Link className="btn primary" href="/aulas">
                 Conhecer aulas
               </Link>
-              <Link className="btn secondary" href="/sobre">
-                Ver método
+              <Link className="btn secondary" href="/andre-felisberto">
+                Ver trajetória do André
               </Link>
             </div>
           </Reveal>

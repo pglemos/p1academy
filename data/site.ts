@@ -34,6 +34,14 @@ export const navItems = [
 
 export const quickAccess = [
   {
+    href: "/andre-felisberto",
+    title: "André Felisberto",
+    text: "Biografia, assinatura, campeonatos e trajetória pública do piloto que conduz a identidade competitiva da P1.",
+    icon: Award,
+    label: "Piloto e mentor",
+    image: "/andre/andre-felisberto-poster.png",
+  },
+  {
     href: "/ranking",
     title: "Ranking de pilotos",
     text: "Classificação por presença, tomada, melhor volta, consistência e conduta de pista.",
