@@ -60,24 +60,24 @@ export function BookingForm() {
   }
 
   return (
-    <form className="form card" onSubmit={handleSubmit}>
+    <form className="form" onSubmit={handleSubmit}>
       <h3>
         <CalendarCheck size={22} /> Agendamento P1
       </h3>
       <div className="grid-2">
         <label className="field">
           <span>Nome</span>
-          <input value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="Seu nome" />
+          <input name="name" value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="Seu nome" autoComplete="name" required />
         </label>
         <label className="field">
           <span>WhatsApp</span>
-          <input value={form.phone} onChange={(event) => update("phone", event.target.value)} placeholder="(21) 99596-0077" />
+          <input name="phone" value={form.phone} onChange={(event) => update("phone", event.target.value)} placeholder="(21) 99596-0077" autoComplete="tel" required />
         </label>
       </div>
       <div className="grid-2">
         <label className="field">
           <span>Interesse</span>
-          <select value={form.interest} onChange={(event) => update("interest", event.target.value)}>
+          <select name="interest" value={form.interest} onChange={(event) => update("interest", event.target.value)}>
             <option>Aulas P1 Academy</option>
             <option>Bateria avulsa</option>
             <option>Campeonatos</option>
@@ -87,7 +87,7 @@ export function BookingForm() {
         </label>
         <label className="field">
           <span>Experiência</span>
-          <select value={form.experience} onChange={(event) => update("experience", event.target.value)}>
+          <select name="experience" value={form.experience} onChange={(event) => update("experience", event.target.value)}>
             <option>Primeira vez</option>
             <option>Já andei algumas vezes</option>
             <option>Participo de campeonatos</option>
@@ -97,11 +97,11 @@ export function BookingForm() {
       </div>
       <label className="field">
         <span>Preferência de data ou horário</span>
-        <input value={form.schedule} onChange={(event) => update("schedule", event.target.value)} placeholder="Ex: sábado pela manhã" />
+        <input name="schedule" value={form.schedule} onChange={(event) => update("schedule", event.target.value)} placeholder="Ex: sábado pela manhã" required />
       </label>
       <label className="field">
         <span>Observações</span>
-        <textarea value={form.notes} onChange={(event) => update("notes", event.target.value)} placeholder="Conte objetivo, grupo, idade ou meta na pista." />
+        <textarea name="notes" value={form.notes} onChange={(event) => update("notes", event.target.value)} placeholder="Conte objetivo, grupo, idade ou meta na pista." />
       </label>
       {error ? <p className="error">{error}</p> : null}
       {success ? <p className="success">{success}</p> : null}

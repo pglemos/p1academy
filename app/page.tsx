@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarCheck, Flag, Play, Timer, Trophy } from "lucide-react";
+import { ArrowRight, CalendarCheck, Flag, Play, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { BookingForm } from "@/components/BookingForm";
@@ -12,7 +12,10 @@ export default function Home() {
       <section className="hero">
         <div className="container hero-grid">
           <Reveal>
-            <h1>P1 Academy</h1>
+            <h1>
+              <span>P1</span>
+              <span>Academy</span>
+            </h1>
             <p>
               Drive to Perfection em formato de escola de kart e plataforma de corrida para transformar freada, tangência, ultrapassagem e consistência em experiência de grid profissional.
             </p>
@@ -159,10 +162,6 @@ export default function Home() {
               <div className="stat">
                 <strong>RACE</strong>
                 <span>Na pista</span>
-              </div>
-              <div className="stat">
-                <strong><Timer size={34} /></strong>
-                <span>Cronômetro</span>
               </div>
             </div>
           </Reveal>
