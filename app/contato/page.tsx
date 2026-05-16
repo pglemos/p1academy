@@ -2,6 +2,7 @@ import { Camera, MapPin, MessageCircle } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
+import { contactName, mapUrl, trackAddress, whatsappDisplay, whatsappNumber } from "@/data/site";
 
 export const metadata = {
   title: "Contato | P1 Academy",
@@ -21,7 +22,12 @@ export default function ContatoPage() {
             <div className="card">
               <MessageCircle size={26} color="var(--cyan)" />
               <h3>WhatsApp</h3>
-              <p>Fluxo principal para confirmar data, pista, grupo e modalidade.</p>
+              <p>
+                {contactName}:{" "}
+                <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer">
+                  {whatsappDisplay}
+                </a>
+              </p>
             </div>
             <div className="card">
               <Camera size={26} color="var(--cyan)" />
@@ -31,7 +37,10 @@ export default function ContatoPage() {
             <div className="card">
               <MapPin size={26} color="var(--cyan)" />
               <h3>Localização</h3>
-              <p>Endereço placeholder. Substituir pela base oficial de treinos e eventos.</p>
+              <p>{trackAddress}</p>
+              <a className="btn secondary contact-button" href={mapUrl} target="_blank" rel="noreferrer">
+                Abrir no Google Maps
+              </a>
             </div>
           </Reveal>
           <BookingForm />

@@ -653,6 +653,16 @@ video {
   line-height: 1.58;
 }
 
+.card a:not(.btn) {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.contact-button {
+  width: fit-content;
+  margin-top: 16px;
+}
+
 .feature-card,
 .article-card {
   overflow: hidden;
@@ -961,6 +971,20 @@ video {
   font-size: 0.82rem;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.footer-contact {
+  display: grid;
+  max-width: 680px;
+  gap: 6px;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.footer-contact a {
+  color: var(--muted);
 }
 
 @keyframes dash {

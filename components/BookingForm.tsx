@@ -2,7 +2,7 @@
 
 import { CalendarCheck, Send } from "lucide-react";
 import { FormEvent, useState } from "react";
-import { whatsappNumber } from "@/data/site";
+import { contactName, trackAddress, whatsappNumber } from "@/data/site";
 
 type FormState = {
   name: string;
@@ -50,6 +50,9 @@ export function BookingForm() {
       `Experiência: ${form.experience}`,
       `Preferência: ${form.schedule}`,
       `Observações: ${form.notes || "Sem observações"}`,
+      "",
+      `Contato: ${contactName}`,
+      `Local: ${trackAddress}`,
     ].join("\n");
 
     setSuccess("Mensagem pronta. O WhatsApp será aberto para confirmar o envio.");
@@ -68,7 +71,7 @@ export function BookingForm() {
         </label>
         <label className="field">
           <span>WhatsApp</span>
-          <input value={form.phone} onChange={(event) => update("phone", event.target.value)} placeholder="(31) 99999-9999" />
+          <input value={form.phone} onChange={(event) => update("phone", event.target.value)} placeholder="(21) 99596-0077" />
         </label>
       </div>
       <div className="grid-2">

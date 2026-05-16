@@ -13,7 +13,11 @@ import {
   Video,
 } from "lucide-react";
 
-export const whatsappNumber = "5531999999999";
+export const whatsappNumber = "5521995960077";
+export const whatsappDisplay = "+55 21 99596-0077";
+export const contactName = "André Felisberto";
+export const trackAddress = "Avenida Adutora Várzea das Flores, 477 - Itacolomi, Betim - MG, 32672-586";
+export const mapUrl = "https://maps.app.goo.gl/vnUKS8m9QsewWCVo6";
 
 export const navItems = [
   { href: "/sobre", label: "Sobre" },

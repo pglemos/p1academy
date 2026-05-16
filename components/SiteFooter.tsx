@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { navItems } from "@/data/site";
+import { contactName, mapUrl, navItems, trackAddress, whatsappDisplay, whatsappNumber } from "@/data/site";
 import { Logo } from "./Logo";
 
 export function SiteFooter() {
@@ -10,6 +10,14 @@ export function SiteFooter() {
           <Logo />
           <p className="lead">
             P1 Academy é uma experiência premium para quem quer aprender, competir e evoluir no kart com método.
+          </p>
+          <p className="footer-contact">
+            <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer">
+              {contactName}: {whatsappDisplay}
+            </a>
+            <a href={mapUrl} target="_blank" rel="noreferrer">
+              {trackAddress}
+            </a>
           </p>
         </div>
         <div className="footer-links">
