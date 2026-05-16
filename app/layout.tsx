@@ -1,17 +1,25 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Anybody, Geist, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 
-const inter = Inter({
+const anybody = Anybody({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-headline",
+  weight: ["700", "800", "900"],
+  style: ["normal", "italic"],
 });
 
-const space = Space_Grotesk({
+const geist = Geist({
   subsets: ["latin"],
-  variable: "--font-space",
+  variable: "--font-body",
+});
+
+const jetbrains = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -23,7 +31,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.variable} ${space.variable}`}>
+      <body className={`${anybody.variable} ${geist.variable} ${jetbrains.variable}`}>
         <div className="site-shell">
           <SiteHeader />
           <main>{children}</main>

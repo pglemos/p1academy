@@ -90,15 +90,25 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section">
-        <div className="container split">
-          <Reveal className="section-head">
-            <h2>Treino com leitura de corrida</h2>
-            <div className="accent-line" />
-            <p>
-              Do primeiro contato com o kart à preparação para campeonato, a P1 organiza cada experiência como um box de performance: briefing, aquecimento, volta lançada, análise e próximos passos.
-            </p>
-            <div className="button-row">
+      <section className="section carbon-section">
+        <div className="container grid-2 align-start">
+          <Reveal>
+            <div className="section-head">
+              <h2>Treino com leitura de corrida</h2>
+              <div className="accent-line" />
+              <p>
+                Do primeiro contato com o kart à preparação para campeonato, a P1 organiza cada experiência como um box de performance: briefing, aquecimento, volta lançada, análise e próximos passos.
+              </p>
+            </div>
+            <div className="grid-1">
+              {programs.map((program) => (
+                <div className="card compact-card" key={program.title}>
+                  <h3>{program.title}</h3>
+                  <p>{program.text}</p>
+                </div>
+              ))}
+            </div>
+            <div className="button-row section-actions">
               <Link className="btn primary" href="/aulas">
                 Conhecer aulas
               </Link>
@@ -107,35 +117,25 @@ export default function Home() {
               </Link>
             </div>
           </Reveal>
-          <div className="grid-1">
-            {programs.map((program) => (
-              <Reveal className="card" key={program.title}>
-                <h3>{program.title}</h3>
-                <p>{program.text}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      <section className="section tight">
-        <div className="container">
-          <Reveal className="section-head">
-            <h2>Grid em formação</h2>
-            <div className="accent-line" />
+          <Reveal>
+            <div className="section-head">
+              <h2>Grid em formação</h2>
+              <div className="accent-line" />
+            </div>
+            <div className="table-like">
+              {competitions.map((item) => (
+                <div className="row" key={item.title}>
+                  <strong>{item.title}</strong>
+                  <span>{item.category}</span>
+                  <span>{item.date}</span>
+                  <Link className="status-pill" href="/competicoes">
+                    {item.status}
+                  </Link>
+                </div>
+              ))}
+            </div>
           </Reveal>
-          <div className="table-like">
-            {competitions.map((item) => (
-              <Reveal className="row" key={item.title}>
-                <strong>{item.title}</strong>
-                <span>{item.category}</span>
-                <span>{item.date}</span>
-                <Link className="btn ghost" href="/competicoes">
-                  {item.status}
-                </Link>
-              </Reveal>
-            ))}
-          </div>
         </div>
       </section>
 
