@@ -34,6 +34,7 @@ export const legendsStats = [
 ];
 
 export const legendsSections = [
+  { href: "/competicoes/pontuacao", label: "Pontuação" },
   { href: "#classificacao", label: "Classificação" },
   { href: "#resultados", label: "Resultados" },
   { href: "#etapas", label: "Etapas" },

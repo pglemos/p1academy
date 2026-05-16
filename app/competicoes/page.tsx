@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Award, CalendarDays, Download, Flag, Gauge, MapPin, ShieldCheck, Trophy } from "lucide-react";
+import { Award, Calculator, CalendarDays, Download, Flag, Gauge, MapPin, ShieldCheck, Trophy } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
 import {
@@ -46,6 +46,9 @@ export default function CompeticoesPage() {
             <div className="button-row">
               <Link className="btn primary" href="/contato">
                 Quero participar
+              </Link>
+              <Link className="btn secondary" href="/competicoes/pontuacao">
+                <Calculator size={18} /> Sistema de pontuação
               </Link>
               <a className="btn secondary" href={legendsPdf} target="_blank" rel="noreferrer">
                 <Download size={18} /> Regulamento
@@ -157,6 +160,9 @@ export default function CompeticoesPage() {
             <h2>Resultados das etapas</h2>
             <div className="accent-line" />
             <p>Registro dos tempos, pontuações e desempenho de cada bateria realizada. O vencedor soma 10,000 pontos, e a diferença de tempo reduz a pontuação dos demais pilotos.</p>
+            <Link className="btn primary" href="/competicoes/pontuacao">
+              <Calculator size={18} /> Calcular bateria
+            </Link>
           </Reveal>
           <div className="table-like">
             {legendsResultsPreview.map((item) => (

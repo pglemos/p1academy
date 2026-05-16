@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import { Calculator, Trophy } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
 import { legendsCompetition, legendsRankingPreview } from "@/data/legends";
@@ -25,9 +25,14 @@ export default function RankingPage() {
             <p>
               A classificação geral considerará os melhores resultados do piloto, com limite de 10 corridas válidas para pontuação regular. Os classificados para a Super Final podem somar uma corrida extra.
             </p>
-            <Link className="btn secondary" href="/competicoes#classificacao">
-              Ver hub da competição
-            </Link>
+            <div className="button-row">
+              <Link className="btn secondary" href="/competicoes#classificacao">
+                Ver hub da competição
+              </Link>
+              <Link className="btn primary" href="/competicoes/pontuacao">
+                <Calculator size={18} /> Sistema de pontuação
+              </Link>
+            </div>
           </Reveal>
           <div className="table-like">
             {legendsRankingPreview.map((item) => (
