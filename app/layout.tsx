@@ -17,7 +17,7 @@ const space = Space_Grotesk({
 export const metadata: Metadata = {
   title: "P1 Academy | Kart Performance",
   description:
-    "Aulas de kart, baterias, campeonatos, rankings e experiências premium para pilotos iniciantes e competitivos.",
+    "Drive to Perfection: aulas de kart, baterias, campeonatos, rankings e experiências premium para pilotos iniciantes e competitivos.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

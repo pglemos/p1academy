@@ -15,6 +15,7 @@ export function PageHero({ title, text, image = "/images/hero-kart-night.png" }:
       </div>
       <div className="container">
         <Reveal className="section-head">
+          <Image className="page-hero-seal" src="/brand/p1-academy-seal.png" alt="" width={96} height={96} />
           <h1>{title}</h1>
           <div className="accent-line" />
           <p>{text}</p>

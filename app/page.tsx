@@ -14,12 +14,12 @@ export default function Home() {
           <Reveal>
             <h1>P1 Academy</h1>
             <p>
-              Escola de kart e plataforma de corrida para transformar freada, tangência, ultrapassagem e consistência em experiência de grid profissional.
+              Drive to Perfection em formato de escola de kart e plataforma de corrida para transformar freada, tangência, ultrapassagem e consistência em experiência de grid profissional.
             </p>
             <div className="race-signals" aria-label="Pilares de pilotagem P1">
-              <span>Freada</span>
-              <span>Apex</span>
-              <span>Racecraft</span>
+              <span>Drive</span>
+              <span>To</span>
+              <span>Perfection</span>
             </div>
             <div className="button-row">
               <Link className="btn primary" href="/contato">
@@ -32,6 +32,7 @@ export default function Home() {
           </Reveal>
 
           <Reveal className="hero-panel" aria-label="Vídeo placeholder premium de kart">
+            <Image className="hero-brand-mark" src="/brand/p1-mark-yellow.png" alt="" width={170} height={170} />
             <Image
               className="hero-photo"
               src="/images/hero-kart-night.png"
