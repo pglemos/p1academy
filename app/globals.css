@@ -1714,6 +1714,159 @@ video {
   text-transform: uppercase;
 }
 
+.track-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(360px, 0.9fr);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: center;
+}
+
+.track-feature-map,
+.track-card,
+.track-guide-card,
+.track-stat {
+  border: 1px solid var(--line);
+  background:
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.02) 10px, rgba(255, 255, 255, 0.02) 20px),
+    var(--panel);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+  overflow: hidden;
+}
+
+.track-feature-map {
+  display: grid;
+}
+
+.track-feature-media,
+.track-card-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  background: #efefef;
+}
+
+.track-feature-media img,
+.track-card-media img {
+  object-fit: contain;
+}
+
+.track-feature-caption,
+.track-card-meta {
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px 20px;
+}
+
+.track-feature-caption span,
+.track-card-meta span,
+.track-card-meta small {
+  color: var(--acid);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.track-feature-caption strong,
+.track-card-meta strong {
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.45rem;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.track-feature-caption small,
+.track-card-meta small {
+  color: var(--muted);
+}
+
+.track-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin: 36px 0 22px;
+}
+
+.track-stat {
+  display: grid;
+  gap: 8px;
+  padding: 22px;
+  text-align: center;
+}
+
+.track-stat strong {
+  color: var(--acid);
+  font-family: var(--font-headline), sans-serif;
+  font-size: 2.25rem;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.track-stat span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.track-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.track-guide-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 22px;
+}
+
+.track-guide-card h3 {
+  margin: 0;
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.18rem;
+  font-style: italic;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.track-guide-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.56;
+}
+
+.track-layout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 22px;
+}
+
+.track-card a {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.track-card-media img {
+  transition: transform 220ms ease, filter 220ms ease;
+}
+
+.track-card:hover {
+  border-color: var(--acid);
+}
+
+.track-card:hover .track-card-media img {
+  filter: contrast(1.05);
+  transform: scale(1.025);
+}
+
 .form {
   display: grid;
   gap: 18px;
@@ -1841,9 +1994,597 @@ video {
   color: var(--muted);
 }
 
+.andre-hero {
+  min-height: calc(100vh - 80px);
+  display: grid;
+  align-items: end;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  background: #070707;
+}
+
+.andre-hero-bg {
+  position: absolute;
+  inset: -5% 0 0;
+  z-index: 0;
+  transform-origin: center top;
+}
+
+.andre-hero-bg img {
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(1.08) contrast(1.08);
+}
+
+.andre-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(7, 7, 7, 0.98) 0%, rgba(7, 7, 7, 0.78) 34%, rgba(7, 7, 7, 0.22) 62%, rgba(7, 7, 7, 0.72) 100%),
+    linear-gradient(180deg, rgba(7, 7, 7, 0.12) 0%, rgba(7, 7, 7, 0.32) 50%, var(--bg) 100%);
+}
+
+.andre-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(100deg, transparent 0 52%, rgba(255, 255, 0, 0.16) 52% 53%, transparent 53% 100%),
+    repeating-linear-gradient(90deg, transparent 0 56px, rgba(255, 255, 255, 0.035) 56px 57px);
+  mix-blend-mode: screen;
+}
+
+.andre-hero-grid {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 440px);
+  gap: clamp(24px, 5vw, 72px);
+  align-items: end;
+  padding-block: clamp(90px, 12vw, 170px) clamp(40px, 8vw, 96px);
+}
+
+.andre-hero-copy {
+  max-width: 760px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(234, 234, 0, 0.44);
+  padding: 0 12px;
+  color: var(--acid);
+  background: rgba(10, 10, 10, 0.62);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+
+.andre-hero h1 {
+  margin: 0;
+  max-width: 10ch;
+  color: var(--text);
+  font-family: var(--font-headline), sans-serif;
+  font-size: clamp(4.2rem, 10vw, 8.6rem);
+  font-style: italic;
+  font-weight: 900;
+  line-height: 0.86;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-shadow: 5px 5px 0 var(--ink);
+}
+
+.andre-hero p {
+  max-width: 62ch;
+  margin: 26px 0 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  line-height: 1.7;
+}
+
+.andre-slogan {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+  border-left: 4px solid var(--acid);
+  padding: 10px 14px;
+  color: var(--text);
+  background: rgba(10, 10, 10, 0.72);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.andre-signature-lockup {
+  width: min(360px, 100%);
+  margin-top: 26px;
+}
+
+.andre-signature-lockup > span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--faint);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.andre-signature-crop {
+  position: relative;
+  width: min(340px, 100%);
+  height: 92px;
+  overflow: hidden;
+  border: 1px solid rgba(234, 234, 0, 0.22);
+  background:
+    linear-gradient(90deg, rgba(7, 7, 7, 0.18), rgba(7, 7, 7, 0.02)),
+    url("/andre/andre-felisberto-signature.png") center / cover no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 16px 44px rgba(0, 0, 0, 0.38);
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+
+.andre-signature-crop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 0 34%, rgba(255, 255, 0, 0.18) 45%, transparent 56% 100%);
+  transform: translateX(-110%);
+  animation: signature-sweep 5.8s ease-in-out infinite;
+}
+
+.andre-scoreboard {
+  display: grid;
+  gap: 12px;
+}
+
+.andre-score {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 18px;
+  background:
+    linear-gradient(90deg, rgba(234, 234, 0, 0.12), transparent 46%),
+    rgba(12, 12, 12, 0.78);
+  backdrop-filter: blur(14px);
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+
+.andre-score span,
+.andre-score small {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.andre-score strong {
+  color: var(--acid);
+  font-family: var(--font-headline), sans-serif;
+  font-size: clamp(1.9rem, 4vw, 3.3rem);
+  font-style: italic;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.andre-profile-grid,
+.andre-results-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.55fr);
+  gap: clamp(28px, 5vw, 70px);
+  align-items: start;
+}
+
+.andre-biography p {
+  max-width: 82ch;
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 1.04rem;
+  line-height: 1.78;
+}
+
+.andre-profile-card {
+  position: sticky;
+  top: 108px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.024) 10px, rgba(255, 255, 255, 0.024) 20px),
+    var(--panel);
+  clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+}
+
+.andre-profile-photo {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--ink);
+}
+
+.andre-profile-photo img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.andre-profile-body {
+  display: grid;
+  gap: 14px;
+  padding: 24px;
+}
+
+.andre-profile-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--acid);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.andre-profile-kicker svg {
+  flex: 0 0 auto;
+}
+
+.andre-profile-body h3 {
+  margin: 0;
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.65rem;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.andre-signature-card-mark {
+  width: 100%;
+  height: 78px;
+  background-position: center;
+  background-size: cover;
+}
+
+.andre-profile-body p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.62;
+}
+
+.andre-profile-body dl {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 6px 0 0;
+}
+
+.andre-profile-body dl div {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.andre-profile-body dt {
+  color: var(--faint);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.andre-profile-body dd {
+  margin: 6px 0 0;
+  color: var(--acid);
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.55rem;
+  font-style: italic;
+  font-weight: 900;
+}
+
+.andre-timeline {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  max-width: 1120px;
+  margin: 44px auto 0;
+}
+
+.andre-timeline::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 116px;
+  width: 2px;
+  background: linear-gradient(var(--acid), rgba(234, 234, 0, 0.08));
+}
+
+.andre-timeline-item {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.andre-timeline-item > span {
+  display: grid;
+  place-items: center;
+  width: 82px;
+  height: 82px;
+  border: 2px solid var(--acid);
+  color: var(--acid);
+  background: var(--bg-2);
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.32rem;
+  font-style: italic;
+  font-weight: 900;
+  z-index: 1;
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+
+.andre-timeline-item > div {
+  border: 1px solid var(--line);
+  padding: 24px;
+  background: rgba(31, 32, 32, 0.74);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+.andre-timeline-item h3,
+.andre-achievement h3 {
+  margin: 0 0 10px;
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.45rem;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.andre-timeline-item p,
+.andre-achievement p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.64;
+}
+
+.andre-manifesto-section {
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(234, 234, 0, 0.1), transparent 34%),
+    radial-gradient(circle at 76% 22%, rgba(234, 234, 0, 0.12), transparent 34rem),
+    var(--bg);
+}
+
+.andre-manifesto-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.72fr) minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 76px);
+  align-items: center;
+}
+
+.andre-manifesto-poster {
+  position: relative;
+  min-height: clamp(460px, 46vw, 680px);
+  overflow: hidden;
+  border: 1px solid rgba(234, 234, 0, 0.28);
+  background: var(--ink);
+  clip-path: polygon(28px 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%, 0 28px);
+}
+
+.andre-manifesto-poster img {
+  object-fit: cover;
+  object-position: 70% center;
+  filter: saturate(1.2) contrast(1.08);
+}
+
+.andre-manifesto-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 0 58%, rgba(7, 7, 7, 0.62) 100%),
+    repeating-linear-gradient(90deg, transparent 0 52px, rgba(255, 255, 255, 0.04) 52px 53px);
+}
+
+.andre-manifesto-copy h2 {
+  max-width: 12ch;
+  margin: 0;
+  font-family: var(--font-headline), sans-serif;
+  font-size: clamp(2.8rem, 7vw, 6.8rem);
+  font-style: italic;
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.andre-manifesto-copy > p {
+  max-width: 68ch;
+  margin: 26px 0 0;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.78;
+}
+
+.andre-principles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.andre-principles article {
+  border-left: 3px solid var(--acid);
+  padding: 14px 16px;
+  background: rgba(31, 32, 32, 0.7);
+}
+
+.andre-principles strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text);
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.2rem;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.andre-principles p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.58;
+}
+
+.andre-achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.andre-achievement {
+  min-height: 230px;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  border: 1px solid var(--line);
+  padding: 24px;
+  background:
+    linear-gradient(135deg, rgba(234, 234, 0, 0.11), transparent 42%),
+    var(--panel);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+.andre-achievement svg {
+  color: var(--acid);
+}
+
+.andre-fact-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.andre-fact-list span {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--line);
+  padding: 14px;
+  color: var(--muted);
+  background: var(--panel);
+}
+
+.andre-fact-list svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--acid);
+}
+
+.andre-results-table {
+  display: grid;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+  overflow: hidden;
+}
+
+.andre-result-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(110px, 0.55fr) minmax(150px, 0.8fr);
+  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: 18px 20px;
+}
+
+.andre-result-row:last-child {
+  border-bottom: 0;
+}
+
+.andre-result-row strong {
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.05rem;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.andre-result-row span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.andre-result-row em {
+  color: var(--acid);
+  font-style: normal;
+  font-weight: 800;
+}
+
+.andre-sources-section {
+  border-top: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(234, 234, 0, 0.08), transparent 38%),
+    var(--bg-2);
+}
+
+.andre-source-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.andre-source-link {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid var(--line);
+  padding: 16px 18px;
+  color: var(--text);
+  background: rgba(31, 32, 32, 0.82);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+
+.andre-source-link:hover {
+  border-color: var(--acid);
+  color: var(--acid);
+}
+
 @keyframes dash {
   to {
     transform: translateX(-56px);
+  }
+}
+
+@keyframes signature-sweep {
+  0%,
+  52%,
+  100% {
+    transform: translateX(-110%);
+  }
+
+  68% {
+    transform: translateX(110%);
   }
 }
 
@@ -1851,7 +2592,12 @@ video {
   .hero-grid,
   .split,
   .grid-2,
-  .scoring-board {
+  .track-overview,
+  .scoring-board,
+  .andre-hero-grid,
+  .andre-profile-grid,
+  .andre-results-grid,
+  .andre-manifesto-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1861,8 +2607,24 @@ video {
   .legends-metrics,
   .details-grid,
   .levels-grid,
-  .scoring-rules-grid {
+  .scoring-rules-grid,
+  .track-guide-grid,
+  .track-stats,
+  .andre-achievement-grid,
+  .andre-source-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .andre-profile-card {
+    position: static;
+  }
+
+  .andre-scoreboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .andre-manifesto-poster {
+    min-height: 520px;
   }
 
   .scoring-summary {
@@ -1944,8 +2706,89 @@ video {
   .details-grid,
   .levels-grid,
   .scoring-rules-grid,
-  .stat-strip {
+  .stat-strip,
+  .track-guide-grid,
+  .track-stats,
+  .andre-achievement-grid,
+  .andre-source-grid,
+  .andre-scoreboard {
     grid-template-columns: 1fr;
+  }
+
+  .andre-hero {
+    min-height: auto;
+  }
+
+  .andre-hero-bg img {
+    object-position: 55% center;
+  }
+
+  .andre-hero-overlay {
+    background:
+      linear-gradient(180deg, rgba(7, 7, 7, 0.52) 0%, rgba(7, 7, 7, 0.74) 42%, var(--bg) 100%),
+      linear-gradient(90deg, rgba(7, 7, 7, 0.8), rgba(7, 7, 7, 0.28));
+  }
+
+  .andre-hero-grid {
+    padding-block: 72px 44px;
+  }
+
+  .andre-hero h1 {
+    max-width: 100%;
+    font-size: clamp(2.45rem, 12vw, 3.8rem);
+    line-height: 0.92;
+    overflow-wrap: anywhere;
+  }
+
+  .andre-slogan {
+    width: 100%;
+    align-items: flex-start;
+    font-size: 0.7rem;
+    line-height: 1.45;
+  }
+
+  .andre-signature-crop {
+    height: 78px;
+  }
+
+  .andre-profile-body dl {
+    grid-template-columns: 1fr;
+  }
+
+  .andre-manifesto-poster {
+    min-height: 420px;
+  }
+
+  .andre-manifesto-copy h2 {
+    font-size: clamp(2.35rem, 12vw, 3.9rem);
+  }
+
+  .andre-principles {
+    grid-template-columns: 1fr;
+  }
+
+  .andre-timeline::before {
+    left: 38px;
+  }
+
+  .andre-timeline-item {
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .andre-timeline-item > span {
+    width: 68px;
+    height: 68px;
+    font-size: 1.05rem;
+  }
+
+  .andre-timeline-item > div {
+    padding: 18px;
+  }
+
+  .andre-result-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .legends-status {
@@ -1955,6 +2798,15 @@ video {
   .legends-tabs a,
   .legends-status .btn {
     width: 100%;
+  }
+
+  .track-layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .track-feature-caption strong,
+  .track-card-meta strong {
+    font-size: 1.18rem;
   }
 
   .row {
@@ -1992,9 +2844,15 @@ video {
     grid-template-columns: 1fr;
   }
 
-  .hero h1,
-  .page-hero h1 {
+  .hero h1 {
     font-size: clamp(3.2rem, 17vw, 5rem);
+  }
+
+  .page-hero h1 {
+    max-width: 100%;
+    font-size: 3rem;
+    line-height: 0.95;
+    overflow-wrap: anywhere;
   }
 
   .page-hero-compact h1 {
