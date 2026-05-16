@@ -1,6 +1,7 @@
 import { sponsors } from "./sponsors";
 
 export const legendsPdf = "/regulamentos/regulamento-legends-kart-series-2026.pdf";
+export const legendsCalendarPdf = "/regulamentos/calendario-legends-kart-series-2026.pdf";
 
 export const legendsCompetition = {
   name: "Legends Kart Series",
@@ -8,7 +9,7 @@ export const legendsCompetition = {
   season: "2026",
   version: "Regulamento Geral - Versão 3.0",
   versionDate: "16/05/2026",
-  status: "Em breve",
+  status: "Calendário oficial publicado",
   venue: "Kartódromo Internacional de Betim",
   address: "Av. Adutora Várzea das Flores, 477 - Itacolomi, Betim - MG, 32672-586",
   organizer: "André Felisberto",
@@ -21,21 +22,22 @@ export const legendsCompetition = {
   superFinalDuration: "10 minutos",
   seats: "22 pilotos por bateria",
   validResults: "10 melhores corridas válidas",
-  expectedStages: "40 etapas previstas no 1º semestre de 2026",
+  expectedStages: "48 corridas oficiais entre junho e dezembro de 2026",
 };
 
 export const legendsStats = [
   { value: "1ª", label: "edição oficial" },
+  { value: "48", label: "corridas oficiais" },
   { value: "100 KG", label: "lastro-base" },
   { value: "20 MIN", label: "tomada de tempo" },
   { value: "22", label: "vagas previstas" },
   { value: "10", label: "resultados válidos" },
-  { value: "BETIM", label: "sede única" },
 ];
 
 export const legendsSections = [
   { href: "/competicoes/pontuacao", label: "Pontuação" },
-  { href: "/calendario-tracados", label: "Traçados" },
+  { href: "/calendario-tracados#calendario-oficial", label: "Calendário" },
+  { href: "/calendario-tracados#galeria-tracados", label: "Traçados" },
   { href: "#classificacao", label: "Classificação" },
   { href: "#resultados", label: "Resultados" },
   { href: "#etapas", label: "Etapas" },
@@ -82,6 +84,102 @@ export const legendsCurrentEdition = [
   ["Lastro-base", legendsCompetition.ballast],
   ["Duração da bateria", legendsCompetition.heatDuration],
   ["Vagas previstas", legendsCompetition.seats],
+  ["Calendário", legendsCompetition.expectedStages],
+];
+
+export const legendsCalendarSummary = {
+  totalRaces: 48,
+  months: "Junho a dezembro",
+  firstRace: "03/06/2026",
+  finalRace: "19/12/2026",
+  weekdayWindows: "Quartas 20:30 e 21:05",
+  saturdayWindow: "Sábados 09:15",
+};
+
+export const legendsOfficialCalendar = [
+  {
+    month: "Junho",
+    races: [
+      { race: 1, date: "03/06/2026", day: "Quarta", time: "20:30" },
+      { race: 2, date: "03/06/2026", day: "Quarta", time: "21:05" },
+      { race: 3, date: "06/06/2026", day: "Sábado", time: "09:15" },
+      { race: 5, date: "17/06/2026", day: "Quarta", time: "20:30" },
+      { race: 6, date: "17/06/2026", day: "Quarta", time: "21:05" },
+      { race: 7, date: "20/06/2026", day: "Sábado", time: "09:15" },
+    ],
+  },
+  {
+    month: "Julho",
+    races: [
+      { race: 1, date: "01/07/2026", day: "Quarta", time: "20:30" },
+      { race: 2, date: "01/07/2026", day: "Quarta", time: "21:05" },
+      { race: 3, date: "04/07/2026", day: "Sábado", time: "09:15" },
+      { race: 5, date: "15/07/2026", day: "Quarta", time: "20:30" },
+      { race: 6, date: "15/07/2026", day: "Quarta", time: "21:05" },
+      { race: 7, date: "18/07/2026", day: "Sábado", time: "09:15" },
+      { race: 8, date: "29/07/2026", day: "Quarta", time: "20:30" },
+      { race: 9, date: "29/07/2026", day: "Quarta", time: "20:30" },
+    ],
+  },
+  {
+    month: "Agosto",
+    races: [
+      { race: 1, date: "01/08/2026", day: "Sábado", time: "09:15" },
+      { race: 2, date: "12/08/2026", day: "Quarta", time: "20:30" },
+      { race: 3, date: "12/08/2026", day: "Quarta", time: "21:05" },
+      { race: 5, date: "15/08/2026", day: "Sábado", time: "09:15" },
+      { race: 6, date: "26/08/2026", day: "Quarta", time: "20:30" },
+      { race: 7, date: "26/08/2026", day: "Quarta", time: "21:05" },
+      { race: 8, date: "29/08/2026", day: "Sábado", time: "09:15" },
+    ],
+  },
+  {
+    month: "Setembro",
+    races: [
+      { race: 1, date: "02/09/2026", day: "Quarta", time: "20:30" },
+      { race: 2, date: "02/09/2026", day: "Quarta", time: "21:05" },
+      { race: 3, date: "05/09/2026", day: "Sábado", time: "09:15" },
+      { race: 5, date: "16/09/2026", day: "Quarta", time: "20:30" },
+      { race: 6, date: "16/09/2026", day: "Quarta", time: "21:05" },
+      { race: 7, date: "19/09/2026", day: "Sábado", time: "09:15" },
+      { race: 8, date: "30/09/2026", day: "Quarta", time: "20:30" },
+      { race: 9, date: "30/09/2026", day: "Quarta", time: "21:05" },
+    ],
+  },
+  {
+    month: "Outubro",
+    races: [
+      { race: 1, date: "03/10/2026", day: "Sábado", time: "09:15" },
+      { race: 2, date: "14/10/2026", day: "Quarta", time: "20:30" },
+      { race: 3, date: "14/10/2026", day: "Quarta", time: "21:05" },
+      { race: 5, date: "17/10/2026", day: "Sábado", time: "09:15" },
+      { race: 6, date: "28/10/2026", day: "Quarta", time: "20:30" },
+      { race: 7, date: "28/10/2026", day: "Quarta", time: "21:05" },
+      { race: 8, date: "31/10/2026", day: "Sábado", time: "09:15" },
+    ],
+  },
+  {
+    month: "Novembro",
+    races: [
+      { race: 1, date: "04/11/2026", day: "Quarta", time: "20:30" },
+      { race: 2, date: "04/11/2026", day: "Quarta", time: "21:05" },
+      { race: 3, date: "07/11/2026", day: "Sábado", time: "09:15" },
+      { race: 5, date: "18/11/2026", day: "Quarta", time: "20:30" },
+      { race: 6, date: "18/11/2026", day: "Quarta", time: "21:05" },
+      { race: 7, date: "21/11/2026", day: "Sábado", time: "09:15" },
+    ],
+  },
+  {
+    month: "Dezembro",
+    races: [
+      { race: 1, date: "02/12/2026", day: "Quarta", time: "20:30" },
+      { race: 2, date: "02/12/2026", day: "Quarta", time: "21:05" },
+      { race: 3, date: "05/12/2026", day: "Sábado", time: "09:15" },
+      { race: 5, date: "16/12/2026", day: "Quarta", time: "20:30" },
+      { race: 6, date: "16/12/2026", day: "Quarta", time: "21:05" },
+      { race: 7, date: "19/12/2026", day: "Sábado", time: "09:15" },
+    ],
+  },
 ];
 
 export const legendsLevels = [
@@ -125,7 +223,7 @@ export const legendsResultsPreview = [
 ];
 
 export const legendsStageInfo = [
-  { label: "Calendário oficial", value: "Será publicado nos canais oficiais antes do início da competição." },
+  { label: "Calendário oficial", value: "Publicado com 48 corridas entre 03/06/2026 e 19/12/2026: quartas às 20:30 e 21:05, sábados às 09:15." },
   { label: "Briefing", value: "Obrigatório antes das corridas. Decisões de briefing prevalecem sobre necessidades operacionais." },
   { label: "Pagamento", value: "Cada piloto paga apenas o valor das corridas no dia da etapa, salvo datas especiais." },
   { label: "Termo", value: "Todos os pilotos devem assinar termo de responsabilidade na recepção do kartódromo." },

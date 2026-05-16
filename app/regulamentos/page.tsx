@@ -1,7 +1,7 @@
 import { Download, FileText, ShieldCheck } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
-import { legendsCompetition, legendsPdf } from "@/data/legends";
+import { legendsCalendarPdf, legendsCompetition, legendsPdf } from "@/data/legends";
 
 export const metadata = {
   title: "Regulamento Legends Kart Series | P1 Academy",
@@ -26,6 +26,9 @@ export default function RegulamentosPage() {
             </p>
             <a className="btn primary" href={legendsPdf} target="_blank" rel="noreferrer">
               <Download size={18} /> Baixar PDF oficial
+            </a>
+            <a className="btn secondary" href={legendsCalendarPdf} target="_blank" rel="noreferrer">
+              <Download size={18} /> Baixar calendário
             </a>
           </Reveal>
           <Reveal className="legends-panel">

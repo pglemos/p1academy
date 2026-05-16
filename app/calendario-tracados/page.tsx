@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ClipboardList, Flag, Gauge, MapPin, Route, RotateCcw, ShieldCheck } from "lucide-react";
+import { CalendarDays, ClipboardList, Download, Flag, Gauge, MapPin, Route, RotateCcw, ShieldCheck } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
-import { legendsCompetition, legendsStageInfo } from "@/data/legends";
+import { legendsCalendarPdf, legendsCalendarSummary, legendsCompetition, legendsOfficialCalendar, legendsStageInfo } from "@/data/legends";
 import { mapUrl, trackAddress } from "@/data/site";
 import { trackGuide, trackLayouts, trackLayoutStats } from "@/data/tracados";
 
@@ -18,9 +18,68 @@ export default function CalendarioTracadosPage() {
     <>
       <PageHero
         title="Calendário e traçados"
-        text="Agenda oficial da Legends Kart Series e biblioteca dos traçados do Kartódromo Internacional de Betim. Consulte sentido, metragem, chicanes e referências para briefing antes das baterias."
+        text="Calendário oficial da Legends Kart Series 2026 e biblioteca dos traçados do Kartódromo Internacional de Betim. Consulte datas, horários, sentido, metragem e referências para briefing."
         image="/images/wallpaper-kart-dawn.png"
       />
+
+      <section className="section tight carbon-section" id="calendario-oficial">
+        <div className="container">
+          <Reveal className="section-head center">
+            <CalendarDays size={30} color="var(--acid)" />
+            <h2>Calendário oficial 2026</h2>
+            <div className="accent-line" />
+            <p>
+              A Legends Kart Series tem {legendsCalendarSummary.totalRaces} corridas oficiais entre {legendsCalendarSummary.firstRace} e {legendsCalendarSummary.finalRace}, com janelas às quartas-feiras e sábados pela manhã.
+            </p>
+            <a className="btn primary" href={legendsCalendarPdf} target="_blank" rel="noreferrer">
+              <Download size={18} /> Baixar calendário oficial
+            </a>
+          </Reveal>
+
+          <div className="calendar-summary-grid">
+            <Reveal className="metric-card">
+              <strong>{legendsCalendarSummary.totalRaces}</strong>
+              <span>corridas oficiais</span>
+            </Reveal>
+            <Reveal className="metric-card">
+              <strong>{legendsCalendarSummary.months}</strong>
+              <span>período do campeonato</span>
+            </Reveal>
+            <Reveal className="metric-card">
+              <strong>20:30 / 21:05</strong>
+              <span>janelas de quarta</span>
+            </Reveal>
+            <Reveal className="metric-card">
+              <strong>09:15</strong>
+              <span>janela de sábado</span>
+            </Reveal>
+          </div>
+
+          <div className="calendar-month-grid">
+            {legendsOfficialCalendar.map((month) => (
+              <Reveal className="calendar-month-card" key={month.month}>
+                <h3>{month.month}</h3>
+                <div className="calendar-table" role="table" aria-label={`Calendário Legends ${month.month}`}>
+                  <div className="calendar-row calendar-row-head" role="row">
+                    <span>Corrida</span>
+                    <span>Data</span>
+                    <span>Dia</span>
+                    <span>Hora</span>
+                  </div>
+                  {month.races.map((race) => (
+                    <div className="calendar-row" role="row" key={`${month.month}-${race.race}-${race.date}-${race.time}`}>
+                      <strong>{race.race}</strong>
+                      <span>{race.date.slice(0, 5)}</span>
+                      <span>{race.day}</span>
+                      <span>{race.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="section tight">
         <div className="container track-overview">
@@ -126,15 +185,18 @@ export default function CalendarioTracadosPage() {
             <h2>Agenda e briefing</h2>
             <div className="accent-line" />
             <p>
-              O calendário oficial da Legends Kart Series será publicado pelos canais da P1 Academy. Antes de cada bateria, a organização confirma o traçado do dia, sentido, condição de pista e regras operacionais.
+              O calendário oficial da Legends Kart Series já está publicado. Antes de cada bateria, a organização confirma o traçado do dia, sentido, condição de pista e regras operacionais.
             </p>
+            <a className="btn secondary" href={legendsCalendarPdf} target="_blank" rel="noreferrer">
+              <Download size={18} /> PDF do calendário
+            </a>
           </Reveal>
           <div className="table-like">
             <Reveal className="row">
               <strong>Temporada 2026</strong>
               <span>{legendsCompetition.venue}</span>
               <span>{legendsCompetition.expectedStages}</span>
-              <span>Em breve</span>
+              <span>Oficial</span>
             </Reveal>
             {legendsStageInfo.map((item) => (
               <Reveal className="row" key={item.label}>

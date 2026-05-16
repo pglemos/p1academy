@@ -1,10 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Award, Calculator, CalendarDays, Download, Flag, Gauge, MapPin, ShieldCheck, Trophy } from "lucide-react";
+import { ChampionshipRegistrationModal } from "@/components/ChampionshipRegistrationForm";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
 import {
   legendsAchievements,
+  legendsCalendarPdf,
+  legendsCalendarSummary,
   legendsCompetition,
   legendsCurrentEdition,
   legendsLevels,
@@ -27,6 +30,7 @@ export const metadata = {
 export default function CompeticoesPage() {
   return (
     <>
+      <ChampionshipRegistrationModal />
       <PageHero
         title="Legends Kart Series"
         text="1ª edição oficial do campeonato semestral de rental kart da P1 Academy. Categoria única, tomada de tempo, lastro-base de 100 kg e sede oficial no Kartódromo Internacional de Betim."
@@ -44,15 +48,18 @@ export default function CompeticoesPage() {
               </p>
             </div>
             <div className="button-row">
-              <Link className="btn primary" href="/contato">
+              <button className="btn primary" type="button" data-registration-trigger>
                 Quero participar
-              </Link>
+              </button>
               <Link className="btn secondary" href="/competicoes/pontuacao">
                 <Calculator size={18} /> Sistema de pontuação
               </Link>
               <Link className="btn secondary" href="/calendario-tracados">
                 <MapPin size={18} /> Traçados da pista
               </Link>
+              <a className="btn secondary" href={legendsCalendarPdf} target="_blank" rel="noreferrer">
+                <CalendarDays size={18} /> Calendário
+              </a>
               <a className="btn secondary" href={legendsPdf} target="_blank" rel="noreferrer">
                 <Download size={18} /> Regulamento
               </a>
@@ -60,6 +67,7 @@ export default function CompeticoesPage() {
           </Reveal>
 
           <nav className="legends-tabs" aria-label="Abas da Legends Kart Series">
+            <button type="button" data-registration-trigger>Inscrição</button>
             {legendsSections.map((section) => (
               <a href={section.href} key={section.href}>
                 {section.label}
@@ -186,7 +194,17 @@ export default function CompeticoesPage() {
             <CalendarDays size={30} color="var(--acid)" />
             <h2>Informações das etapas</h2>
             <div className="accent-line" />
-            <p>Datas, horários, valores, briefing e comunicados oficiais serão publicados nos canais da organização antes do início da competição.</p>
+            <p>
+              Calendário oficial publicado com {legendsCalendarSummary.totalRaces} corridas entre {legendsCalendarSummary.firstRace} e {legendsCalendarSummary.finalRace}. As janelas oficiais são {legendsCalendarSummary.weekdayWindows.toLowerCase()} e {legendsCalendarSummary.saturdayWindow.toLowerCase()}.
+            </p>
+            <div className="button-row">
+              <Link className="btn primary" href="/calendario-tracados#calendario-oficial">
+                <CalendarDays size={18} /> Ver calendário
+              </Link>
+              <a className="btn secondary" href={legendsCalendarPdf} target="_blank" rel="noreferrer">
+                <Download size={18} /> PDF oficial
+              </a>
+            </div>
           </Reveal>
           <div className="grid-1">
             {legendsStageInfo.map((item) => (

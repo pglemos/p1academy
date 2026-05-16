@@ -151,11 +151,14 @@ video {
   padding: 0 18px;
   color: var(--text);
   background: var(--panel-strong);
+  appearance: none;
+  cursor: pointer;
   font-family: var(--font-headline), sans-serif;
   font-size: 0.9rem;
   font-style: italic;
   font-weight: 800;
   text-transform: uppercase;
+  text-decoration: none;
   letter-spacing: 0;
   clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
   transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
@@ -863,7 +866,8 @@ video {
   gap: 10px;
 }
 
-.legends-tabs a {
+.legends-tabs a,
+.legends-tabs button {
   min-height: 36px;
   display: inline-flex;
   align-items: center;
@@ -871,15 +875,19 @@ video {
   padding: 0 13px;
   color: var(--muted);
   background: var(--panel);
+  appearance: none;
   font-family: var(--font-mono), monospace;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
   clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
 }
 
-.legends-tabs a:hover {
+.legends-tabs a:hover,
+.legends-tabs button:hover {
   border-color: var(--acid);
   color: var(--acid);
 }
@@ -1714,6 +1722,77 @@ video {
   text-transform: uppercase;
 }
 
+.calendar-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.calendar-month-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.calendar-month-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  padding: 20px;
+  background:
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.02) 10px, rgba(255, 255, 255, 0.02) 20px),
+    var(--panel);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+.calendar-month-card h3 {
+  margin: 0 0 14px;
+  color: var(--acid);
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.55rem;
+  font-style: italic;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.calendar-table {
+  display: grid;
+  overflow-x: auto;
+}
+
+.calendar-row {
+  min-width: 500px;
+  display: grid;
+  grid-template-columns: 0.7fr 1fr 1fr 0.9fr;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+}
+
+.calendar-row-head {
+  color: var(--acid);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.calendar-row strong {
+  color: var(--text);
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.05rem;
+  font-style: italic;
+}
+
+.calendar-row span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
 .track-overview {
   display: grid;
   grid-template-columns: minmax(0, 0.82fr) minmax(360px, 0.9fr);
@@ -1952,6 +2031,200 @@ video {
   color: var(--acid);
   font-size: 0.9rem;
   font-weight: 800;
+}
+
+.registration-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: clamp(14px, 3vw, 34px);
+  background:
+    radial-gradient(circle at 22% 8%, rgba(234, 234, 0, 0.14), transparent 28rem),
+    rgba(4, 4, 4, 0.78);
+  backdrop-filter: blur(14px);
+}
+
+.registration-modal {
+  width: min(1120px, 100%);
+  max-height: calc(100vh - clamp(28px, 6vw, 68px));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid rgba(234, 234, 0, 0.34);
+  background:
+    repeating-linear-gradient(45deg, transparent, transparent 11px, rgba(255, 255, 255, 0.025) 11px, rgba(255, 255, 255, 0.025) 22px),
+    var(--surface-low);
+  box-shadow: 0 26px 90px rgba(0, 0, 0, 0.72);
+  clip-path: polygon(24px 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%, 0 24px);
+}
+
+.registration-modal-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+  border-bottom: 1px solid var(--line);
+  padding: clamp(18px, 3vw, 28px);
+  background:
+    linear-gradient(90deg, rgba(234, 234, 0, 0.12), transparent 48%),
+    rgba(10, 10, 10, 0.82);
+}
+
+.registration-modal-head h2 {
+  margin: 0;
+  max-width: 13ch;
+  font-family: var(--font-headline), sans-serif;
+  font-size: clamp(2rem, 5vw, 4.2rem);
+  font-style: italic;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.registration-modal-head p {
+  max-width: 68ch;
+  margin: 14px 0 0;
+  color: var(--muted);
+  line-height: 1.58;
+}
+
+.registration-modal-close {
+  width: 46px;
+  height: 46px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: var(--panel);
+  cursor: pointer;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+.registration-modal-close:hover,
+.registration-modal-close:focus-visible {
+  border-color: var(--acid);
+  color: var(--acid);
+  outline: none;
+}
+
+.registration-modal-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(16px, 3vw, 30px);
+}
+
+.championship-form {
+  display: grid;
+  gap: 22px;
+  position: relative;
+  border: 1px solid rgba(234, 234, 0, 0.28);
+  padding: clamp(22px, 4vw, 34px);
+  background:
+    linear-gradient(135deg, rgba(234, 234, 0, 0.12), transparent 34%),
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.024) 10px, rgba(255, 255, 255, 0.024) 20px),
+    var(--panel);
+  clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+}
+
+.championship-form::before {
+  content: "LEGENDS";
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 9px 14px;
+  color: var(--ink);
+  background: var(--acid);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.championship-form-head {
+  display: grid;
+  gap: 14px;
+  max-width: 760px;
+}
+
+.championship-form-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding-right: 92px;
+  font-family: var(--font-headline), sans-serif;
+  font-size: clamp(1.65rem, 3vw, 2.55rem);
+  font-style: italic;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.championship-form-head p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.62;
+}
+
+.form-section {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+  padding: 20px;
+  background: rgba(12, 12, 12, 0.28);
+}
+
+.form-section legend {
+  padding: 0 10px;
+  color: var(--acid);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.form-section-compact {
+  gap: 12px;
+}
+
+.check-field {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  color: var(--muted);
+  line-height: 1.48;
+}
+
+.check-field input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--acid);
+}
+
+.registration-footnote {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border-left: 4px solid var(--acid);
+  padding: 14px 16px;
+  color: var(--muted);
+  background: rgba(234, 234, 0, 0.07);
+}
+
+.registration-footnote svg {
+  flex: 0 0 auto;
+  color: var(--acid);
+}
+
+.registration-footnote p {
+  margin: 0;
+  line-height: 1.55;
 }
 
 .site-footer {
@@ -2610,6 +2883,8 @@ video {
   .scoring-rules-grid,
   .track-guide-grid,
   .track-stats,
+  .calendar-summary-grid,
+  .calendar-month-grid,
   .andre-achievement-grid,
   .andre-source-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2709,10 +2984,55 @@ video {
   .stat-strip,
   .track-guide-grid,
   .track-stats,
+  .calendar-summary-grid,
+  .calendar-month-grid,
   .andre-achievement-grid,
   .andre-source-grid,
   .andre-scoreboard {
     grid-template-columns: 1fr;
+  }
+
+  .championship-form .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-modal-backdrop {
+    padding: 10px;
+  }
+
+  .registration-modal {
+    max-height: calc(100vh - 20px);
+    clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+  }
+
+  .registration-modal-head {
+    grid-template-columns: 1fr auto;
+    padding: 18px;
+  }
+
+  .registration-modal-head h2 {
+    font-size: clamp(1.85rem, 11vw, 3rem);
+  }
+
+  .registration-modal-head p {
+    font-size: 0.94rem;
+  }
+
+  .registration-modal-body {
+    padding: 12px;
+  }
+
+  .championship-form {
+    padding: 18px;
+  }
+
+  .championship-form-head h3 {
+    padding-right: 0;
+    font-size: clamp(1.45rem, 8vw, 2.2rem);
+  }
+
+  .form-section {
+    padding: 16px;
   }
 
   .andre-hero {
@@ -2796,6 +3116,7 @@ video {
   }
 
   .legends-tabs a,
+  .legends-tabs button,
   .legends-status .btn {
     width: 100%;
   }
