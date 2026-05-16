@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Handshake } from "lucide-react";
+import Image from "next/image";
+import { AtSign, ExternalLink, Handshake } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
 import { sponsors } from "@/data/site";
@@ -17,11 +18,21 @@ export default function PatrocinadoresPage() {
         image="/images/hero-kart-night.png"
       />
       <section className="section">
-        <div className="container grid-3">
+        <div className="container sponsors-grid">
           {sponsors.map((sponsor) => (
-            <Reveal className="card" key={sponsor}>
-              <h3>{sponsor}</h3>
-              <p>Bloco de marca temporário para logo, descrição curta e presença na temporada.</p>
+            <Reveal className="sponsor-card" key={sponsor.instagram}>
+              <a href={sponsor.instagram} target="_blank" rel="noreferrer" aria-label={`Abrir Instagram ${sponsor.name}`}>
+                <span className="sponsor-logo">
+                  <Image src={sponsor.logo} alt={`Logo ${sponsor.name}`} fill sizes="(max-width: 760px) 100vw, 33vw" />
+                </span>
+                <span className="sponsor-meta">
+                  <span>{sponsor.segment}</span>
+                  <strong>{sponsor.name}</strong>
+                  <span className="sponsor-handle">
+                    <AtSign size={16} /> {sponsor.handle} <ExternalLink size={14} />
+                  </span>
+                </span>
+              </a>
             </Reveal>
           ))}
         </div>

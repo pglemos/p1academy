@@ -135,12 +135,62 @@ export const regulations = [
 ];
 
 export const sponsors = [
-  "Apex Timing",
-  "Carbon Track Garage",
-  "Grid Wear Racing",
-  "Pitlane Studio",
-  "Telemetry Co.",
-  "Podium Fuel",
+  {
+    name: "LapTime Software",
+    handle: "@laptimesoftware",
+    instagram: "https://www.instagram.com/laptimesoftware",
+    logo: "/sponsors/laptime-software.jpg",
+    segment: "Software e cronometragem",
+  },
+  {
+    name: "Vlad Imagens",
+    handle: "@vlad_imagens",
+    instagram: "https://www.instagram.com/vlad_imagens",
+    logo: "/sponsors/vlad-imagens.jpg",
+    segment: "Fotografia e conteúdo",
+  },
+  {
+    name: "Soupe Digital Marketing",
+    handle: "@soupedigital",
+    instagram: "https://www.instagram.com/soupedigital",
+    logo: "/sponsors/soupe-digital.jpg",
+    segment: "Marketing digital",
+  },
+  {
+    name: "TS Sports",
+    handle: "@tssports.br",
+    instagram: "https://www.instagram.com/tssports.br",
+    logo: "/sponsors/ts-sports.jpg",
+    segment: "Esporte e performance",
+  },
+  {
+    name: "Kartódromo Internacional de Betim",
+    handle: "@kartodromobetim",
+    instagram: "https://www.instagram.com/kartodromobetim",
+    logo: "/sponsors/kartodromo-betim.jpg",
+    segment: "Pista oficial",
+  },
+  {
+    name: "Gui Cosmos TV",
+    handle: "@guicosmos_tv",
+    instagram: "https://www.instagram.com/guicosmos_tv",
+    logo: "/sponsors/guicosmos-tv.jpg",
+    segment: "Mídia e transmissão",
+  },
+  {
+    name: "Clique na Curva",
+    handle: "@cliquenacurva",
+    instagram: "https://www.instagram.com/cliquenacurva",
+    logo: "/sponsors/clique-na-curva.jpg",
+    segment: "Fotografia motorsport",
+  },
+  {
+    name: "Firepit Brasil",
+    handle: "@firepitbrasil",
+    instagram: "https://www.instagram.com/firepitbrasil",
+    logo: "/sponsors/firepit-brasil.jpg",
+    segment: "Experiência e lifestyle",
+  },
 ];
 
 export const posts = [

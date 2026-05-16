@@ -204,9 +204,14 @@ export default function Home() {
           </Reveal>
           <div className="grid-2">
             {sponsors.slice(0, 4).map((sponsor) => (
-              <Reveal className="card" key={sponsor}>
-                <h3>{sponsor}</h3>
-                <p>Logo placeholder premium para substituição por parceiro oficial.</p>
+              <Reveal className="sponsor-mini" key={sponsor.instagram}>
+                <Link href="/patrocinadores">
+                  <Image src={sponsor.logo} alt={`Logo ${sponsor.name}`} width={180} height={180} />
+                  <span>
+                    <strong>{sponsor.name}</strong>
+                    <small>{sponsor.handle}</small>
+                  </span>
+                </Link>
               </Reveal>
             ))}
           </div>
