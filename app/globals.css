@@ -2038,7 +2038,8 @@ video {
   inset: 0;
   z-index: 90;
   display: grid;
-  place-items: center;
+  place-items: start center;
+  overflow-y: auto;
   padding: clamp(14px, 3vw, 34px);
   background:
     radial-gradient(circle at 22% 8%, rgba(234, 234, 0, 0.14), transparent 28rem),
@@ -2047,10 +2048,11 @@ video {
 }
 
 .registration-modal {
+  position: relative;
   width: min(1120px, 100%);
-  max-height: calc(100vh - clamp(28px, 6vw, 68px));
+  max-height: calc(100vh - 48px);
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
   border: 1px solid rgba(234, 234, 0, 0.34);
   background:
@@ -2060,36 +2062,11 @@ video {
   clip-path: polygon(24px 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%, 0 24px);
 }
 
-.registration-modal-head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 18px;
-  align-items: start;
-  border-bottom: 1px solid var(--line);
-  padding: clamp(18px, 3vw, 28px);
-  background:
-    linear-gradient(90deg, rgba(234, 234, 0, 0.12), transparent 48%),
-    rgba(10, 10, 10, 0.82);
-}
-
-.registration-modal-head h2 {
-  margin: 0;
-  max-width: 13ch;
-  font-family: var(--font-headline), sans-serif;
-  font-size: clamp(2rem, 5vw, 4.2rem);
-  font-style: italic;
-  line-height: 0.9;
-  text-transform: uppercase;
-}
-
-.registration-modal-head p {
-  max-width: 68ch;
-  margin: 14px 0 0;
-  color: var(--muted);
-  line-height: 1.58;
-}
-
 .registration-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 3;
   width: 46px;
   height: 46px;
   display: inline-grid;
@@ -2140,6 +2117,10 @@ video {
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.registration-modal .championship-form::before {
+  right: 76px;
 }
 
 .championship-form-head {
@@ -3005,17 +2986,11 @@ video {
     clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
   }
 
-  .registration-modal-head {
-    grid-template-columns: 1fr auto;
-    padding: 18px;
-  }
-
-  .registration-modal-head h2 {
-    font-size: clamp(1.85rem, 11vw, 3rem);
-  }
-
-  .registration-modal-head p {
-    font-size: 0.94rem;
+  .registration-modal-close {
+    width: 40px;
+    height: 40px;
+    top: 14px;
+    right: 14px;
   }
 
   .registration-modal-body {
@@ -3024,6 +2999,10 @@ video {
 
   .championship-form {
     padding: 18px;
+  }
+
+  .registration-modal .championship-form::before {
+    right: 62px;
   }
 
   .championship-form-head h3 {

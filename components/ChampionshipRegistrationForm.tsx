@@ -122,17 +122,10 @@ export function ChampionshipRegistrationModal() {
 
   return (
     <div className="registration-modal-backdrop" onMouseDown={handleBackdropClick}>
-      <div className="registration-modal" role="dialog" aria-modal="true" aria-labelledby="registration-modal-title">
-        <div className="registration-modal-head">
-          <div>
-            <span className="eyebrow">Inscrição Legends</span>
-            <h2 id="registration-modal-title">Cadastro completo do piloto</h2>
-            <p>Preencha os dados para a organização analisar vaga, nível, disponibilidade, segurança e retorno pelo WhatsApp.</p>
-          </div>
-          <button ref={closeButtonRef} className="registration-modal-close" type="button" onClick={closeModal} aria-label="Fechar inscrição">
-            <X size={22} />
-          </button>
-        </div>
+      <div className="registration-modal" role="dialog" aria-modal="true" aria-label="Cadastro completo do piloto">
+        <button ref={closeButtonRef} className="registration-modal-close" type="button" onClick={closeModal} aria-label="Fechar inscrição">
+          <X size={22} />
+        </button>
         <div className="registration-modal-body">
           <ChampionshipRegistrationForm />
         </div>
@@ -212,12 +205,8 @@ export function ChampionshipRegistrationForm() {
       `Regulamento: ${legendsPdf}`,
     ].join("\n");
 
-    setSuccess("Pré-inscrição pronta. O WhatsApp será aberto para enviar os dados à organização.");
-    window.open(
-      `https://wa.me/${legendsCompetition.whatsappNumber}?text=${encodeURIComponent(message)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    setSuccess("Pré-inscrição pronta. Você será direcionado ao WhatsApp para enviar os dados à organização.");
+    window.location.assign(`https://wa.me/${legendsCompetition.whatsappNumber}?text=${encodeURIComponent(message)}`);
   }
 
   return (
