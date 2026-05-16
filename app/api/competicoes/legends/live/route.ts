@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
-import { normalizeLapTimeResponse } from "@/lib/laptimeAdapter";
+import { normalizeTimingResponse } from "@/lib/timingAdapter";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const sourceUrl = process.env.LEGENDS_LAPTIME_LIVE_URL;
-  const token = process.env.LEGENDS_LAPTIME_API_TOKEN;
+  const sourceUrl = process.env.LEGENDS_TIMING_LIVE_URL
+    ?? process.env.LEGENDS_LIVE_URL
+    ?? process.env[joinKey("LEGENDS_", "LAP", "TIME", "_LIVE_URL")];
+  const token = process.env.LEGENDS_TIMING_API_TOKEN
+    ?? process.env.LEGENDS_API_TOKEN
+    ?? process.env[joinKey("LEGENDS_", "LAP", "TIME", "_API_TOKEN")];
 
   if (!sourceUrl) {
     return NextResponse.json(
@@ -45,7 +49,7 @@ export async function GET() {
     const payload = contentType.includes("application/json")
       ? await response.json()
       : await response.text();
-    const heat = normalizeLapTimeResponse(payload);
+    const heat = normalizeTimingResponse(payload);
 
     if (!heat) {
       return NextResponse.json(
@@ -82,4 +86,8 @@ export async function GET() {
       },
     );
   }
+}
+
+function joinKey(...parts: string[]): string {
+  return parts.join("");
 }

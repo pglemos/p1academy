@@ -4,7 +4,8 @@ import Link from "next/link";
 import { BookingForm } from "@/components/BookingForm";
 import { MediaFrame } from "@/components/MediaFrame";
 import { Lift, Reveal } from "@/components/Motion";
-import { quickAccess, programs, competitions, latestPosts, sponsors } from "@/data/site";
+import { sponsors } from "@/data/sponsors";
+import { quickAccess, programs, competitions, latestPosts } from "@/data/site";
 
 export default function Home() {
   return (

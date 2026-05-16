@@ -1,4 +1,4 @@
-import { sponsors } from "./site";
+import { sponsors } from "./sponsors";
 
 export const legendsPdf = "/regulamentos/regulamento-legends-kart-series-2026.pdf";
 

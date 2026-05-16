@@ -1,4 +1,4 @@
-import { calculateHeatResults, formatLapTime, formatScore, type HeatInput } from "./legendsScoring";
+import { calculateHeatResults, formatScore, formatTimingValue, type HeatInput } from "./legendsScoring";
 
 const pageWidth = 842;
 const pageHeight = 595;
@@ -19,12 +19,12 @@ export function buildLegendsResultPdf(heat: HeatInput): Uint8Array {
       pad(result.position ? String(result.position) : "-", 4),
       pad(result.kart || "-", 5),
       pad(trim(result.name, 34), 34),
-      pad(formatLapTime(result.officialMs), 10),
+      pad(formatTimingValue(result.officialMs), 10),
       pad(result.gapMs === null ? "-" : `+${(result.gapMs / 1000).toFixed(3)}s`, 9),
       pad(formatScore(result.score), 8),
       pad(result.totalLaps || "-", 7),
       pad(result.averageSpeedKmh || "-", 6),
-      pad(result.secondBestLapTime || "-", 10),
+      pad(result.secondBestTime || "-", 10),
       result.federation || "-",
     ].join(" ");
     lines.push(row);

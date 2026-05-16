@@ -36,7 +36,7 @@ export default async function LegendsPontuacaoPage({ searchParams }: LegendsPont
               <span className="eyebrow">Regra oficial</span>
               <h2>Ao vivo, sem subir PDF</h2>
               <p>
-                Quando a cronometragem estiver ativa, o site consulta a fonte oficial em intervalos curtos, normaliza os dados do LapTime e recalcula a tabela automaticamente. Em bateria regular, o melhor tempo soma 10,000 pontos. Na Super Final, a base é 5,000 pontos.
+                Quando a cronometragem estiver ativa, o site consulta a fonte oficial em intervalos curtos, normaliza os dados da bateria e recalcula a tabela automaticamente. Em bateria regular, o melhor tempo soma 10,000 pontos. Na Super Final, a base é 5,000 pontos.
               </p>
             </div>
             <div className="button-row">
@@ -94,7 +94,7 @@ export default async function LegendsPontuacaoPage({ searchParams }: LegendsPont
           </Reveal>
           <Reveal className="legends-panel">
             <h3>{legendsCompetition.name}</h3>
-            <p>O integrador entende campos típicos do LapTime: POS, número do competidor, piloto, MV, TMV, DL, DA, TV, VM, MV 2, TMV 2 e UF.</p>
+            <p>O integrador entende campos típicos de cronometragem: posição, número do competidor, piloto, melhor volta, diferenças, total de voltas, velocidade média e UF.</p>
             <p>O cálculo respeita diferença para o melhor tempo, ajuste de empates por ordem oficial, pontuação mínima acima de 9 segundos e base reduzida para Super Final.</p>
           </Reveal>
         </div>

@@ -5,7 +5,7 @@ export type HeatDriverInput = {
   id: string;
   name: string;
   kart?: string;
-  lapTime: string;
+  bestTime: string;
   status?: DriverStatus;
   order: number;
   sourcePosition?: number | null;
@@ -13,7 +13,7 @@ export type HeatDriverInput = {
   totalLaps?: string;
   averageSpeedKmh?: string;
   secondBestLapNumber?: string;
-  secondBestLapTime?: string;
+  secondBestTime?: string;
   federation?: string;
   gapToLeader?: string;
   gapToPrevious?: string;
@@ -35,7 +35,7 @@ export type HeatResult = {
   totalLaps?: string;
   averageSpeedKmh?: string;
   secondBestLapNumber?: string;
-  secondBestLapTime?: string;
+  secondBestTime?: string;
   federation?: string;
   gapToLeader?: string;
   gapToPrevious?: string;
@@ -47,7 +47,7 @@ export type HeatInput = {
   date: string;
   type: HeatType;
   generatedAt?: string;
-  source?: "manual" | "laptime-live" | "snapshot";
+  source?: "manual" | "timing-live" | "snapshot";
   trackLayout?: string;
   category?: string;
   drivers: HeatDriverInput[];
@@ -70,7 +70,7 @@ const SUPER_FINAL_BASE_SCORE = 5;
 const MIN_SCORE_AFTER_NINE_SECONDS = 1;
 const MAX_VALID_REGULAR_RESULTS = 10;
 
-export function parseLapTimeToMs(value: string): number | null {
+export function parseTimingValueToMs(value: string): number | null {
   const input = value.trim().replace(",", ".");
 
   if (!input) {
@@ -95,7 +95,7 @@ export function parseLapTimeToMs(value: string): number | null {
   return null;
 }
 
-export function formatLapTime(milliseconds: number | null): string {
+export function formatTimingValue(milliseconds: number | null): string {
   if (milliseconds === null || !Number.isFinite(milliseconds)) {
     return "-";
   }
@@ -120,7 +120,7 @@ export function calculateHeatResults(heat: HeatInput): HeatResult[] {
   const parsed = heat.drivers
     .map((driver) => {
       const status = driver.status ?? "ok";
-      const rawMs = status === "ok" ? parseLapTimeToMs(driver.lapTime) : null;
+      const rawMs = status === "ok" ? parseTimingValueToMs(driver.bestTime) : null;
       return { ...driver, status, rawMs };
     })
     .filter((driver) => driver.name.trim() || driver.rawMs !== null);
@@ -186,7 +186,7 @@ export function calculateHeatResults(heat: HeatInput): HeatResult[] {
       totalLaps: driver.totalLaps,
       averageSpeedKmh: driver.averageSpeedKmh,
       secondBestLapNumber: driver.secondBestLapNumber,
-      secondBestLapTime: driver.secondBestLapTime,
+      secondBestTime: driver.secondBestTime,
       federation: driver.federation,
       gapToLeader: driver.gapToLeader,
       gapToPrevious: driver.gapToPrevious,
@@ -211,7 +211,7 @@ export function calculateHeatResults(heat: HeatInput): HeatResult[] {
       totalLaps: driver.totalLaps,
       averageSpeedKmh: driver.averageSpeedKmh,
       secondBestLapNumber: driver.secondBestLapNumber,
-      secondBestLapTime: driver.secondBestLapTime,
+      secondBestTime: driver.secondBestTime,
       federation: driver.federation,
       gapToLeader: driver.gapToLeader,
       gapToPrevious: driver.gapToPrevious,

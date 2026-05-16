@@ -3,7 +3,7 @@ import Image from "next/image";
 import { AtSign, ExternalLink, Handshake } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
-import { sponsors } from "@/data/site";
+import { sponsors } from "@/data/sponsors";
 
 export const metadata = {
   title: "Patrocinadores | P1 Academy",

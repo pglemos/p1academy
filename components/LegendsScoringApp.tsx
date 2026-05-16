@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Clipboard, Copy, FileDown, Plus, Radio, RefreshCw, RotateCcw, Share2, Timer, Trash2 } from "lucide-react";
 import {
   calculateHeatResults,
-  formatLapTime,
   formatScore,
+  formatTimingValue,
   type DriverStatus,
   type HeatDriverInput,
   type HeatInput,
@@ -24,10 +24,10 @@ type LegendsScoringAppProps = {
 };
 
 const emptyDrivers: HeatDriverInput[] = [
-  { id: "driver-1", name: "", kart: "", lapTime: "", status: "ok", order: 1 },
-  { id: "driver-2", name: "", kart: "", lapTime: "", status: "ok", order: 2 },
-  { id: "driver-3", name: "", kart: "", lapTime: "", status: "ok", order: 3 },
-  { id: "driver-4", name: "", kart: "", lapTime: "", status: "ok", order: 4 },
+  { id: "driver-1", name: "", kart: "", bestTime: "", status: "ok", order: 1 },
+  { id: "driver-2", name: "", kart: "", bestTime: "", status: "ok", order: 2 },
+  { id: "driver-3", name: "", kart: "", bestTime: "", status: "ok", order: 3 },
+  { id: "driver-4", name: "", kart: "", bestTime: "", status: "ok", order: 4 },
 ];
 
 const sampleHeat: HeatInput = {
@@ -36,10 +36,10 @@ const sampleHeat: HeatInput = {
   date: "2026-06-01",
   type: "regular",
   drivers: [
-    { id: "andre", name: "Piloto 01", kart: "31", lapTime: "1:05.500", status: "ok", order: 1 },
-    { id: "bruno", name: "Piloto 02", kart: "12", lapTime: "1:06.000", status: "ok", order: 2 },
-    { id: "caio", name: "Piloto 03", kart: "08", lapTime: "1:06.000", status: "ok", order: 3 },
-    { id: "daniel", name: "Piloto 04", kart: "22", lapTime: "1:14.650", status: "ok", order: 4 },
+    { id: "andre", name: "Piloto 01", kart: "31", bestTime: "1:05.500", status: "ok", order: 1 },
+    { id: "bruno", name: "Piloto 02", kart: "12", bestTime: "1:06.000", status: "ok", order: 2 },
+    { id: "caio", name: "Piloto 03", kart: "08", bestTime: "1:06.000", status: "ok", order: 3 },
+    { id: "daniel", name: "Piloto 04", kart: "22", bestTime: "1:14.650", status: "ok", order: 4 },
   ],
 };
 
@@ -122,7 +122,7 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
         ...current,
         drivers: [
           ...current.drivers,
-          { id: `driver-${Date.now()}-${nextOrder}`, name: "", kart: "", lapTime: "", status: "ok", order: nextOrder },
+          { id: `driver-${Date.now()}-${nextOrder}`, name: "", kart: "", bestTime: "", status: "ok", order: nextOrder },
         ],
       };
     });
@@ -149,7 +149,7 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
       heat.date ? `Data: ${heat.date}` : "",
       "",
       ...results.map((result) => (
-        `${result.position ? `${result.position}º` : "-"} | ${result.name} | Kart ${result.kart || "-"} | ${formatLapTime(result.officialMs)} | ${formatScore(result.score)} pts${result.note ? ` | ${result.note}` : ""}`
+        `${result.position ? `${result.position}º` : "-"} | ${result.name} | Kart ${result.kart || "-"} | ${formatTimingValue(result.officialMs)} | ${formatScore(result.score)} pts${result.note ? ` | ${result.note}` : ""}`
       )),
     ].filter(Boolean).join("\n");
 
@@ -242,8 +242,8 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
                   disabled={fieldsDisabled}
                 />
                 <input
-                  value={driver.lapTime}
-                  onChange={(event) => updateDriver(driver.id, "lapTime", event.target.value)}
+                  value={driver.bestTime}
+                  onChange={(event) => updateDriver(driver.id, "bestTime", event.target.value)}
                   placeholder="1:05.500"
                   disabled={fieldsDisabled}
                 />
@@ -288,7 +288,7 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
           <div className="scoring-podium">
             <div>
               <span>Melhor volta</span>
-              <strong>{formatLapTime(winner?.officialMs ?? null)}</strong>
+              <strong>{formatTimingValue(winner?.officialMs ?? null)}</strong>
             </div>
             <div>
               <span>Pontuação do vencedor</span>
@@ -347,12 +347,12 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
               <span>{result.position ? `${result.position}º` : "-"}</span>
               <strong>{result.name}</strong>
               <span>{result.kart || "-"}</span>
-              <span>{formatLapTime(result.officialMs)}</span>
+              <span>{formatTimingValue(result.officialMs)}</span>
               <span>{result.gapMs === null ? "-" : `+${(result.gapMs / 1000).toFixed(3)}s`}</span>
               <span className={result.position === 1 ? "score-pill win" : "score-pill"}>{formatScore(result.score)}</span>
               <span>{result.totalLaps || "-"}</span>
               <span>{result.averageSpeedKmh || "-"}</span>
-              <span>{result.secondBestLapTime || "-"}</span>
+              <span>{result.secondBestTime || "-"}</span>
               <span>{result.federation || "-"}</span>
               <span className="score-note">{result.note || "Tempo válido"}</span>
             </div>
@@ -376,25 +376,38 @@ function normalizeHeat(value: HeatInput): HeatInput {
     trackLayout: value.trackLayout || "",
     category: value.category || "",
     drivers: Array.isArray(value.drivers) && value.drivers.length
-      ? value.drivers.map((driver, index) => ({
-        id: driver.id || `driver-${index + 1}`,
-        name: driver.name || "",
-        kart: driver.kart || "",
-        lapTime: driver.lapTime || "",
-        status: driver.status || "ok",
-        order: index + 1,
-        sourcePosition: driver.sourcePosition ?? null,
-        bestLapNumber: driver.bestLapNumber || "",
-        totalLaps: driver.totalLaps || "",
-        averageSpeedKmh: driver.averageSpeedKmh || "",
-        secondBestLapNumber: driver.secondBestLapNumber || "",
-        secondBestLapTime: driver.secondBestLapTime || "",
-        federation: driver.federation || "",
-        gapToLeader: driver.gapToLeader || "",
-        gapToPrevious: driver.gapToPrevious || "",
-      }))
+      ? value.drivers.map((driver, index) => {
+        const record = driver as HeatDriverInput & Record<string, string | number | null | undefined>;
+
+        return {
+          id: driver.id || `driver-${index + 1}`,
+          name: driver.name || "",
+          kart: driver.kart || "",
+          bestTime: driver.bestTime || readDriverString(record, joinKey("lap", "Time")),
+          status: driver.status || "ok",
+          order: index + 1,
+          sourcePosition: driver.sourcePosition ?? null,
+          bestLapNumber: driver.bestLapNumber || "",
+          totalLaps: driver.totalLaps || "",
+          averageSpeedKmh: driver.averageSpeedKmh || "",
+          secondBestLapNumber: driver.secondBestLapNumber || "",
+          secondBestTime: driver.secondBestTime || readDriverString(record, joinKey("secondBest", "Lap", "Time")),
+          federation: driver.federation || "",
+          gapToLeader: driver.gapToLeader || "",
+          gapToPrevious: driver.gapToPrevious || "",
+        };
+      })
       : emptyDrivers,
   };
+}
+
+function readDriverString(driver: Record<string, string | number | null | undefined>, key: string): string {
+  const value = driver[key];
+  return typeof value === "string" ? value : "";
+}
+
+function joinKey(...parts: string[]): string {
+  return parts.join("");
 }
 
 function createEmptyHeat(): HeatInput {

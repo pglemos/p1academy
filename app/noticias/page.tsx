@@ -13,7 +13,7 @@ export default function NoticiasPage() {
     <>
       <PageHero
         title="Notícias"
-        text="Conteúdo editorial para pilotos, alunos, participantes de campeonato, patrocinadores e comunidade P1."
+        text="Coberturas editoriais da P1 Academy baseadas em fontes oficiais, com imagens, contexto e link direto para a publicação original."
         image="/images/competition-corner.png"
       />
       <section className="section">

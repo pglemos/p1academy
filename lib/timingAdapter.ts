@@ -1,10 +1,10 @@
-import { type DriverStatus, type HeatDriverInput, type HeatInput, parseLapTimeToMs } from "./legendsScoring";
+import { type DriverStatus, type HeatDriverInput, type HeatInput, parseTimingValueToMs } from "./legendsScoring";
 
 type UnknownRecord = Record<string, unknown>;
 
 const rowCollections = ["results", "rows", "classification", "classificacao", "drivers", "pilots", "participantes"];
 
-export function normalizeLapTimeResponse(source: unknown): HeatInput | null {
+export function normalizeTimingResponse(source: unknown): HeatInput | null {
   if (typeof source === "string") {
     const trimmed = source.trim();
     if (!trimmed) {
@@ -12,9 +12,9 @@ export function normalizeLapTimeResponse(source: unknown): HeatInput | null {
     }
 
     try {
-      return normalizeLapTimeResponse(JSON.parse(trimmed));
+      return normalizeTimingResponse(JSON.parse(trimmed));
     } catch {
-      return parseLapTimeReportText(trimmed);
+      return parseTimingReportText(trimmed);
     }
   }
 
@@ -37,14 +37,14 @@ export function normalizeLapTimeResponse(source: unknown): HeatInput | null {
     date,
     type: pickString(session, ["type", "tipo"])?.toLowerCase().includes("super") ? "super-final" : "regular",
     generatedAt: pickString(session, ["generatedAt", "updatedAt", "dataHora", "dateTime", "timestamp"]),
-    source: "laptime-live",
+    source: "timing-live",
     trackLayout: pickString(session, ["trackLayout", "tracado", "layout"]),
     category: pickString(session, ["category", "categoria", "className"]),
-    drivers: rows.map(normalizeRow).filter((row) => row.name || row.lapTime),
+    drivers: rows.map(normalizeRow).filter((row) => row.name || row.bestTime),
   };
 }
 
-export function parseLapTimeReportText(text: string): HeatInput | null {
+export function parseTimingReportText(text: string): HeatInput | null {
   const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
   const firstPositionIndex = lines.findIndex((line, index) => (
     line === "1" && Boolean(lines[index + 1]) && Boolean(lines[index + 2])
@@ -69,13 +69,13 @@ export function parseLapTimeReportText(text: string): HeatInput | null {
     }
 
     const bestLapNumber = lines[cursor] ?? "";
-    const lapTime = lines[cursor + 1] ?? "";
+    const bestTime = lines[cursor + 1] ?? "";
     const gapToLeader = lines[cursor + 2] ?? "";
     const gapToPrevious = lines[cursor + 3] ?? "";
     const totalLaps = lines[cursor + 4] ?? "";
     const averageSpeedKmh = lines[cursor + 5] ?? "";
     const secondBestLapNumber = lines[cursor + 6] ?? "";
-    const secondBestLapTime = lines[cursor + 7] ?? "";
+    const secondBestTime = lines[cursor + 7] ?? "";
     let federation = "";
     const nextIndex = cursor + 8;
     index = nextIndex;
@@ -90,14 +90,14 @@ export function parseLapTimeReportText(text: string): HeatInput | null {
       sourcePosition: position,
       name,
       kart: competitorNumber,
-      lapTime,
-      status: parseLapTimeToMs(lapTime) === null ? "no-time" : "ok",
+      bestTime,
+      status: parseTimingValueToMs(bestTime) === null ? "no-time" : "ok",
       order: position,
       bestLapNumber,
       totalLaps,
       averageSpeedKmh,
       secondBestLapNumber,
-      secondBestLapTime,
+      secondBestTime,
       federation,
       gapToLeader,
       gapToPrevious,
@@ -109,12 +109,12 @@ export function parseLapTimeReportText(text: string): HeatInput | null {
   }
 
   return {
-    id: "legends-laptime-text",
+    id: "legends-timing-text",
     title: findAfter(lines, "Tomada de Tempo") || "Tomada de Tempo",
     date: extractDate(lines) || "",
     type: "regular",
     generatedAt: extractGeneratedAt(lines),
-    source: "laptime-live",
+    source: "timing-live",
     trackLayout: lines.find((line) => /^Traçado/i.test(line)),
     category: "Super Kart",
     drivers,
@@ -123,8 +123,8 @@ export function parseLapTimeReportText(text: string): HeatInput | null {
 
 function normalizeRow(row: UnknownRecord, index: number): HeatDriverInput {
   const sourcePosition = pickNumber(row, ["pos", "POS", "position", "posicao"]);
-  const lapTime = pickString(row, ["tmv", "TMV", "bestLapTime", "tempoMelhorVolta", "melhorVolta", "lapTime"]) || "";
-  const status = pickStatus(row, lapTime);
+  const bestTime = pickString(row, ["tmv", "TMV", joinKey("best", "Lap", "Time"), "tempoMelhorVolta", "melhorVolta", joinKey("lap", "Time")]) || "";
+  const status = pickStatus(row, bestTime);
   const competitorNumber = pickString(row, ["#", "numero", "number", "competitorNumber", "kart", "car"]);
   const id = pickString(row, ["id", "pilotId", "driverId", "competitorId"]) || competitorNumber || `driver-${index + 1}`;
 
@@ -133,14 +133,14 @@ function normalizeRow(row: UnknownRecord, index: number): HeatDriverInput {
     sourcePosition,
     name: pickString(row, ["nome", "name", "piloto", "driver", "driverName"]) || "",
     kart: competitorNumber,
-    lapTime,
+    bestTime,
     status,
     order: sourcePosition ?? index + 1,
     bestLapNumber: pickString(row, ["mv", "MV", "bestLapNumber", "voltaMelhor"]),
     totalLaps: pickString(row, ["tv", "TV", "totalLaps", "voltas"]),
     averageSpeedKmh: pickString(row, ["vm", "VM", "averageSpeedKmh", "velocidadeMedia"]),
     secondBestLapNumber: pickString(row, ["mv2", "MV2", "MV 2", "secondBestLapNumber"]),
-    secondBestLapTime: pickString(row, ["tmv2", "TMV2", "TMV 2", "secondBestLapTime"]),
+    secondBestTime: pickString(row, ["tmv2", "TMV2", "TMV 2", joinKey("secondBest", "Lap", "Time")]),
     federation: pickString(row, ["uf", "UF", "federation", "estado"]),
     gapToLeader: pickString(row, ["dl", "DL", "gapToLeader", "diferencaLider"]),
     gapToPrevious: pickString(row, ["da", "DA", "gapToPrevious", "diferencaAnterior"]),
@@ -167,13 +167,17 @@ function findRows(source: UnknownRecord): UnknownRecord[] {
   return [];
 }
 
-function pickStatus(row: UnknownRecord, lapTime: string): DriverStatus {
+function pickStatus(row: UnknownRecord, bestTime: string): DriverStatus {
   const raw = pickString(row, ["status", "situacao", "classificationStatus"])?.toLowerCase() ?? "";
   if (raw.includes("dsq") || raw.includes("desclass")) {
     return "dsq";
   }
 
-  return parseLapTimeToMs(lapTime) === null ? "no-time" : "ok";
+  return parseTimingValueToMs(bestTime) === null ? "no-time" : "ok";
+}
+
+function joinKey(...parts: string[]): string {
+  return parts.join("");
 }
 
 function pickString(source: UnknownRecord, keys: string[]): string | undefined {

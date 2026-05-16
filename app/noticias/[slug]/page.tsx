@@ -55,6 +55,12 @@ function buildCompleteCoverage(post: NewsPost) {
   ];
 }
 
+function getSourceDisclosure(post: NewsPost) {
+  return post.source === "CBA"
+    ? "Cobertura editorial da P1 Academy baseada na publicação oficial da Confederação Brasileira de Automobilismo. Para ler o comunicado integral de origem, acesse a fonte original."
+    : "Cobertura editorial da P1 Academy baseada na publicação oficial da FIA Karting. Para ler o comunicado integral de origem, acesse a fonte original.";
+}
+
 export async function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
 }
@@ -87,6 +93,7 @@ export default async function NewsDetailPage({ params }: NewsDetailProps) {
           </Reveal>
           <Reveal className="card article-detail">
             <p className="news-meta">{post.date} | {post.category} | {post.source}</p>
+            <p className="source-disclosure">{getSourceDisclosure(post)}</p>
             <h3>{post.category}</h3>
             {articleContent.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
