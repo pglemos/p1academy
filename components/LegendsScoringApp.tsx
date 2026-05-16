@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Clipboard, Copy, Plus, RotateCcw, Share2, Timer, Trash2 } from "lucide-react";
+import { Clipboard, Copy, FileDown, Plus, Radio, RefreshCw, RotateCcw, Share2, Timer, Trash2 } from "lucide-react";
 import {
   calculateHeatResults,
   formatLapTime,
@@ -9,10 +9,15 @@ import {
   type DriverStatus,
   type HeatDriverInput,
   type HeatInput,
-type HeatType,
+  type HeatType,
 } from "@/lib/legendsScoring";
 
 const STORAGE_KEY = "p1-legends-scoring-heat";
+type SourceMode = "live" | "manual";
+type LiveStatus = {
+  kind: "idle" | "ok" | "warn" | "error";
+  text: string;
+};
 type LegendsScoringAppProps = {
   initialHeat?: HeatInput | null;
   initialMessage?: string;
@@ -41,15 +46,53 @@ const sampleHeat: HeatInput = {
 export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: LegendsScoringAppProps) {
   const [heat, setHeat] = useState<HeatInput>(() => initialHeat ? normalizeHeat(initialHeat) : createEmptyHeat());
   const [message, setMessage] = useState(initialMessage);
+  const [sourceMode, setSourceMode] = useState<SourceMode>(initialHeat ? "manual" : "live");
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>({
+    kind: initialHeat ? "ok" : "idle",
+    text: initialHeat ? "Snapshot publico carregado." : "Aguardando cronometragem ao vivo.",
+  });
+  const [lastSync, setLastSync] = useState("");
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(heat));
   }, [heat]);
 
+  useEffect(() => {
+    if (sourceMode !== "live") {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function run() {
+      const status = await syncLiveHeat();
+      if (cancelled) {
+        return;
+      }
+
+      setLiveStatus(status.status);
+      if (status.heat) {
+        setHeat(status.heat);
+        setLastSync(status.syncedAt || new Date().toLocaleTimeString("pt-BR"));
+      }
+    }
+
+    run();
+    const interval = window.setInterval(run, 5000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [sourceMode]);
+
   const results = useMemo(() => calculateHeatResults(heat), [heat]);
   const validResults = results.filter((result) => result.status === "ok");
   const winner = validResults[0];
-  const sharePath = useMemo(() => buildSharePath(heat), [heat]);
+  const encodedHeat = useMemo(() => encodeHeat(heat), [heat]);
+  const sharePath = useMemo(() => buildSharePath(encodedHeat), [encodedHeat]);
+  const pdfPath = useMemo(() => buildPdfPath(encodedHeat), [encodedHeat]);
+  const fieldsDisabled = sourceMode === "live";
 
   function updateDriver(id: string, field: keyof HeatDriverInput, value: string) {
     setHeat((current) => ({
@@ -60,6 +103,16 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
           : driver
       )),
     }));
+  }
+
+  async function syncNow() {
+    setLiveStatus({ kind: "idle", text: "Sincronizando com a cronometragem..." });
+    const status = await syncLiveHeat();
+    setLiveStatus(status.status);
+    if (status.heat) {
+      setHeat(status.heat);
+      setLastSync(status.syncedAt || new Date().toLocaleTimeString("pt-BR"));
+    }
   }
 
   function addDriver() {
@@ -116,6 +169,24 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
             </div>
           </div>
 
+          <div className={`live-status live-status-${liveStatus.kind}`}>
+            <Radio size={20} />
+            <div>
+              <strong>{sourceMode === "live" ? "Cronometragem autônoma" : "Fallback operacional"}</strong>
+              <span>{liveStatus.text}{lastSync ? ` Última leitura: ${lastSync}.` : ""}</span>
+            </div>
+            <button className="btn ghost" type="button" onClick={syncNow} disabled={sourceMode !== "live"}>
+              <RefreshCw size={18} /> Sincronizar
+            </button>
+            <button
+              className="btn secondary"
+              type="button"
+              onClick={() => setSourceMode((current) => current === "live" ? "manual" : "live")}
+            >
+              {sourceMode === "live" ? "Ativar fallback manual" : "Voltar ao vivo"}
+            </button>
+          </div>
+
           <div className="scoring-meta-grid">
             <label className="field">
               <span>Nome da bateria</span>
@@ -123,6 +194,7 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
                 value={heat.title}
                 onChange={(event) => setHeat((current) => ({ ...current, title: event.target.value }))}
                 placeholder="Bateria 01"
+                disabled={fieldsDisabled}
               />
             </label>
             <label className="field">
@@ -131,6 +203,7 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
                 type="date"
                 value={heat.date}
                 onChange={(event) => setHeat((current) => ({ ...current, date: event.target.value }))}
+                disabled={fieldsDisabled}
               />
             </label>
             <label className="field">
@@ -138,6 +211,7 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
               <select
                 value={heat.type}
                 onChange={(event) => setHeat((current) => ({ ...current, type: event.target.value as HeatType }))}
+                disabled={fieldsDisabled}
               >
                 <option value="regular">Bateria regular - 10,000 pts</option>
                 <option value="super-final">Super Final - 5,000 pts</option>
@@ -159,20 +233,24 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
                   value={driver.name}
                   onChange={(event) => updateDriver(driver.id, "name", event.target.value)}
                   placeholder={`Piloto ${driver.order}`}
+                  disabled={fieldsDisabled}
                 />
                 <input
                   value={driver.kart}
                   onChange={(event) => updateDriver(driver.id, "kart", event.target.value)}
                   placeholder="31"
+                  disabled={fieldsDisabled}
                 />
                 <input
                   value={driver.lapTime}
                   onChange={(event) => updateDriver(driver.id, "lapTime", event.target.value)}
                   placeholder="1:05.500"
+                  disabled={fieldsDisabled}
                 />
                 <select
                   value={driver.status}
                   onChange={(event) => updateDriver(driver.id, "status", event.target.value)}
+                  disabled={fieldsDisabled}
                 >
                   <option value="ok">Tempo válido</option>
                   <option value="no-time">Sem tempo</option>
@@ -183,7 +261,7 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
                   className="icon-button"
                   type="button"
                   onClick={() => removeDriver(driver.id)}
-                  disabled={heat.drivers.length <= 1}
+                  disabled={fieldsDisabled || heat.drivers.length <= 1}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -192,13 +270,13 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
           </div>
 
           <div className="scoring-toolbar">
-            <button className="btn secondary" type="button" onClick={addDriver}>
+            <button className="btn secondary" type="button" onClick={addDriver} disabled={fieldsDisabled}>
               <Plus size={18} /> Adicionar piloto
             </button>
-            <button className="btn ghost" type="button" onClick={() => setHeat(sampleHeat)}>
+            <button className="btn ghost" type="button" onClick={() => setHeat(sampleHeat)} disabled={fieldsDisabled}>
               <Clipboard size={18} /> Carregar exemplo
             </button>
-            <button className="btn ghost" type="button" onClick={() => setHeat({ ...heat, drivers: emptyDrivers })}>
+            <button className="btn ghost" type="button" onClick={() => setHeat({ ...heat, drivers: emptyDrivers })} disabled={fieldsDisabled}>
               <RotateCcw size={18} /> Limpar pilotos
             </button>
           </div>
@@ -233,6 +311,9 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
             <button className="btn secondary" type="button" onClick={copyResults}>
               <Copy size={18} /> Copiar resultado
             </button>
+            <a className="btn secondary" href={pdfPath} target="_blank" rel="noreferrer">
+              <FileDown size={18} /> Baixar PDF
+            </a>
           </div>
           {message ? <p className="success">{message}</p> : null}
         </aside>
@@ -255,6 +336,10 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
             <span>Tempo oficial</span>
             <span>Diferença</span>
             <span>Pontos</span>
+            <span>Voltas</span>
+            <span>VM</span>
+            <span>2ª melhor</span>
+            <span>UF</span>
             <span>Observação</span>
           </div>
           {results.length ? results.map((result) => (
@@ -265,6 +350,10 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
               <span>{formatLapTime(result.officialMs)}</span>
               <span>{result.gapMs === null ? "-" : `+${(result.gapMs / 1000).toFixed(3)}s`}</span>
               <span className={result.position === 1 ? "score-pill win" : "score-pill"}>{formatScore(result.score)}</span>
+              <span>{result.totalLaps || "-"}</span>
+              <span>{result.averageSpeedKmh || "-"}</span>
+              <span>{result.secondBestLapTime || "-"}</span>
+              <span>{result.federation || "-"}</span>
               <span className="score-note">{result.note || "Tempo válido"}</span>
             </div>
           )) : (
@@ -282,6 +371,10 @@ function normalizeHeat(value: HeatInput): HeatInput {
     title: value.title || "Bateria Legends",
     date: value.date || "",
     type: value.type === "super-final" ? "super-final" : "regular",
+    generatedAt: value.generatedAt || "",
+    source: value.source || "snapshot",
+    trackLayout: value.trackLayout || "",
+    category: value.category || "",
     drivers: Array.isArray(value.drivers) && value.drivers.length
       ? value.drivers.map((driver, index) => ({
         id: driver.id || `driver-${index + 1}`,
@@ -290,6 +383,15 @@ function normalizeHeat(value: HeatInput): HeatInput {
         lapTime: driver.lapTime || "",
         status: driver.status || "ok",
         order: index + 1,
+        sourcePosition: driver.sourcePosition ?? null,
+        bestLapNumber: driver.bestLapNumber || "",
+        totalLaps: driver.totalLaps || "",
+        averageSpeedKmh: driver.averageSpeedKmh || "",
+        secondBestLapNumber: driver.secondBestLapNumber || "",
+        secondBestLapTime: driver.secondBestLapTime || "",
+        federation: driver.federation || "",
+        gapToLeader: driver.gapToLeader || "",
+        gapToPrevious: driver.gapToPrevious || "",
       }))
       : emptyDrivers,
   };
@@ -301,13 +403,17 @@ function createEmptyHeat(): HeatInput {
     title: "Bateria 01",
     date: "",
     type: "regular",
+    source: "manual",
     drivers: emptyDrivers,
   };
 }
 
-function buildSharePath(heat: HeatInput): string {
-  const payload = encodeHeat(heat);
-  return `/competicoes/pontuacao?data=${payload}`;
+function buildSharePath(encodedHeat: string): string {
+  return `/competicoes/pontuacao?data=${encodedHeat}`;
+}
+
+function buildPdfPath(encodedHeat: string): string {
+  return `/api/competicoes/legends/pdf?data=${encodedHeat}`;
 }
 
 function encodeHeat(heat: HeatInput): string {
@@ -318,6 +424,39 @@ function encodeHeat(heat: HeatInput): string {
   });
 
   return encodeURIComponent(btoa(binary));
+}
+
+async function syncLiveHeat(): Promise<{ heat: HeatInput | null; syncedAt?: string; status: LiveStatus }> {
+  try {
+    const response = await fetch("/api/competicoes/legends/live", { cache: "no-store" });
+    const payload = await response.json() as {
+      heat?: HeatInput;
+      syncedAt?: string;
+      message?: string;
+      configured?: boolean;
+    };
+
+    if (!response.ok || !payload.heat) {
+      return {
+        heat: null,
+        status: {
+          kind: payload.configured ? "warn" : "idle",
+          text: payload.message || "Cronometragem ao vivo ainda sem dados.",
+        },
+      };
+    }
+
+    return {
+      heat: normalizeHeat(payload.heat),
+      syncedAt: payload.syncedAt ? new Date(payload.syncedAt).toLocaleTimeString("pt-BR") : undefined,
+      status: { kind: "ok", text: "Dados recebidos da cronometragem em tempo real." },
+    };
+  } catch {
+    return {
+      heat: null,
+      status: { kind: "error", text: "Falha ao conectar na cronometragem ao vivo." },
+    };
+  }
 }
 
 async function copyText(text: string) {

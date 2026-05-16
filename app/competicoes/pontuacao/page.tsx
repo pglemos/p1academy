@@ -25,7 +25,7 @@ export default async function LegendsPontuacaoPage({ searchParams }: LegendsPont
       <PageHero
         compact
         title="Sistema de pontuação Legends"
-        text="Área operacional para lançar o melhor tempo de cada piloto, calcular a pontuação da bateria e publicar um link de resultado imediato para a Legends Kart Series."
+        text="Painel público e operacional para receber a cronometragem em tempo real, calcular a pontuação da bateria, publicar o resultado e permitir download em PDF."
         image="/images/timing-telemetry.png"
       />
 
@@ -34,9 +34,9 @@ export default async function LegendsPontuacaoPage({ searchParams }: LegendsPont
           <Reveal className="legends-status">
             <div>
               <span className="eyebrow">Regra oficial</span>
-              <h2>10,000 menos a diferença</h2>
+              <h2>Ao vivo, sem subir PDF</h2>
               <p>
-                Em bateria regular, o melhor tempo soma 10,000 pontos. Os demais recebem a base menos a diferença em segundos para o vencedor. Na Super Final, a base é 5,000 pontos. Empates são ajustados por ordem de registro, com acréscimo de um milésimo para quem marcou depois.
+                Quando a cronometragem estiver ativa, o site consulta a fonte oficial em intervalos curtos, normaliza os dados do LapTime e recalcula a tabela automaticamente. Em bateria regular, o melhor tempo soma 10,000 pontos. Na Super Final, a base é 5,000 pontos.
               </p>
             </div>
             <div className="button-row">
@@ -89,13 +89,13 @@ export default async function LegendsPontuacaoPage({ searchParams }: LegendsPont
             <h2>Como usar no dia da bateria</h2>
             <div className="accent-line" />
             <p>
-              A organização lança o nome do piloto, kart sorteado e melhor volta no formato 1:05.500. Ao final da bateria, basta copiar o link público e divulgar para os participantes.
+              Com a integração da cronometragem configurada, os pilotos acessam o mesmo endereço público para acompanhar tempos, diferenças, pontuação e baixar o PDF completo do resultado. O fallback manual fica disponível apenas para contingência operacional.
             </p>
           </Reveal>
           <Reveal className="legends-panel">
             <h3>{legendsCompetition.name}</h3>
-            <p>O cálculo respeita a regra de diferença de tempo, ajuste de empates por milésimo, pontuação mínima acima de 9 segundos e base reduzida para Super Final.</p>
-            <p>Resultados com DSQ ou sem tempo ficam marcados na tabela e podem ser descartados na classificação geral, conforme o regulamento.</p>
+            <p>O integrador entende campos típicos do LapTime: POS, número do competidor, piloto, MV, TMV, DL, DA, TV, VM, MV 2, TMV 2 e UF.</p>
+            <p>O cálculo respeita diferença para o melhor tempo, ajuste de empates por ordem oficial, pontuação mínima acima de 9 segundos e base reduzida para Super Final.</p>
           </Reveal>
         </div>
       </section>

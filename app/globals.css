@@ -1011,6 +1011,50 @@ video {
   margin-bottom: 22px;
 }
 
+.live-status {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 22px;
+  border: 1px solid var(--line);
+  padding: 14px;
+  background: var(--bg-2);
+}
+
+.live-status svg {
+  color: var(--acid);
+}
+
+.live-status strong {
+  display: block;
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1rem;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.live-status span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
+.live-status-ok {
+  border-color: var(--acid);
+}
+
+.live-status-error {
+  border-color: var(--red);
+}
+
+.live-status-warn {
+  border-color: var(--outline);
+}
+
 .driver-input-list {
   display: grid;
   gap: 8px;
@@ -1052,6 +1096,15 @@ video {
 .share-box input:focus {
   border-color: var(--acid);
   box-shadow: 0 0 0 3px oklch(91% 0.22 103 / 0.18);
+}
+
+.driver-input-row input:disabled,
+.driver-input-row select:disabled,
+.field input:disabled,
+.field select:disabled,
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 .icon-button {
@@ -1143,9 +1196,9 @@ video {
 }
 
 .score-row {
-  min-width: 980px;
+  min-width: 1320px;
   display: grid;
-  grid-template-columns: 54px minmax(180px, 1.4fr) 82px 138px 118px 118px minmax(220px, 1.2fr);
+  grid-template-columns: 54px minmax(180px, 1.4fr) 82px 118px 106px 108px 70px 72px 104px 54px minmax(220px, 1.2fr);
   gap: 12px;
   align-items: center;
   padding: 14px 10px;
@@ -1807,6 +1860,14 @@ video {
     position: static;
   }
 
+  .live-status {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .live-status .btn {
+    grid-column: span 2;
+  }
+
   .scoring-meta-grid,
   .driver-input-header,
   .driver-input-row {
@@ -1898,7 +1959,8 @@ video {
   }
 
   .scoring-meta-grid,
-  .driver-input-row {
+  .driver-input-row,
+  .live-status {
     grid-template-columns: 1fr;
   }
 
@@ -1908,8 +1970,13 @@ video {
 
   .driver-input-row .icon-button,
   .scoring-toolbar .btn,
-  .share-box .btn {
+  .share-box .btn,
+  .live-status .btn {
     width: 100%;
+  }
+
+  .live-status .btn {
+    grid-column: auto;
   }
 
   .telemetry {

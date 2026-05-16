@@ -8,6 +8,15 @@ export type HeatDriverInput = {
   lapTime: string;
   status?: DriverStatus;
   order: number;
+  sourcePosition?: number | null;
+  bestLapNumber?: string;
+  totalLaps?: string;
+  averageSpeedKmh?: string;
+  secondBestLapNumber?: string;
+  secondBestLapTime?: string;
+  federation?: string;
+  gapToLeader?: string;
+  gapToPrevious?: string;
 };
 
 export type HeatResult = {
@@ -21,6 +30,15 @@ export type HeatResult = {
   score: number;
   status: DriverStatus;
   note: string;
+  sourcePosition?: number | null;
+  bestLapNumber?: string;
+  totalLaps?: string;
+  averageSpeedKmh?: string;
+  secondBestLapNumber?: string;
+  secondBestLapTime?: string;
+  federation?: string;
+  gapToLeader?: string;
+  gapToPrevious?: string;
 };
 
 export type HeatInput = {
@@ -28,6 +46,10 @@ export type HeatInput = {
   title: string;
   date: string;
   type: HeatType;
+  generatedAt?: string;
+  source?: "manual" | "laptime-live" | "snapshot";
+  trackLayout?: string;
+  category?: string;
   drivers: HeatDriverInput[];
 };
 
@@ -159,6 +181,15 @@ export function calculateHeatResults(heat: HeatInput): HeatResult[] {
       score,
       status: driver.status,
       note,
+      sourcePosition: driver.sourcePosition ?? null,
+      bestLapNumber: driver.bestLapNumber,
+      totalLaps: driver.totalLaps,
+      averageSpeedKmh: driver.averageSpeedKmh,
+      secondBestLapNumber: driver.secondBestLapNumber,
+      secondBestLapTime: driver.secondBestLapTime,
+      federation: driver.federation,
+      gapToLeader: driver.gapToLeader,
+      gapToPrevious: driver.gapToPrevious,
     });
   });
 
@@ -175,6 +206,15 @@ export function calculateHeatResults(heat: HeatInput): HeatResult[] {
       score: 0,
       status: driver.status === "ok" ? "no-time" : driver.status,
       note: driver.status === "dsq" ? "Desclassificação descartável" : "Sem tempo válido",
+      sourcePosition: driver.sourcePosition ?? null,
+      bestLapNumber: driver.bestLapNumber,
+      totalLaps: driver.totalLaps,
+      averageSpeedKmh: driver.averageSpeedKmh,
+      secondBestLapNumber: driver.secondBestLapNumber,
+      secondBestLapTime: driver.secondBestLapTime,
+      federation: driver.federation,
+      gapToLeader: driver.gapToLeader,
+      gapToPrevious: driver.gapToPrevious,
     }));
 
   return [
