@@ -1,31 +1,46 @@
+import Link from "next/link";
+import { Trophy } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
-import { rankings } from "@/data/site";
+import { legendsCompetition, legendsRankingPreview } from "@/data/legends";
 
 export const metadata = {
-  title: "Ranking | P1 Academy",
+  title: "Classificação Legends Kart Series | P1 Academy",
 };
 
 export default function RankingPage() {
   return (
     <>
       <PageHero
-        title="Ranking"
-        text="Classificação demonstrativa para pilotos, categorias, pontuação e melhores voltas da comunidade P1."
+        title="Classificação"
+        text="Ranking oficial da Legends Kart Series com base nas melhores pontuações válidas de cada piloto ao longo da temporada."
         image="/images/timing-telemetry.png"
       />
       <section className="section">
-        <div className="container table-like">
-          {rankings.map((item, index) => (
-            <Reveal className="row" key={item.name}>
-              <strong>
-                {String(index + 1).padStart(2, "0")} {item.name}
-              </strong>
-              <span>{item.category}</span>
-              <span>{item.points} pontos</span>
-              <span>{item.best}</span>
-            </Reveal>
-          ))}
+        <div className="container split">
+          <Reveal className="section-head">
+            <Trophy size={30} color="var(--acid)" />
+            <h2>{legendsCompetition.name}</h2>
+            <div className="accent-line" />
+            <p>
+              A classificação geral considerará os melhores resultados do piloto, com limite de 10 corridas válidas para pontuação regular. Os classificados para a Super Final podem somar uma corrida extra.
+            </p>
+            <Link className="btn secondary" href="/competicoes#classificacao">
+              Ver hub da competição
+            </Link>
+          </Reveal>
+          <div className="table-like">
+            {legendsRankingPreview.map((item) => (
+              <Reveal className="row" key={`${item.position}-${item.driver}`}>
+                <strong>
+                  {item.position} {item.driver}
+                </strong>
+                <span>{item.level}</span>
+                <span>{item.points} pontos</span>
+                <span>{item.valid}</span>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
     </>

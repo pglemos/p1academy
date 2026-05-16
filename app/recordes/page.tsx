@@ -1,6 +1,6 @@
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
-import { recordes } from "@/data/site";
+import { legendsResultsPreview } from "@/data/legends";
 
 export const metadata = {
   title: "Recordes | P1 Academy",
@@ -11,17 +11,17 @@ export default function RecordesPage() {
     <>
       <PageHero
         title="Recordes"
-        text="Quadro de melhores tempos por traçado e piloto, pronto para receber dados oficiais da temporada."
+        text="Quadro de melhores voltas da Legends Kart Series. Os tempos oficiais serão publicados após as primeiras baterias."
         image="/images/timing-telemetry.png"
       />
       <section className="section">
         <div className="container table-like">
-          {recordes.map((item) => (
-            <Reveal className="row" key={item.track}>
-              <strong>{item.track}</strong>
-              <span>{item.driver}</span>
+          {legendsResultsPreview.map((item) => (
+            <Reveal className="row" key={item.heat}>
+              <strong>{item.heat}</strong>
+              <span>{item.winner}</span>
               <span>Melhor volta</span>
-              <span>{item.time}</span>
+              <span>{item.bestLap}</span>
             </Reveal>
           ))}
         </div>

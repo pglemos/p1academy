@@ -5,11 +5,12 @@ type PageHeroProps = {
   title: string;
   text: string;
   image?: string;
+  compact?: boolean;
 };
 
-export function PageHero({ title, text, image = "/images/hero-kart-night.png" }: PageHeroProps) {
+export function PageHero({ title, text, image = "/images/hero-kart-night.png", compact = false }: PageHeroProps) {
   return (
-    <section className="page-hero">
+    <section className={`page-hero ${compact ? "page-hero-compact" : ""}`}>
       <div className="page-hero-photo" aria-hidden="true">
         <Image src={image} alt="" fill priority sizes="100vw" />
       </div>

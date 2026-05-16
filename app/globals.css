@@ -814,9 +814,263 @@ video {
   font-weight: 700;
 }
 
+.legends-shell {
+  display: grid;
+  gap: 24px;
+}
+
+.legends-status {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  border: 1px solid var(--line);
+  padding: 28px;
+  background:
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.02) 10px, rgba(255, 255, 255, 0.02) 20px),
+    var(--panel);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+.eyebrow {
+  color: var(--acid);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.legends-status h2 {
+  margin: 10px 0 14px;
+  font-family: var(--font-headline), sans-serif;
+  font-size: clamp(2rem, 5vw, 4.8rem);
+  font-style: italic;
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+.legends-status p {
+  max-width: 78ch;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.legends-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.legends-tabs a {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  padding: 0 13px;
+  color: var(--muted);
+  background: var(--panel);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+}
+
+.legends-tabs a:hover {
+  border-color: var(--acid);
+  color: var(--acid);
+}
+
+.legends-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metric-card {
+  border: 1px solid var(--line);
+  padding: 18px;
+  background: var(--bg-2);
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+
+.metric-card strong {
+  display: block;
+  color: var(--acid);
+  font-family: var(--font-headline), sans-serif;
+  font-size: clamp(1.4rem, 2.4vw, 2.2rem);
+  font-style: italic;
+  line-height: 1;
+}
+
+.metric-card span,
+.detail-row span,
+.level-card span {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.legends-panel {
+  border: 1px solid var(--line);
+  padding: 28px;
+  background:
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.025) 10px, rgba(255, 255, 255, 0.025) 20px),
+    var(--panel);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+.legends-panel h3 {
+  margin: 12px 0;
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.5rem;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.legends-panel p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.detail-row {
+  display: grid;
+  gap: 8px;
+  min-height: 112px;
+  padding: 22px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.detail-row strong {
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.level-card {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  border: 1px solid var(--line);
+  padding: 16px;
+  background: var(--panel);
+}
+
+.level-card strong {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  color: var(--ink);
+  background: var(--acid);
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.2rem;
+  font-style: italic;
+}
+
+.photo-card {
+  position: relative;
+  min-height: 360px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+.photo-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 35%, rgba(13, 14, 15, 0.92));
+  z-index: 1;
+}
+
+.photo-card img {
+  object-fit: cover;
+  filter: grayscale(0.25) contrast(1.08);
+}
+
+.photo-card span,
+.photo-card strong {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  z-index: 2;
+}
+
+.photo-card span {
+  bottom: 76px;
+  color: var(--acid);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.photo-card strong {
+  bottom: 22px;
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.2rem;
+  font-style: italic;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
 .feature-body,
 .article-body {
   padding: 22px;
+}
+
+.news-meta {
+  color: var(--acid) !important;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.article-detail {
+  display: grid;
+  gap: 16px;
+}
+
+.news-detail-layout {
+  grid-template-columns: minmax(280px, 0.62fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+.article-detail p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.72;
+}
+
+.article-detail .button-row {
+  margin-top: 8px;
 }
 
 .media {
@@ -1052,6 +1306,20 @@ video {
   text-transform: uppercase;
 }
 
+.page-hero-compact {
+  padding: clamp(58px, 8vw, 104px) 0 clamp(38px, 6vw, 72px);
+}
+
+.page-hero-compact h1 {
+  max-width: 18ch;
+  font-size: clamp(2.15rem, 5.2vw, 4.5rem);
+  line-height: 0.95;
+}
+
+.page-hero-compact p {
+  max-width: 76ch;
+}
+
 .page-hero-seal {
   width: clamp(72px, 10vw, 112px);
   height: auto;
@@ -1253,8 +1521,15 @@ video {
 
   .grid-3,
   .grid-4,
-  .sponsors-grid {
+  .sponsors-grid,
+  .legends-metrics,
+  .details-grid,
+  .levels-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .legends-status {
+    grid-template-columns: 1fr;
   }
 
   .nav-links {
@@ -1300,8 +1575,20 @@ video {
   .grid-3,
   .grid-4,
   .sponsors-grid,
+  .legends-metrics,
+  .details-grid,
+  .levels-grid,
   .stat-strip {
     grid-template-columns: 1fr;
+  }
+
+  .legends-status {
+    padding: 20px;
+  }
+
+  .legends-tabs a,
+  .legends-status .btn {
+    width: 100%;
   }
 
   .row {
@@ -1315,6 +1602,12 @@ video {
   .hero h1,
   .page-hero h1 {
     font-size: clamp(3.2rem, 17vw, 5rem);
+  }
+
+  .page-hero-compact h1 {
+    max-width: 20ch;
+    font-size: clamp(2rem, 10.5vw, 3.35rem);
+    line-height: 1;
   }
 
   .hero-panel {

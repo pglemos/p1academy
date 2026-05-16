@@ -4,7 +4,7 @@ import Link from "next/link";
 import { BookingForm } from "@/components/BookingForm";
 import { MediaFrame } from "@/components/MediaFrame";
 import { Lift, Reveal } from "@/components/Motion";
-import { quickAccess, programs, competitions, posts, sponsors } from "@/data/site";
+import { quickAccess, programs, competitions, latestPosts, sponsors } from "@/data/site";
 
 export default function Home() {
   return (
@@ -176,10 +176,11 @@ export default function Home() {
             <div className="accent-line" />
           </Reveal>
           <div className="grid-4">
-            {posts.map((post) => (
+            {latestPosts.slice(0, 4).map((post) => (
               <Lift className="article-card" key={post.slug}>
-                <MediaFrame label={post.category} src="/images/competition-corner.png" alt={post.title} />
+                <MediaFrame label={post.source} src={post.image} alt={post.title} />
                 <div className="article-body">
+                  <p className="news-meta">{post.date} | {post.category}</p>
                   <h3>{post.title}</h3>
                   <p>{post.excerpt}</p>
                   <Link className="btn ghost" href={`/noticias/${post.slug}`}>

@@ -1,7 +1,7 @@
 import { PageHero } from "@/components/PageHero";
 import { MediaFrame } from "@/components/MediaFrame";
 import { Reveal } from "@/components/Motion";
-import { schedule } from "@/data/site";
+import { legendsCompetition, legendsStageInfo } from "@/data/legends";
 
 export const metadata = {
   title: "Calendário e Traçados | P1 Academy",
@@ -12,7 +12,7 @@ export default function CalendarioTracadosPage() {
     <>
       <PageHero
         title="Calendário e traçados"
-        text="Agenda mockada para publicar datas, pistas, sentidos, configurações e objetivos técnicos de cada encontro."
+        text="Agenda oficial da Legends Kart Series. Datas, horários, valores, briefing e traçados serão publicados pela organização antes do início da competição."
         image="/images/wallpaper-kart-dawn.png"
       />
       <section className="section">
@@ -21,12 +21,18 @@ export default function CalendarioTracadosPage() {
             <MediaFrame label="Mapa do traçado" src="/images/wallpaper-kart-dawn.png" alt="Kart parado no traçado ao amanhecer" tall />
           </Reveal>
           <div className="table-like">
-            {schedule.map((item) => (
-              <Reveal className="row" key={`${item.date}-${item.track}`}>
-                <strong>{item.date}</strong>
-                <span>{item.track}</span>
-                <span>{item.event}</span>
-                <span>Briefing</span>
+            <Reveal className="row">
+              <strong>Temporada 2026</strong>
+              <span>{legendsCompetition.venue}</span>
+              <span>{legendsCompetition.expectedStages}</span>
+              <span>Em breve</span>
+            </Reveal>
+            {legendsStageInfo.map((item) => (
+              <Reveal className="row" key={item.label}>
+                <strong>{item.label}</strong>
+                <span>{item.value}</span>
+                <span>Legends</span>
+                <span>Oficial</span>
               </Reveal>
             ))}
           </div>

@@ -12,6 +12,7 @@ import {
   Trophy,
   Video,
 } from "lucide-react";
+export { latestPosts, posts } from "./news";
 
 export const whatsappNumber = "5521995960077";
 export const whatsappDisplay = "+55 21 99596-0077";
@@ -100,38 +101,15 @@ export const programs = [
 
 export const competitions = [
   {
-    title: "P1 Sprint Series",
-    category: "Iniciante e intermediário",
-    date: "Sábados alternados",
-    status: "Pré-inscrição",
-  },
-  {
-    title: "P1 Pro Heat",
-    category: "Graduados",
-    date: "Noites de quinta",
-    status: "Lista aberta",
-  },
-  {
-    title: "P1 Endurance Lab",
-    category: "Equipes",
-    date: "Eventos especiais",
-    status: "Captação",
-  },
-  {
-    title: "P1 Academy Cup",
-    category: "Alunos",
-    date: "Mensal",
-    status: "Agenda ativa",
+    title: "Legends Kart Series",
+    category: "Categoria única",
+    date: "1º semestre de 2026",
+    status: "Em breve",
   },
 ];
 
 export const regulations = [
-  "Regulamento P1 Sprint Series",
-  "Folha de regras P1 Academy Cup",
-  "Regulamento P1 Pro Heat",
-  "Código de conduta e segurança",
-  "Manual de briefing, bandeiras e boxes",
-  "Termo de participação",
+  "Regulamento Legends Kart Series - Versão 3.0",
 ];
 
 export const sponsors = [
@@ -193,54 +171,12 @@ export const sponsors = [
   },
 ];
 
-export const posts = [
-  {
-    slug: "como-entrar-no-kart-amador",
-    title: "Como entrar no kart amador com segurança e ritmo",
-    date: "15/05/2026",
-    category: "Academy",
-    excerpt:
-      "O primeiro passo não é acelerar mais cedo. É entender pista, postura, freada, bandeiras e convivência de grid.",
-  },
-  {
-    slug: "preparacao-para-primeiro-campeonato",
-    title: "Preparação para o primeiro campeonato P1",
-    date: "08/05/2026",
-    category: "Competições",
-    excerpt:
-      "Um guia direto para chegar na etapa sabendo tomada, largada, bandeiras, boxes e disputa limpa.",
-  },
-  {
-    slug: "traçado-e-consistencia",
-    title: "Traçado e consistência antes da volta perfeita",
-    date: "30/04/2026",
-    category: "Técnica",
-    excerpt:
-      "A volta rápida nasce de repetição, referência visual e controle emocional em cada setor.",
-  },
-  {
-    slug: "bateria-corporativa-premium",
-    title: "Bateria corporativa com experiência premium",
-    date: "22/04/2026",
-    category: "Eventos",
-    excerpt:
-      "Formato para grupos, empresas e convidados com briefing, ranking, premiação e registro visual.",
-  },
-];
-
 export const rankings = [
-  { name: "Rafael Lima", points: 184, category: "Pro", best: "47.812" },
-  { name: "Marina Costa", points: 171, category: "Pro", best: "48.006" },
-  { name: "Caio Torres", points: 158, category: "Academy", best: "49.221" },
-  { name: "Bianca Alves", points: 146, category: "Academy", best: "49.408" },
-  { name: "Theo Martins", points: 132, category: "Rookie", best: "50.114" },
+  { name: "Aguardando primeira bateria", points: 0, category: "A definir", best: "-" },
 ];
 
 export const schedule = [
-  { date: "24/05", track: "Betim T7 anti-horário", event: "Academy Performance" },
-  { date: "07/06", track: "RBC T1 horário", event: "P1 Sprint Series" },
-  { date: "21/06", track: "Betim T9 normal", event: "P1 Academy Cup" },
-  { date: "05/07", track: "RBC T4 anti-horário", event: "Pro Heat" },
+  { date: "Em breve", track: "Kartódromo Internacional de Betim", event: "Legends Kart Series" },
 ];
 
 export const tips = [
@@ -267,10 +203,7 @@ export const tips = [
 ];
 
 export const recordes = [
-  { track: "Betim T7 anti-horário", driver: "Marina Costa", time: "47.812" },
-  { track: "RBC T1 horário", driver: "Rafael Lima", time: "48.004" },
-  { track: "Betim T9 normal", driver: "Caio Torres", time: "49.117" },
-  { track: "RBC T4 anti-horário", driver: "Bianca Alves", time: "48.771" },
+  { track: "Legends Kart Series", driver: "Aguardando primeira bateria", time: "-" },
 ];
 
 export const iconHighlights = [
