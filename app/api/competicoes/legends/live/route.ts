@@ -13,6 +13,7 @@ let lastRenderIssue = "";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
+  const debug = requestUrl.searchParams.get("debug") === "1";
   const querySourceUrl = requestUrl.searchParams.get("source");
   const sourceUrl = normalizeAllowedSourceUrl(querySourceUrl)
     ?? process.env.LEGENDS_TIMING_LIVE_URL
@@ -70,7 +71,9 @@ export async function GET(request: Request) {
           waiting: true,
           sourceUrl,
           message: lastRenderIssue
-            ? `Fonte ao vivo conectada, mas a renderização da LiveTime falhou: ${lastRenderIssue}`
+            ? debug
+              ? `Fonte ao vivo conectada, mas a renderização da LiveTime falhou: ${lastRenderIssue}`
+              : "Fonte ao vivo conectada, mas a LiveTime ainda não disponibilizou uma tabela renderizada para captura."
             : "Fonte ao vivo conectada. Aguardando a cronometragem publicar a tabela da corrida.",
         },
         {
@@ -160,7 +163,7 @@ async function renderLiveTimeSource(sourceUrl: string): Promise<HeatInput | null
       };
     }
 
-    return heat;
+    return heat ?? (renderedCache?.sourceUrl === sourceUrl ? renderedCache.heat : null);
   } catch (error) {
     lastRenderIssue = error instanceof Error ? error.message : "erro desconhecido";
     console.error("LiveTime render failed", error);
