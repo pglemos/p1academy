@@ -175,24 +175,16 @@ export function parseLiveTimeHtml(html: string): HeatInput | null {
 
 function normalizeLiveTimeCells(headers: string[], rawCells: string[], index: number): HeatDriverInput | null {
   const cells = rawCells.map(extractCellText);
-  const getByHeader = (...keys: string[]) => {
-    for (const key of keys) {
-      const headerIndex = headers.findIndex((header) => header.includes(key));
-      if (headerIndex >= 0 && cells[headerIndex]) {
-        return cells[headerIndex];
-      }
-    }
-
-    return "";
-  };
+  const getByHeader = (...keys: string[]) => getLiveTimeHeaderValue(headers, cells, keys);
   const fallback = (position: number) => cells[position] ?? "";
-  const sourcePosition = parseInteger(getByHeader("pos", "posição", "p") || fallback(0));
-  const competitorNumber = getByHeader("#", "num", "numero", "número", "kart", "carro") || fallback(1);
-  const name = getNameFromCell(rawCells, headers) || getByHeader("nome", "piloto", "driver") || fallback(2);
-  const bestTime = getByHeader("tmv", "melhor", "best", "tempo") || findFirstTime(cells);
-  const totalLaps = getByHeader("tv", "volta", "laps");
-  const gapToLeader = getByHeader("dl", "lider", "líder", "gap");
-  const gapToPrevious = getByHeader("da", "anterior");
+  const sourcePosition = parseInteger(getByHeader("p", "pos", "position", "posição") || fallback(0));
+  const competitorNumber = getByHeader("#", "num", "number", "numero", "número", "kart", "carro") || fallback(1);
+  const name = getNameFromCell(rawCells, headers) || getByHeader("name", "nome", "piloto", "driver") || fallback(2);
+  const bestTime = getByHeader("b.time", "btime", "best time", "tmv", "melhor volta") || findFirstTime(cells);
+  const bestLapNumber = getByHeader("b.lap", "blap", "best lap", "mv", "melhor volta numero");
+  const totalLaps = getByHeader("lap", "laps", "tv", "voltas", "volta");
+  const gapToLeader = getByHeader("gap", "dl", "lider", "líder");
+  const gapToPrevious = getByHeader("interval", "da", "anterior");
   const averageSpeedKmh = getByHeader("vm", "media", "média", "speed");
 
   if (!name && !bestTime) {
@@ -207,11 +199,32 @@ function normalizeLiveTimeCells(headers: string[], rawCells: string[], index: nu
     bestTime,
     status: parseTimingValueToMs(bestTime) === null ? "no-time" : "ok",
     order: sourcePosition ?? index + 1,
+    bestLapNumber,
     totalLaps,
     averageSpeedKmh,
     gapToLeader,
     gapToPrevious,
   };
+}
+
+function getLiveTimeHeaderValue(headers: string[], cells: string[], keys: string[]): string {
+  const normalizedKeys = keys.map(normalizeHeader);
+
+  for (const key of normalizedKeys) {
+    const headerIndex = headers.findIndex((header) => header === key);
+    if (headerIndex >= 0 && cells[headerIndex]) {
+      return cells[headerIndex];
+    }
+  }
+
+  for (const key of normalizedKeys.filter((item) => item.length > 1)) {
+    const headerIndex = headers.findIndex((header) => header.includes(key));
+    if (headerIndex >= 0 && cells[headerIndex]) {
+      return cells[headerIndex];
+    }
+  }
+
+  return "";
 }
 
 function normalizeRow(row: UnknownRecord, index: number): HeatDriverInput {
@@ -323,6 +336,17 @@ function parseInteger(value: string): number | null {
 }
 
 function extractHtmlTitle(html: string): string | null {
+  const liveTimeTitle = html.match(/<div[^>]*class=["'][^"']*top-block[^"']*["'][^>]*>([\s\S]*?)<\/div>/i);
+  if (liveTimeTitle) {
+    const title = decodeHtmlEntities(stripHtml(liveTimeTitle[1]))
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (title) {
+      return title;
+    }
+  }
+
   const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
   return match ? decodeHtmlEntities(stripHtml(match[1])).trim() : null;
 }

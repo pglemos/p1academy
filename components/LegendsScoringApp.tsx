@@ -63,9 +63,17 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
     }
 
     let cancelled = false;
+    let inFlight = false;
 
     async function run() {
+      if (inFlight) {
+        return;
+      }
+
+      inFlight = true;
       const status = await syncLiveHeat();
+      inFlight = false;
+
       if (cancelled) {
         return;
       }
@@ -78,7 +86,7 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
     }
 
     run();
-    const interval = window.setInterval(run, 5000);
+    const interval = window.setInterval(run, 10_000);
 
     return () => {
       cancelled = true;
