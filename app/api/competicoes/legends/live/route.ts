@@ -3,10 +3,16 @@ import { normalizeTimingResponse } from "@/lib/timingAdapter";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const sourceUrl = process.env.LEGENDS_TIMING_LIVE_URL
+const defaultTestSourceUrl = "https://livetime.azurewebsites.net/?uid=58856059-c4fd-4626-aea7-42aefc048eec";
+
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url);
+  const querySourceUrl = requestUrl.searchParams.get("source");
+  const sourceUrl = normalizeAllowedSourceUrl(querySourceUrl)
+    ?? process.env.LEGENDS_TIMING_LIVE_URL
     ?? process.env.LEGENDS_LIVE_URL
-    ?? process.env[joinKey("LEGENDS_", "LAP", "TIME", "_LIVE_URL")];
+    ?? process.env[joinKey("LEGENDS_", "LAP", "TIME", "_LIVE_URL")]
+    ?? defaultTestSourceUrl;
   const token = process.env.LEGENDS_TIMING_API_TOKEN
     ?? process.env.LEGENDS_API_TOKEN
     ?? process.env[joinKey("LEGENDS_", "LAP", "TIME", "_API_TOKEN")];
@@ -55,10 +61,11 @@ export async function GET() {
       return NextResponse.json(
         {
           configured: true,
-          message: "Fonte ao vivo disponível, mas o formato ainda não foi reconhecido.",
+          waiting: true,
+          sourceUrl,
+          message: "Fonte ao vivo conectada. Aguardando a cronometragem publicar a tabela da corrida.",
         },
         {
-          status: 422,
           headers: { "Cache-Control": "no-store" },
         },
       );
@@ -67,6 +74,8 @@ export async function GET() {
     return NextResponse.json(
       {
         configured: true,
+        waiting: false,
+        sourceUrl,
         syncedAt: new Date().toISOString(),
         heat,
       },
@@ -90,4 +99,21 @@ export async function GET() {
 
 function joinKey(...parts: string[]): string {
   return parts.join("");
+}
+
+function normalizeAllowedSourceUrl(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    const url = new URL(value);
+    if (url.hostname !== "livetime.azurewebsites.net") {
+      return null;
+    }
+
+    return url.toString();
+  } catch {
+    return null;
+  }
 }

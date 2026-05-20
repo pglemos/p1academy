@@ -45,6 +45,13 @@ export function normalizeTimingResponse(source: unknown): HeatInput | null {
 }
 
 export function parseTimingReportText(text: string): HeatInput | null {
+  if (/<table[\s>]/i.test(text)) {
+    const htmlHeat = parseLiveTimeHtml(text);
+    if (htmlHeat) {
+      return htmlHeat;
+    }
+  }
+
   const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
   const firstPositionIndex = lines.findIndex((line, index) => (
     line === "1" && Boolean(lines[index + 1]) && Boolean(lines[index + 2])
@@ -121,6 +128,92 @@ export function parseTimingReportText(text: string): HeatInput | null {
   };
 }
 
+export function parseLiveTimeHtml(html: string): HeatInput | null {
+  const tableMatches = html.match(/<table[\s\S]*?<\/table>/gi) ?? [];
+  const drivers: HeatDriverInput[] = [];
+
+  tableMatches.forEach((table) => {
+    const rowMatches = table.match(/<tr[\s\S]*?<\/tr>/gi) ?? [];
+    let headers: string[] = [];
+
+    rowMatches.forEach((row) => {
+      const cellMatches = row.match(/<(?:th|td)[^>]*>[\s\S]*?<\/(?:th|td)>/gi) ?? [];
+      if (!cellMatches.length) {
+        return;
+      }
+
+      const cells = cellMatches.map(extractCellText);
+      const isHeader = /<th[\s>]/i.test(row) || cells.some((cell) => /pos|posição|nome|piloto|tempo|volta|kart|#/i.test(cell));
+
+      if (isHeader && cells.length > 1) {
+        headers = cells.map(normalizeHeader);
+        return;
+      }
+
+      const driver = normalizeLiveTimeCells(headers, cellMatches, drivers.length);
+      if (driver && (driver.name || driver.bestTime)) {
+        drivers.push(driver);
+      }
+    });
+  });
+
+  if (!drivers.length) {
+    return null;
+  }
+
+  return {
+    id: "legends-livetime",
+    title: extractHtmlTitle(html) || "LiveTime Legends",
+    date: extractDate([stripHtml(html)]) || "",
+    type: "regular",
+    generatedAt: new Date().toISOString(),
+    source: "timing-live",
+    category: "LiveTime",
+    drivers,
+  };
+}
+
+function normalizeLiveTimeCells(headers: string[], rawCells: string[], index: number): HeatDriverInput | null {
+  const cells = rawCells.map(extractCellText);
+  const getByHeader = (...keys: string[]) => {
+    for (const key of keys) {
+      const headerIndex = headers.findIndex((header) => header.includes(key));
+      if (headerIndex >= 0 && cells[headerIndex]) {
+        return cells[headerIndex];
+      }
+    }
+
+    return "";
+  };
+  const fallback = (position: number) => cells[position] ?? "";
+  const sourcePosition = parseInteger(getByHeader("pos", "posição", "p") || fallback(0));
+  const competitorNumber = getByHeader("#", "num", "numero", "número", "kart", "carro") || fallback(1);
+  const name = getNameFromCell(rawCells, headers) || getByHeader("nome", "piloto", "driver") || fallback(2);
+  const bestTime = getByHeader("tmv", "melhor", "best", "tempo") || findFirstTime(cells);
+  const totalLaps = getByHeader("tv", "volta", "laps");
+  const gapToLeader = getByHeader("dl", "lider", "líder", "gap");
+  const gapToPrevious = getByHeader("da", "anterior");
+  const averageSpeedKmh = getByHeader("vm", "media", "média", "speed");
+
+  if (!name && !bestTime) {
+    return null;
+  }
+
+  return {
+    id: competitorNumber || `driver-${index + 1}`,
+    sourcePosition,
+    name,
+    kart: competitorNumber,
+    bestTime,
+    status: parseTimingValueToMs(bestTime) === null ? "no-time" : "ok",
+    order: sourcePosition ?? index + 1,
+    totalLaps,
+    averageSpeedKmh,
+    gapToLeader,
+    gapToPrevious,
+  };
+}
+
 function normalizeRow(row: UnknownRecord, index: number): HeatDriverInput {
   const sourcePosition = pickNumber(row, ["pos", "POS", "position", "posicao"]);
   const bestTime = pickString(row, ["tmv", "TMV", joinKey("best", "Lap", "Time"), "tempoMelhorVolta", "melhorVolta", joinKey("lap", "Time")]) || "";
@@ -174,6 +267,64 @@ function pickStatus(row: UnknownRecord, bestTime: string): DriverStatus {
   }
 
   return parseTimingValueToMs(bestTime) === null ? "no-time" : "ok";
+}
+
+function getNameFromCell(rawCells: string[], headers: string[]): string {
+  const nameIndex = headers.findIndex((header) => header.includes("nome") || header.includes("piloto") || header.includes("driver"));
+  const rawCell = rawCells[nameIndex >= 0 ? nameIndex : 2] ?? "";
+  const fullNameMatch = rawCell.match(/<span[^>]*class=["'][^"']*full-name[^"']*["'][^>]*>([\s\S]*?)<\/span>/i);
+
+  if (fullNameMatch) {
+    return decodeHtmlEntities(stripHtml(fullNameMatch[1])).trim();
+  }
+
+  return extractCellText(rawCell);
+}
+
+function findFirstTime(cells: string[]): string {
+  return cells.find((cell) => /^\d{1,2}:\d{2}[.,]\d{1,3}$/.test(cell) || /^\d{1,3}[.,]\d{1,3}$/.test(cell)) ?? "";
+}
+
+function normalizeHeader(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractCellText(cell: string): string {
+  return decodeHtmlEntities(stripHtml(cell))
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function stripHtml(value: string): string {
+  return value
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ");
+}
+
+function decodeHtmlEntities(value: string): string {
+  return value
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'");
+}
+
+function parseInteger(value: string): number | null {
+  const parsed = Number(value.replace(/\D/g, ""));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function extractHtmlTitle(html: string): string | null {
+  const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  return match ? decodeHtmlEntities(stripHtml(match[1])).trim() : null;
 }
 
 function joinKey(...parts: string[]): string {
