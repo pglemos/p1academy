@@ -9,6 +9,7 @@ export const maxDuration = 30;
 const defaultTestSourceUrl = "https://livetime.azurewebsites.net/?uid=58856059-c4fd-4626-aea7-42aefc048eec";
 const renderedCacheTtlMs = 6_000;
 let renderedCache: { sourceUrl: string; heat: HeatInput; syncedAt: string; expiresAt: number } | null = null;
+let lastRenderIssue = "";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -68,7 +69,9 @@ export async function GET(request: Request) {
           configured: true,
           waiting: true,
           sourceUrl,
-          message: "Fonte ao vivo conectada. Aguardando a cronometragem publicar a tabela da corrida.",
+          message: lastRenderIssue
+            ? `Fonte ao vivo conectada, mas a renderização da LiveTime falhou: ${lastRenderIssue}`
+            : "Fonte ao vivo conectada. Aguardando a cronometragem publicar a tabela da corrida.",
         },
         {
           headers: { "Cache-Control": "no-store" },
@@ -158,7 +161,9 @@ async function renderLiveTimeSource(sourceUrl: string): Promise<HeatInput | null
     }
 
     return heat;
-  } catch {
+  } catch (error) {
+    lastRenderIssue = error instanceof Error ? error.message : "erro desconhecido";
+    console.error("LiveTime render failed", error);
     return null;
   } finally {
     await browser?.close();
