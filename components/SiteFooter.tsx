@@ -1,8 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { contactName, mapUrl, navItems, trackAddress, whatsappDisplay, whatsappNumber } from "@/data/site";
 import { Logo } from "./Logo";
 
 export function SiteFooter() {
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <footer className="site-footer">
       <div className="container footer-grid">

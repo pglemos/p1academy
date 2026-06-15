@@ -11,6 +11,10 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <header className="site-header">
       <div className="container nav-inner">
