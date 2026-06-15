@@ -3431,7 +3431,8 @@ video {
     linear-gradient(180deg, #0d0f10, #060707 58%, #030404);
 }
 
-.site-shell:has(.admin-race-section) main {
+.site-shell:has(.admin-race-section) main,
+.site-shell:has(.admin-login-screen) main {
   padding-top: 0;
 }
 
