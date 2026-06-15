@@ -1,7 +1,7 @@
 import { sponsors } from "./sponsors";
 
 export const legendsPdf = "/regulamentos/regulamento-legends-kart-series-2026.pdf";
-export const legendsCalendarPdf = "/regulamentos/calendario-legends-kart-series-2026-v2.pdf";
+export const legendsCalendarPdf = "/regulamentos/calendario-legends-kart-series-2026.pdf";
 
 export const legendsCompetition = {
   name: "Legends Kart Series",
