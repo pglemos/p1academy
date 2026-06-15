@@ -107,7 +107,7 @@ export const legendsOfficialCalendar = [
       { race: 6, date: "15/07/2026", day: "Quarta", time: "21:05" },
       { race: 7, date: "18/07/2026", day: "Sábado", time: "09:15" },
       { race: 8, date: "29/07/2026", day: "Quarta", time: "20:30" },
-      { race: 9, date: "29/07/2026", day: "Quarta", time: "20:30" },
+      { race: 9, date: "29/07/2026", day: "Quarta", time: "21:05" },
     ],
   },
   {
