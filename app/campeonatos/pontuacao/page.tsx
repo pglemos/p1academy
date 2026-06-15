@@ -43,7 +43,7 @@ export default async function LegendsPontuacaoPage({ searchParams }: LegendsPont
               <a className="btn secondary" href={legendsPdf} target="_blank" rel="noreferrer">
                 <Download size={18} /> Regulamento
               </a>
-              <Link className="btn ghost" href="/competicoes">
+              <Link className="btn ghost" href="/campeonatos">
                 <Trophy size={18} /> Hub Legends
               </Link>
             </div>

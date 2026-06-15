@@ -26,10 +26,10 @@ export default function RankingPage() {
               A classificação geral considerará os melhores resultados do piloto, com limite de 10 corridas válidas para pontuação regular. Os classificados para a Super Final podem somar uma corrida extra.
             </p>
             <div className="button-row">
-              <Link className="btn secondary" href="/competicoes#classificacao">
+              <Link className="btn secondary" href="/campeonatos#classificacao">
                 Ver hub da competição
               </Link>
-              <Link className="btn primary" href="/competicoes/pontuacao">
+              <Link className="btn primary" href="/campeonatos/pontuacao">
                 <Calculator size={18} /> Sistema de pontuação
               </Link>
             </div>

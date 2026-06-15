@@ -29,7 +29,7 @@ export default function Home() {
               <Link className="btn primary" href="/contato">
                 <CalendarCheck size={18} /> Agendar aula
               </Link>
-              <Link className="btn secondary" href="/competicoes">
+              <Link className="btn secondary" href="/campeonatos">
                 <Trophy size={18} /> Entrar em campeonato
               </Link>
               <Link className="btn ghost" href="/andre-felisberto">
@@ -136,7 +136,7 @@ export default function Home() {
                   <strong>{item.title}</strong>
                   <span>{item.category}</span>
                   <span>{item.date}</span>
-                  <Link className="status-pill" href="/competicoes">
+                  <Link className="status-pill" href="/campeonatos">
                     {item.status}
                   </Link>
                 </div>

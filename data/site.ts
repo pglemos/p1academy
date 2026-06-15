@@ -23,8 +23,8 @@ export const mapUrl = "https://maps.app.goo.gl/vnUKS8m9QsewWCVo6";
 export const navItems = [
   { href: "/sobre", label: "Sobre" },
   { href: "/andre-felisberto", label: "André" },
-  { href: "/competicoes", label: "Competições" },
-  { href: "/calendario-tracados", label: "Traçados" },
+  { href: "/campeonatos", label: "Campeonatos" },
+  { href: "/tracados", label: "Traçados" },
   { href: "/regulamentos", label: "Regulamentos" },
   { href: "/patrocinadores", label: "Patrocinadores" },
   { href: "/noticias", label: "Notícias" },
@@ -50,11 +50,11 @@ export const quickAccess = [
     image: "/images/competition-corner.png",
   },
   {
-    href: "/calendario-tracados",
-    title: "Calendário e traçados",
+    href: "/tracados",
+    title: "Traçados",
     text: "Mapas oficiais do Kartódromo Internacional de Betim com sentido, distância, chicanes e briefing técnico.",
     icon: CalendarDays,
-    label: "Agenda da pista",
+    label: "Mapas da pista",
     image: "/images/tracados/tracado-01-normal.jpg",
   },
   {

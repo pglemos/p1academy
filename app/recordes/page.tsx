@@ -22,7 +22,7 @@ export default function RecordesPage() {
             <h2>Tempos por configuração</h2>
             <div className="accent-line" />
             <p>Os recordes serão organizados por traçado, sentido e condição de pista. Use a biblioteca de mapas para identificar a configuração antes de comparar tempos.</p>
-            <Link className="btn primary" href="/calendario-tracados">
+            <Link className="btn primary" href="/tracados">
               <MapPin size={18} /> Ver traçados
             </Link>
           </Reveal>

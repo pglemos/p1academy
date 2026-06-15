@@ -4,7 +4,26 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
   outputFileTracingIncludes: {
-    "/api/competicoes/legends/live": ["./node_modules/@sparticuz/chromium/bin/**/*"],
+    "/api/campeonatos/legends/live": ["./node_modules/@sparticuz/chromium/bin/**/*"],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/competicoes/:path*",
+        destination: "/campeonatos/:path*",
+        permanent: true,
+      },
+      {
+        source: "/api/competicoes/:path*",
+        destination: "/api/campeonatos/:path*",
+        permanent: false,
+      },
+      {
+        source: "/calendario-tracados/:path*",
+        destination: "/tracados/:path*",
+        permanent: true,
+      },
+    ];
   },
   images: {
     remotePatterns: [

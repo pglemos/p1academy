@@ -430,11 +430,11 @@ function createEmptyHeat(): HeatInput {
 }
 
 function buildSharePath(encodedHeat: string): string {
-  return `/competicoes/pontuacao?data=${encodedHeat}`;
+  return `/campeonatos/pontuacao?data=${encodedHeat}`;
 }
 
 function buildPdfPath(encodedHeat: string): string {
-  return `/api/competicoes/legends/pdf?data=${encodedHeat}`;
+  return `/api/campeonatos/legends/pdf?data=${encodedHeat}`;
 }
 
 function encodeHeat(heat: HeatInput): string {
@@ -449,7 +449,7 @@ function encodeHeat(heat: HeatInput): string {
 
 async function syncLiveHeat(): Promise<{ heat: HeatInput | null; syncedAt?: string; status: LiveStatus }> {
   try {
-    const response = await fetch("/api/competicoes/legends/live", { cache: "no-store" });
+    const response = await fetch("/api/campeonatos/legends/live", { cache: "no-store" });
     const payload = await response.json() as {
       heat?: HeatInput;
       syncedAt?: string;

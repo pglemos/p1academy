@@ -11,6 +11,7 @@ import {
   legendsCompetition,
   legendsCurrentEdition,
   legendsLevels,
+  legendsOfficialCalendar,
   legendsPdf,
   legendsPhotoSets,
   legendsRankingPreview,
@@ -27,7 +28,7 @@ export const metadata = {
   title: "Legends Kart Series | P1 Academy",
 };
 
-export default function CompeticoesPage() {
+export default function CampeonatosPage() {
   return (
     <>
       <ChampionshipRegistrationModal />
@@ -51,15 +52,15 @@ export default function CompeticoesPage() {
               <button className="btn primary" type="button" data-registration-trigger>
                 Quero participar
               </button>
-              <Link className="btn secondary" href="/competicoes/pontuacao">
+              <Link className="btn secondary" href="/campeonatos/pontuacao">
                 <Calculator size={18} /> Sistema de pontuação
               </Link>
-              <Link className="btn secondary" href="/calendario-tracados">
+              <Link className="btn secondary" href="/tracados">
                 <MapPin size={18} /> Traçados da pista
               </Link>
-              <a className="btn secondary" href={legendsCalendarPdf} target="_blank" rel="noreferrer">
+              <Link className="btn secondary" href="#calendario-oficial">
                 <CalendarDays size={18} /> Calendário
-              </a>
+              </Link>
               <a className="btn secondary" href={legendsPdf} target="_blank" rel="noreferrer">
                 <Download size={18} /> Regulamento
               </a>
@@ -143,6 +144,65 @@ export default function CompeticoesPage() {
         </div>
       </section>
 
+      <section className="section carbon-section" id="calendario-oficial">
+        <div className="container">
+          <Reveal className="section-head center">
+            <CalendarDays size={30} color="var(--acid)" />
+            <h2>Calendário oficial 2026</h2>
+            <div className="accent-line" />
+            <p>
+              A Legends Kart Series tem {legendsCalendarSummary.totalRaces} corridas oficiais entre {legendsCalendarSummary.firstRace} e {legendsCalendarSummary.finalRace}, com janelas às quartas-feiras e sábados pela manhã.
+            </p>
+            <a className="btn primary" href={legendsCalendarPdf} target="_blank" rel="noreferrer">
+              <Download size={18} /> Baixar calendário oficial
+            </a>
+          </Reveal>
+
+          <div className="calendar-summary-grid">
+            <Reveal className="metric-card">
+              <strong>{legendsCalendarSummary.totalRaces}</strong>
+              <span>corridas oficiais</span>
+            </Reveal>
+            <Reveal className="metric-card">
+              <strong>{legendsCalendarSummary.months}</strong>
+              <span>período do campeonato</span>
+            </Reveal>
+            <Reveal className="metric-card">
+              <strong>20:30 / 21:05</strong>
+              <span>janelas de quarta</span>
+            </Reveal>
+            <Reveal className="metric-card">
+              <strong>09:15</strong>
+              <span>janela de sábado</span>
+            </Reveal>
+          </div>
+
+          <div className="calendar-month-grid">
+            {legendsOfficialCalendar.map((month) => (
+              <Reveal className="calendar-month-card" key={month.month}>
+                <h3>{month.month}</h3>
+                <div className="calendar-table" role="table" aria-label={`Calendário Legends ${month.month}`}>
+                  <div className="calendar-row calendar-row-head" role="row">
+                    <span>Corrida</span>
+                    <span>Data</span>
+                    <span>Dia</span>
+                    <span>Hora</span>
+                  </div>
+                  {month.races.map((race) => (
+                    <div className="calendar-row" role="row" key={`${month.month}-${race.race}-${race.date}-${race.time}`}>
+                      <strong>{race.race}</strong>
+                      <span>{race.date.slice(0, 5)}</span>
+                      <span>{race.day}</span>
+                      <span>{race.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="section carbon-section" id="classificacao">
         <div className="container split">
           <Reveal className="section-head">
@@ -171,7 +231,7 @@ export default function CompeticoesPage() {
             <h2>Resultados das etapas</h2>
             <div className="accent-line" />
             <p>Registro dos tempos, pontuações e desempenho de cada bateria realizada. O vencedor soma 10,000 pontos, e a diferença de tempo reduz a pontuação dos demais pilotos.</p>
-            <Link className="btn primary" href="/competicoes/pontuacao">
+            <Link className="btn primary" href="/campeonatos/pontuacao">
               <Calculator size={18} /> Calcular bateria
             </Link>
           </Reveal>
@@ -198,7 +258,7 @@ export default function CompeticoesPage() {
               Calendário oficial publicado com {legendsCalendarSummary.totalRaces} corridas entre {legendsCalendarSummary.firstRace} e {legendsCalendarSummary.finalRace}. As janelas oficiais são {legendsCalendarSummary.weekdayWindows.toLowerCase()} e {legendsCalendarSummary.saturdayWindow.toLowerCase()}.
             </p>
             <div className="button-row">
-              <Link className="btn primary" href="/calendario-tracados#calendario-oficial">
+              <Link className="btn primary" href="#calendario-oficial">
                 <CalendarDays size={18} /> Ver calendário
               </Link>
               <a className="btn secondary" href={legendsCalendarPdf} target="_blank" rel="noreferrer">

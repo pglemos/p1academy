@@ -2993,6 +2993,28 @@ video {
     right: 14px;
   }
 
+  .calendar-month-card {
+    padding: 16px;
+  }
+
+  .calendar-row {
+    min-width: 0;
+    grid-template-columns: 0.6fr 0.95fr 0.95fr 0.8fr;
+    gap: 6px;
+  }
+
+  .calendar-row-head {
+    font-size: 0.55rem;
+  }
+
+  .calendar-row strong {
+    font-size: 0.92rem;
+  }
+
+  .calendar-row span {
+    font-size: 0.68rem;
+  }
+
   .registration-modal-body {
     padding: 12px;
   }

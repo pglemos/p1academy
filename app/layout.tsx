@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" data-scroll-behavior="smooth">
       <body className={`${anybody.variable} ${geist.variable} ${jetbrains.variable}`}>
         <div className="site-shell">
           <SiteHeader />

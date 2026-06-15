@@ -12,7 +12,7 @@ export function PageHero({ title, text, image = "/images/hero-kart-night.png", c
   return (
     <section className={`page-hero ${compact ? "page-hero-compact" : ""}`}>
       <div className="page-hero-photo" aria-hidden="true">
-        <Image src={image} alt="" fill priority sizes="100vw" />
+        <Image src={image} alt="" fill loading="eager" priority sizes="100vw" />
       </div>
       <div className="container">
         <Reveal className="section-head">
