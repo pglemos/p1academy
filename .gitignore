@@ -8,3 +8,4 @@ out
 *.log
 .playwright-mcp
 tmp
+.env*.local

@@ -2009,9 +2009,19 @@ video {
   outline: none;
 }
 
+.field input[type="date"] {
+  color-scheme: dark;
+}
+
 .field textarea {
   min-height: 118px;
   resize: vertical;
+}
+
+.field-hint {
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
 }
 
 .field input:focus,
@@ -2104,6 +2114,11 @@ video {
   clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
 }
 
+.championship-form .grid-2,
+.championship-form .grid-3 {
+  gap: 16px;
+}
+
 .championship-form::before {
   content: "LEGENDS";
   position: absolute;
@@ -2150,7 +2165,7 @@ video {
 
 .form-section {
   display: grid;
-  gap: 16px;
+  gap: 18px;
   min-width: 0;
   margin: 0;
   border: 1px solid var(--line);
@@ -2178,6 +2193,7 @@ video {
   gap: 12px;
   align-items: start;
   color: var(--muted);
+  font-size: 0.94rem;
   line-height: 1.48;
 }
 
