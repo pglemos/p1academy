@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Clipboard, Copy, FileDown, Plus, Radio, RefreshCw, RotateCcw, Share2, Timer, Trash2 } from "lucide-react";
+import { Clipboard, Copy, FileDown, Plus, Radio, RefreshCw, RotateCcw, Save, Share2, Timer, Trash2 } from "lucide-react";
 import {
   calculateHeatResults,
   formatScore,
@@ -11,6 +11,7 @@ import {
   type HeatInput,
   type HeatType,
 } from "@/lib/legendsScoring";
+import { getBrowserSupabaseClient } from "@/lib/p1BrowserSupabase";
 
 const STORAGE_KEY = "p1-legends-scoring-heat";
 type SourceMode = "live" | "manual";
@@ -52,6 +53,7 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
     text: initialHeat ? "Snapshot publico carregado." : "Aguardando cronometragem ao vivo.",
   });
   const [lastSync, setLastSync] = useState("");
+  const [isPublishing, setIsPublishing] = useState(false);
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(heat));
@@ -163,6 +165,43 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
 
     await copyText(text);
     setMessage("Resultado em texto copiado.");
+  }
+
+  async function publishHeat() {
+    setIsPublishing(true);
+    setMessage("");
+
+    try {
+      const supabase = getBrowserSupabaseClient();
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+
+      if (!token) {
+        setMessage("Entre no admin para publicar baterias no sistema.");
+        return;
+      }
+
+      const response = await fetch("/api/admin/heats", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...heat, publish: true }),
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setMessage(typeof payload.message === "string" ? payload.message : "Nao foi possivel publicar a bateria.");
+        return;
+      }
+
+      setMessage("Bateria publicada no sistema. Ranking e resultados ja podem ser atualizados.");
+    } catch {
+      setMessage("Nao foi possivel conectar ao Supabase para publicar a bateria.");
+    } finally {
+      setIsPublishing(false);
+    }
   }
 
   return (
@@ -322,6 +361,9 @@ export function LegendsScoringApp({ initialHeat = null, initialMessage = "" }: L
             <a className="btn secondary" href={pdfPath} target="_blank" rel="noreferrer">
               <FileDown size={18} /> Baixar PDF
             </a>
+            <button className="btn primary" type="button" onClick={publishHeat} disabled={isPublishing || results.length === 0}>
+              <Save size={18} /> {isPublishing ? "Publicando..." : "Publicar no sistema"}
+            </button>
           </div>
           {message ? <p className="success">{message}</p> : null}
         </aside>

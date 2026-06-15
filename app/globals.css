@@ -3212,6 +3212,242 @@ video {
   }
 }
 
+.registration-protocol {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px 14px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid rgba(234, 255, 0, 0.26);
+  border-radius: 8px;
+  background: rgba(234, 255, 0, 0.08);
+}
+
+.registration-protocol span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.registration-protocol strong {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  color: var(--acid);
+}
+
+.registration-protocol .btn {
+  grid-row: span 2;
+}
+
+.admin-login-shell {
+  max-width: 520px;
+}
+
+.admin-login-form,
+.admin-panel,
+.admin-toolbar {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(10, 10, 10, 0.72);
+  box-shadow: var(--shadow);
+}
+
+.admin-login-form {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.admin-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 22px;
+}
+
+.admin-toolbar h2,
+.admin-panel h3 {
+  margin: 0;
+}
+
+.admin-toolbar p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-grid-wide {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+}
+
+.admin-panel {
+  padding: 20px;
+}
+
+.admin-warning {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  border-color: rgba(234, 255, 0, 0.32);
+}
+
+.admin-warning p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.admin-inline-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-inline-form input {
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.admin-panel-head span {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.admin-table {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) minmax(110px, 0.8fr) minmax(130px, 1fr) minmax(140px, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.admin-row.compact {
+  grid-template-columns: minmax(170px, 1.4fr) repeat(3, minmax(80px, 0.7fr));
+}
+
+.admin-row strong {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-row span {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.admin-actions button {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+.admin-actions button:hover {
+  border-color: rgba(234, 255, 0, 0.45);
+  color: var(--acid);
+}
+
+.admin-status {
+  justify-self: start;
+  padding: 5px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.admin-status-approved,
+.admin-status-completed,
+.admin-status-active {
+  border-color: rgba(84, 255, 162, 0.3);
+  color: #54ffa2;
+}
+
+.admin-status-pending,
+.admin-status-scheduled,
+.admin-status-open {
+  border-color: rgba(234, 255, 0, 0.32);
+  color: var(--acid);
+}
+
+.admin-status-rejected,
+.admin-status-cancelled {
+  border-color: rgba(255, 92, 92, 0.36);
+  color: #ff8b8b;
+}
+
+.admin-status-waitlist,
+.admin-status-full {
+  border-color: rgba(255, 184, 77, 0.36);
+  color: #ffbe68;
+}
+
+@media (max-width: 900px) {
+  .admin-toolbar,
+  .admin-inline-form {
+    flex-direction: column;
+  }
+
+  .admin-grid,
+  .admin-grid-wide {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-row,
+  .admin-row.compact {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-protocol {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-protocol .btn {
+    grid-row: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

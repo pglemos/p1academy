@@ -6,16 +6,8 @@ import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
 import {
   legendsAchievements,
-  legendsCalendarPdf,
-  legendsCalendarSummary,
-  legendsCompetition,
-  legendsCurrentEdition,
   legendsLevels,
-  legendsOfficialCalendar,
-  legendsPdf,
   legendsPhotoSets,
-  legendsRankingPreview,
-  legendsResultsPreview,
   legendsSections,
   legendsSponsors,
   legendsStageInfo,
@@ -23,17 +15,35 @@ import {
   legendsStory,
   legendsSummary,
 } from "@/data/legends";
+import { getLegendsPublicData } from "@/lib/p1Data";
 
 export const metadata = {
   title: "Legends Kart Series | P1 Academy",
 };
 
-export default function CampeonatosPage() {
+export const dynamic = "force-dynamic";
+
+export default async function CampeonatosPage() {
+  const publicData = await getLegendsPublicData();
+  const { championship, calendarSummary, calendarMonths, ranking, results } = publicData;
+  const currentEdition = [
+    ["Edição atual", championship.edition],
+    ["Temporada", championship.season],
+    ["Sede", championship.venue],
+    ["Organizador geral", championship.organizer],
+    ["WhatsApp", championship.whatsapp],
+    ["Formato", championship.format],
+    ["Lastro-base", championship.ballast],
+    ["Duração da bateria", championship.heatDuration],
+    ["Vagas previstas", championship.seats],
+    ["Calendário", championship.expectedStages],
+  ];
+
   return (
     <>
       <ChampionshipRegistrationModal />
       <PageHero
-        title="Legends Kart Series"
+        title={championship.name}
         text="1ª edição oficial do campeonato semestral de rental kart da P1 Academy. Categoria única, tomada de tempo, lastro-base de 100 kg e sede oficial no Kartódromo Internacional de Betim."
         image="/images/competition-corner.png"
       />
@@ -42,8 +52,8 @@ export default function CampeonatosPage() {
         <div className="container legends-shell">
           <Reveal className="legends-status">
             <div>
-              <span className="eyebrow">{legendsCompetition.status}</span>
-              <h2>{legendsCompetition.edition}</h2>
+              <span className="eyebrow">{championship.status}</span>
+              <h2>{championship.edition}</h2>
               <p>
                 Campeonato e grupo de treinos em formato semestral, com baterias avulsas ao longo da temporada. O piloto participa das corridas que quiser, conforme disponibilidade de vaga e aceite da organização.
               </p>
@@ -61,7 +71,7 @@ export default function CampeonatosPage() {
               <Link className="btn secondary" href="#calendario-oficial">
                 <CalendarDays size={18} /> Calendário
               </Link>
-              <a className="btn secondary" href={legendsPdf} target="_blank" rel="noreferrer">
+              <a className="btn secondary" href={championship.rulesPdf} target="_blank" rel="noreferrer">
                 <Download size={18} /> Regulamento
               </a>
             </div>
@@ -118,10 +128,10 @@ export default function CampeonatosPage() {
           <Reveal className="legends-panel">
             <MapPin size={28} color="var(--acid)" />
             <h3>Sede oficial</h3>
-            <p>{legendsCompetition.venue}</p>
-            <p>{legendsCompetition.address}</p>
+            <p>{championship.venue}</p>
+            <p>{championship.address}</p>
             <p>
-              Organização geral: {legendsCompetition.organizer} - WhatsApp {legendsCompetition.whatsapp}
+              Organização geral: {championship.organizer} - WhatsApp {championship.whatsapp}
             </p>
           </Reveal>
         </div>
@@ -134,7 +144,7 @@ export default function CampeonatosPage() {
             <div className="accent-line" />
           </Reveal>
           <div className="details-grid">
-            {legendsCurrentEdition.map(([label, value]) => (
+            {currentEdition.map(([label, value]) => (
               <div className="detail-row" key={label}>
                 <span>{label}</span>
                 <strong>{value}</strong>
@@ -151,20 +161,20 @@ export default function CampeonatosPage() {
             <h2>Calendário oficial 2026</h2>
             <div className="accent-line" />
             <p>
-              A Legends Kart Series tem {legendsCalendarSummary.totalRaces} corridas oficiais entre {legendsCalendarSummary.firstRace} e {legendsCalendarSummary.finalRace}, com janelas às quartas-feiras e sábados pela manhã.
+              A Legends Kart Series tem {calendarSummary.totalRaces} corridas oficiais entre {calendarSummary.firstRace} e {calendarSummary.finalRace}, com janelas às quartas-feiras e sábados pela manhã.
             </p>
-            <a className="btn primary" href={legendsCalendarPdf} target="_blank" rel="noreferrer">
+            <a className="btn primary" href={championship.calendarPdf} target="_blank" rel="noreferrer">
               <Download size={18} /> Baixar calendário oficial
             </a>
           </Reveal>
 
           <div className="calendar-summary-grid">
             <Reveal className="metric-card">
-              <strong>{legendsCalendarSummary.totalRaces}</strong>
+              <strong>{calendarSummary.totalRaces}</strong>
               <span>corridas oficiais</span>
             </Reveal>
             <Reveal className="metric-card">
-              <strong>{legendsCalendarSummary.months}</strong>
+              <strong>{calendarSummary.months}</strong>
               <span>período do campeonato</span>
             </Reveal>
             <Reveal className="metric-card">
@@ -178,7 +188,7 @@ export default function CampeonatosPage() {
           </div>
 
           <div className="calendar-month-grid">
-            {legendsOfficialCalendar.map((month) => (
+            {calendarMonths.map((month) => (
               <Reveal className="calendar-month-card" key={month.month}>
                 <h3>{month.month}</h3>
                 <div className="calendar-table" role="table" aria-label={`Calendário Legends ${month.month}`}>
@@ -212,7 +222,7 @@ export default function CampeonatosPage() {
             <p>Ranking dos pilotos com base nas melhores pontuações válidas ao longo da temporada. Cada piloto terá considerados seus melhores resultados, com limite de 10 corridas válidas para pontuação regular.</p>
           </Reveal>
           <div className="table-like">
-            {legendsRankingPreview.map((item) => (
+            {ranking.map((item) => (
               <Reveal className="row" key={`${item.position}-${item.driver}`}>
                 <strong>{item.position} {item.driver}</strong>
                 <span>{item.level}</span>
@@ -236,7 +246,7 @@ export default function CampeonatosPage() {
             </Link>
           </Reveal>
           <div className="table-like">
-            {legendsResultsPreview.map((item) => (
+            {results.map((item) => (
               <Reveal className="row" key={item.heat}>
                 <strong>{item.heat}</strong>
                 <span>{item.date}</span>
@@ -255,13 +265,13 @@ export default function CampeonatosPage() {
             <h2>Informações das etapas</h2>
             <div className="accent-line" />
             <p>
-              Calendário oficial publicado com {legendsCalendarSummary.totalRaces} corridas entre {legendsCalendarSummary.firstRace} e {legendsCalendarSummary.finalRace}. As janelas oficiais são {legendsCalendarSummary.weekdayWindows.toLowerCase()} e {legendsCalendarSummary.saturdayWindow.toLowerCase()}.
+              Calendário oficial publicado com {calendarSummary.totalRaces} corridas entre {calendarSummary.firstRace} e {calendarSummary.finalRace}. As janelas oficiais são {calendarSummary.weekdayWindows.toLowerCase()} e {calendarSummary.saturdayWindow.toLowerCase()}.
             </p>
             <div className="button-row">
               <Link className="btn primary" href="#calendario-oficial">
                 <CalendarDays size={18} /> Ver calendário
               </Link>
-              <a className="btn secondary" href={legendsCalendarPdf} target="_blank" rel="noreferrer">
+              <a className="btn secondary" href={championship.calendarPdf} target="_blank" rel="noreferrer">
                 <Download size={18} /> PDF oficial
               </a>
             </div>
@@ -283,14 +293,14 @@ export default function CampeonatosPage() {
             <ShieldCheck size={30} color="var(--acid)" />
             <h2>Regulamento oficial</h2>
             <div className="accent-line" />
-            <p>{legendsCompetition.version}, publicado em {legendsCompetition.versionDate}. Documento oficial com regras esportivas, critérios de pontuação, conduta, penalidades, premiação e controle de versões.</p>
-            <a className="btn primary" href={legendsPdf} target="_blank" rel="noreferrer">
+            <p>{championship.version}, publicado em {championship.versionDate}. Documento oficial com regras esportivas, critérios de pontuação, conduta, penalidades, premiação e controle de versões.</p>
+            <a className="btn primary" href={championship.rulesPdf} target="_blank" rel="noreferrer">
               <Download size={18} /> Baixar PDF oficial
             </a>
           </Reveal>
           <Reveal className="legends-panel">
             <h3>Regras-chave</h3>
-            <p>{legendsCompetition.kartFleet}</p>
+            <p>Karts de locação da frota Super Karts, fornecidos pelo kartódromo e definidos por sorteio.</p>
             <p>Troca de kart permitida a critério do piloto, limitada a uma troca por corrida, com voltas anteriores desconsideradas salvo problema mecânico comprovado.</p>
             <p>Premiação com troféus para os 10 melhores pilotos do campeonato e troféu especial para o vencedor da Super Final.</p>
           </Reveal>

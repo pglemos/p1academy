@@ -2,7 +2,6 @@
 
 import { ClipboardCheck, Send, ShieldCheck, X } from "lucide-react";
 import { FormEvent, MouseEvent, useEffect, useRef, useState } from "react";
-import { legendsCompetition, legendsPdf } from "@/data/legends";
 
 type RegistrationFormState = {
   fullName: string;
@@ -90,10 +89,6 @@ function parsePositiveNumber(value: string) {
   const normalized = value.replace(",", ".").trim();
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function formatOptional(value: string, fallback = "Não informado") {
-  return value.trim() || fallback;
 }
 
 export function ChampionshipRegistrationModal() {
@@ -190,15 +185,20 @@ export function ChampionshipRegistrationForm() {
   const [form, setForm] = useState(initialState);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [protocol, setProtocol] = useState("");
+  const [whatsappUrl, setWhatsappUrl] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function update<K extends keyof RegistrationFormState>(field: K, value: RegistrationFormState[K]) {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setSuccess("");
+    setProtocol("");
+    setWhatsappUrl("");
 
     const missingFields = requiredFields
       .filter(({ field }) => {
@@ -234,55 +234,30 @@ export function ChampionshipRegistrationForm() {
       return;
     }
 
-    const message = [
-      `INSCRIÇÃO - ${legendsCompetition.name}`,
-      `${legendsCompetition.edition} | Temporada ${legendsCompetition.season}`,
-      `Sede: ${legendsCompetition.venue}`,
-      "",
-      "DADOS DO PILOTO",
-      `Nome completo: ${form.fullName}`,
-      `CPF: ${form.cpf}`,
-      `Data de nascimento: ${form.birthDate}`,
-      `WhatsApp: ${form.whatsapp}`,
-      `E-mail: ${form.email}`,
-      `Cidade/UF: ${form.city}`,
-      `Idade: ${form.age}`,
-      `Peso aproximado com equipamento: ${form.weight} kg`,
-      "",
-      "PERFIL COMPETITIVO",
-      `Experiência: ${form.experience}`,
-      `Nível declarado: ${form.currentLevel}`,
-      `Objetivo no campeonato: ${formatOptional(form.goals)}`,
-      "",
-      "PARTICIPAÇÃO",
-      `Baterias pretendidas: ${form.intendedHeats}`,
-      `Interesse no ranking: ${form.rankingInterest}`,
-      `Janelas preferidas: ${form.preferredRaceWindows}`,
-      `Disponibilidade detalhada: ${form.availability}`,
-      "",
-      "EQUIPAMENTO",
-      `Equipamento: ${form.equipment}`,
-      `Detalhes do equipamento: ${formatOptional(form.equipmentDetails)}`,
-      "",
-      "SEGURANÇA E SAÚDE",
-      `Contato de emergência: ${form.emergencyContactName}`,
-      `Telefone de emergência: ${form.emergencyContactPhone}`,
-      `Restrições médicas: ${formatOptional(form.medicalRestrictions, "Nenhuma informada")}`,
-      `Alergias: ${formatOptional(form.allergies, "Nenhuma informada")}`,
-      `Medicamentos de uso contínuo: ${formatOptional(form.medications, "Nenhum informado")}`,
-      `Observações operacionais: ${formatOptional(form.notes, "Sem observações")}`,
-      "",
-      "ACEITES",
-      "Autorizo contato por WhatsApp/e-mail para confirmação e orientações.",
-      "Li ou vou ler o regulamento oficial antes da primeira bateria.",
-      "Estou ciente de que a inscrição depende de aceite da organização, disponibilidade de vaga, briefing e termo de responsabilidade no kartódromo.",
-      "Autorizo o uso de imagem em fotos, vídeos, ranking e materiais da competição P1 Academy.",
-      "",
-      `Regulamento: ${legendsPdf}`,
-    ].join("\n");
+    setIsSubmitting(true);
 
-    setSuccess("Inscrição pronta. Você será direcionado ao WhatsApp para enviar os dados completos à organização.");
-    window.location.assign(`https://wa.me/${legendsCompetition.whatsappNumber}?text=${encodeURIComponent(message)}`);
+    try {
+      const response = await fetch("/api/p1/registrations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setError(typeof payload.message === "string" ? payload.message : "Não foi possível enviar a inscrição.");
+        return;
+      }
+
+      setProtocol(String(payload.protocol ?? ""));
+      setWhatsappUrl(String(payload.whatsappUrl ?? ""));
+      setSuccess("Inscrição recebida. A organização vai analisar os dados e confirmar os próximos passos.");
+      setForm(initialState);
+    } catch {
+      setError("Não foi possível conectar ao sistema de inscrições. Tente novamente em instantes.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -485,8 +460,19 @@ export function ChampionshipRegistrationForm() {
 
       {error ? <p className="error">{error}</p> : null}
       {success ? <p className="success">{success}</p> : null}
-      <button className="btn primary" type="submit">
-        <Send size={18} /> Enviar inscrição
+      {protocol ? (
+        <div className="registration-protocol">
+          <span>Protocolo</span>
+          <strong>{protocol}</strong>
+          {whatsappUrl ? (
+            <a className="btn secondary" href={whatsappUrl} target="_blank" rel="noreferrer">
+              <Send size={18} /> Avisar no WhatsApp
+            </a>
+          ) : null}
+        </div>
+      ) : null}
+      <button className="btn primary" type="submit" disabled={isSubmitting}>
+        <Send size={18} /> {isSubmitting ? "Enviando..." : "Enviar inscrição"}
       </button>
     </form>
   );

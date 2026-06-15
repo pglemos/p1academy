@@ -2,13 +2,17 @@ import Link from "next/link";
 import { Calculator, Trophy } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
-import { legendsCompetition, legendsRankingPreview } from "@/data/legends";
+import { getLegendsPublicData } from "@/lib/p1Data";
 
 export const metadata = {
   title: "Classificação Legends Kart Series | P1 Academy",
 };
 
-export default function RankingPage() {
+export const dynamic = "force-dynamic";
+
+export default async function RankingPage() {
+  const { championship, ranking } = await getLegendsPublicData();
+
   return (
     <>
       <PageHero
@@ -20,7 +24,7 @@ export default function RankingPage() {
         <div className="container split">
           <Reveal className="section-head">
             <Trophy size={30} color="var(--acid)" />
-            <h2>{legendsCompetition.name}</h2>
+            <h2>{championship.name}</h2>
             <div className="accent-line" />
             <p>
               A classificação geral considerará os melhores resultados do piloto, com limite de 10 corridas válidas para pontuação regular. Os classificados para a Super Final podem somar uma corrida extra.
@@ -35,7 +39,7 @@ export default function RankingPage() {
             </div>
           </Reveal>
           <div className="table-like">
-            {legendsRankingPreview.map((item) => (
+            {ranking.map((item) => (
               <Reveal className="row" key={`${item.position}-${item.driver}`}>
                 <strong>
                   {item.position} {item.driver}

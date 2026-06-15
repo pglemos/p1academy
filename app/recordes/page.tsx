@@ -2,13 +2,17 @@ import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
-import { legendsResultsPreview } from "@/data/legends";
+import { getLegendsPublicData } from "@/lib/p1Data";
 
 export const metadata = {
   title: "Recordes | P1 Academy",
 };
 
-export default function RecordesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function RecordesPage() {
+  const { results } = await getLegendsPublicData();
+
   return (
     <>
       <PageHero
@@ -27,7 +31,7 @@ export default function RecordesPage() {
             </Link>
           </Reveal>
           <div className="table-like">
-            {legendsResultsPreview.map((item) => (
+            {results.map((item) => (
               <Reveal className="row" key={item.heat}>
                 <strong>{item.heat}</strong>
                 <span>{item.winner}</span>
