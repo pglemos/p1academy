@@ -10,7 +10,6 @@ import {
   FileText,
   Filter,
   Flag,
-  Gauge,
   Home,
   LogOut,
   Mail,
@@ -604,24 +603,70 @@ function AdminModule({
 
 function OperationalGrid({ activeTab, nextStage, overview, setActiveTab }: { activeTab: AdminTab; nextStage: StageRow | undefined; overview: Overview; setActiveTab: (tab: AdminTab) => void }) {
   if (activeTab === "dashboard") {
+    const recent = overview.registrations.slice(0, 5);
+    const upcoming = overview.stages.filter((stage) => stage.status !== "completed" && stage.status !== "cancelled").slice(0, 6);
     return (
-      <div className="admin-overview-grid">
-        <button type="button" onClick={() => setActiveTab("inscricoes")}><ClipboardList size={22} /><strong>{overview.registrations.length}</strong><span>Inscrições</span></button>
-        <button type="button" onClick={() => setActiveTab("pilotos")}><Users size={22} /><strong>{overview.drivers.length}</strong><span>Pilotos ativos</span></button>
-        <button type="button" onClick={() => setActiveTab("etapas")}><CalendarDays size={22} /><strong>{overview.stages.length}</strong><span>Janelas oficiais</span></button>
-        <button type="button" onClick={() => setActiveTab("baterias")}><Timer size={22} /><strong>{overview.heats.length}</strong><span>Baterias publicadas</span></button>
-        <div className="admin-next-stage"><span>Próxima janela</span><strong>{nextStage?.stage_code ?? "Sem etapa"}</strong><p>{nextStage ? `${formatDate(nextStage.scheduled_date)} às ${nextStage.scheduled_time.slice(0, 5)}` : "Calendário aguardando publicação"}</p></div>
+      <div className="admin-dashboard">
+        <div className="admin-overview-grid">
+          <button type="button" onClick={() => setActiveTab("inscricoes")}><ClipboardList size={22} /><strong>{overview.registrations.length}</strong><span>Inscrições</span></button>
+          <button type="button" onClick={() => setActiveTab("pilotos")}><Users size={22} /><strong>{overview.drivers.length}</strong><span>Pilotos ativos</span></button>
+          <button type="button" onClick={() => setActiveTab("etapas")}><CalendarDays size={22} /><strong>{overview.stages.length}</strong><span>Janelas oficiais</span></button>
+          <button type="button" onClick={() => setActiveTab("baterias")}><Timer size={22} /><strong>{overview.heats.length}</strong><span>Baterias publicadas</span></button>
+        </div>
+
+        <div className="admin-dashboard-panels">
+          <section className="admin-panel">
+            <header className="admin-panel-head">
+              <h3>Inscrições recentes</h3>
+              <button type="button" onClick={() => setActiveTab("inscricoes")}>Ver todas</button>
+            </header>
+            {recent.length ? (
+              <div className="admin-panel-list">
+                {recent.map((registration) => (
+                  <div className="admin-panel-row" key={registration.id}>
+                    <div><strong>{registration.full_name}</strong><span>{registration.city || "Cidade não informada"}</span></div>
+                    <StatusBadge status={registration.status} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyPanel icon={<ClipboardList size={26} />} title="Nenhuma inscrição ainda" />
+            )}
+          </section>
+
+          <section className="admin-panel">
+            <header className="admin-panel-head">
+              <h3>Próximas etapas</h3>
+              <button type="button" onClick={() => setActiveTab("etapas")}>Ver calendário</button>
+            </header>
+            {upcoming.length ? (
+              <div className="admin-panel-list">
+                {upcoming.map((stage) => (
+                  <div className="admin-panel-row" key={stage.id}>
+                    <div><strong>{stage.stage_code}</strong><span>{stage.weekday}</span></div>
+                    <span className="admin-panel-meta">{formatDate(stage.scheduled_date)} · {stage.scheduled_time.slice(0, 5)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyPanel icon={<CalendarDays size={26} />} title={nextStage ? `Próxima: ${nextStage.stage_code}` : "Calendário aguardando publicação"} />
+            )}
+          </section>
+        </div>
       </div>
     );
   }
 
   if (activeTab === "pilotos") {
+    if (overview.drivers.length === 0) {
+      return <EmptyPanel icon={<Users size={30} />} title="Nenhum piloto aprovado ainda" text="Pilotos aprovados na triagem de inscrições aparecem aqui." />;
+    }
     return (
       <div className="admin-simple-table">
+        <div className="admin-simple-head"><span>Piloto</span><span>Cidade</span><span>Nível</span><span>Status</span></div>
         {overview.drivers.map((driver) => (
           <div key={driver.id}><strong>{driver.display_name}</strong><span>{driver.city ?? "Cidade não informada"}</span><span>{driver.current_level ?? "Legends"}</span><StatusBadge status={driver.status} /></div>
         ))}
-        {overview.drivers.length === 0 ? <EmptyState text="Nenhum piloto aprovado ainda." /> : null}
       </div>
     );
   }
@@ -629,6 +674,7 @@ function OperationalGrid({ activeTab, nextStage, overview, setActiveTab }: { act
   if (activeTab === "etapas") {
     return (
       <div className="admin-simple-table">
+        <div className="admin-simple-head"><span>Etapa</span><span>Dia</span><span>Data e hora</span><span>Status</span></div>
         {overview.stages.map((stage) => (
           <div key={stage.id}><strong>{stage.stage_code}</strong><span>{stage.weekday}</span><span>{formatDate(stage.scheduled_date)} às {stage.scheduled_time.slice(0, 5)}</span><StatusBadge status={stage.status} /></div>
         ))}
@@ -637,23 +683,29 @@ function OperationalGrid({ activeTab, nextStage, overview, setActiveTab }: { act
   }
 
   if (activeTab === "baterias") {
+    if (overview.heats.length === 0) {
+      return <EmptyPanel icon={<Flag size={30} />} title="Nenhuma bateria publicada ainda" text="Lance uma bateria pelo sistema de pontuação para gerar resultados." />;
+    }
     return (
       <div className="admin-simple-table">
+        <div className="admin-simple-head"><span>Bateria</span><span>Data</span><span>Tipo</span><span>Fonte</span></div>
         {overview.heats.map((heat) => (
           <div key={heat.id}><strong>{heat.title}</strong><span>{formatDate(heat.heat_date)}</span><span>{heat.type === "super_final" ? "Super Final" : "Regular"}</span><span>{translateSource(heat.source)}</span></div>
         ))}
-        {overview.heats.length === 0 ? <EmptyState text="Nenhuma bateria publicada ainda." /> : null}
       </div>
     );
   }
 
   if (activeTab === "ranking") {
+    if (overview.standings.length === 0) {
+      return <EmptyPanel icon={<Trophy size={30} />} title="Ranking será montado após as baterias" text="A classificação geral aparece quando houver resultados publicados." />;
+    }
     return (
       <div className="admin-simple-table">
+        <div className="admin-simple-head"><span>Piloto</span><span>Pontos</span><span>Válidas</span><span>Vitórias</span></div>
         {overview.standings.map((row) => (
           <div key={`${row.position}-${row.driver_name}`}><strong><Medal size={16} /> {String(row.position).padStart(2, "0")} {row.driver_name}</strong><span>{Number(row.total).toLocaleString("pt-BR", { minimumFractionDigits: 3 })} pts</span><span>{row.valid_regular_results}/10 válidas</span><span>{row.wins} vitórias</span></div>
         ))}
-        {overview.standings.length === 0 ? <EmptyState text="Ranking será montado após publicação das baterias." /> : null}
       </div>
     );
   }
@@ -897,8 +949,14 @@ function DetailSection({ rows, title }: { rows: Array<[string, string]>; title: 
   );
 }
 
-function EmptyState({ text }: { text: string }) {
-  return <div className="admin-table-empty"><Gauge size={28} /><strong>{text}</strong></div>;
+function EmptyPanel({ icon, title, text }: { icon: ReactNode; title: string; text?: string }) {
+  return (
+    <div className="admin-empty-panel">
+      <span className="admin-empty-icon">{icon}</span>
+      <strong>{title}</strong>
+      {text ? <span>{text}</span> : null}
+    </div>
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {

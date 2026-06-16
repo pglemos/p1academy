@@ -3602,7 +3602,7 @@ video {
 .admin-module {
   display: grid;
   gap: 22px;
-  padding: 44px 30px 0 52px;
+  padding: 40px 40px 56px;
 }
 
 .admin-module-head {
@@ -4120,6 +4120,142 @@ video {
   gap: 10px;
   color: #a3a8a2;
   text-align: center;
+}
+
+/* Cabeçalho das tabelas simples (Pilotos, Etapas, Baterias, Ranking) */
+.admin-simple-table .admin-simple-head {
+  grid-template-columns: minmax(180px, 1.3fr) repeat(3, minmax(110px, 0.8fr));
+  min-height: 48px;
+  border-top: 0;
+  color: #b8bcb7;
+  background: rgba(255, 255, 255, 0.04);
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* Empty state em painel decente */
+.admin-empty-panel {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 12px;
+  min-height: 340px;
+  padding: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(13, 15, 16, 0.86);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  text-align: center;
+}
+
+.admin-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--acid);
+}
+
+.admin-empty-panel strong {
+  color: #f1f2ef;
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+.admin-empty-panel span {
+  max-width: 440px;
+  color: #9da29c;
+}
+
+/* Dashboard enriquecido */
+.admin-dashboard {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-dashboard-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.admin-panel {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(13, 15, 16, 0.86);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+
+.admin-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-panel-head h3 {
+  margin: 0;
+  color: #f3f4f1;
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-size: 0.96rem;
+  text-transform: uppercase;
+}
+
+.admin-panel-head button {
+  border: 0;
+  background: transparent;
+  color: var(--acid);
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.admin-panel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-panel-list > .admin-panel-row:first-child {
+  border-top: 0;
+}
+
+.admin-panel-row > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-panel-row strong {
+  color: #eceeea;
+  overflow-wrap: anywhere;
+}
+
+.admin-panel-row span {
+  color: #9da29c;
+  font-size: 0.86rem;
+}
+
+.admin-panel-meta {
+  color: #c8ccc6 !important;
+  font-family: var(--font-mono);
+  white-space: nowrap;
 }
 
 .admin-system-alert {
