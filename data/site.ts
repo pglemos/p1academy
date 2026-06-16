@@ -19,6 +19,8 @@ export const whatsappDisplay = "+55 21 99596-0077";
 export const contactName = "André Felisberto";
 export const trackAddress = "Avenida Adutora Várzea das Flores, 477 - Itacolomi, Betim - MG, 32672-586";
 export const mapUrl = "https://maps.app.goo.gl/vnUKS8m9QsewWCVo6";
+export const instagramHandle = "@p1__academy";
+export const instagramUrl = "https://www.instagram.com/p1__academy";
 
 export const navItems = [
   { href: "/sobre", label: "Sobre" },

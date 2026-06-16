@@ -3,7 +3,14 @@ import { MediaFrame } from "@/components/MediaFrame";
 import { PageHero } from "@/components/PageHero";
 import { Lift } from "@/components/Motion";
 
-const wallpapers = ["Carbon grid", "Apex night", "Blue sector", "Red heat", "Podium metal", "Telemetry dark"];
+const wallpapers: Array<{ name: string; src: string }> = [
+  { name: "Carbon grid", src: "/images/wallpaper-kart-dawn.png" },
+  { name: "Apex night", src: "/images/hero-kart-night.png" },
+  { name: "Blue sector", src: "/images/timing-telemetry.png" },
+  { name: "Red heat", src: "/images/competition-corner.png" },
+  { name: "Podium metal", src: "/images/academy-coaching.png" },
+  { name: "Telemetry dark", src: "/images/tracados/tracado-01-normal.jpg" },
+];
 
 export const metadata = {
   title: "Wallpapers | P1 Academy",
@@ -20,14 +27,14 @@ export default function WallpapersPage() {
       <section className="section">
         <div className="container grid-3">
           {wallpapers.map((item) => (
-            <Lift className="feature-card" key={item}>
-              <MediaFrame label={item} src="/images/wallpaper-kart-dawn.png" alt={item} tall />
+            <Lift className="feature-card" key={item.name}>
+              <MediaFrame label={item.name} src={item.src} alt={item.name} tall />
               <div className="feature-body">
-                <h3>{item}</h3>
-                <p>Arte temporária de alto contraste com estética tech e motorsport.</p>
-                <button className="btn ghost" type="button">
+                <h3>{item.name}</h3>
+                <p>Arte de alto contraste com estética tech e motorsport.</p>
+                <a className="btn ghost" href={item.src} download>
                   <Download size={18} /> Baixar
-                </button>
+                </a>
               </div>
             </Lift>
           ))}

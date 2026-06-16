@@ -2,7 +2,7 @@ import { Camera, MapPin, MessageCircle } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
-import { contactName, mapUrl, trackAddress, whatsappDisplay, whatsappNumber } from "@/data/site";
+import { contactName, instagramHandle, instagramUrl, mapUrl, trackAddress, whatsappDisplay, whatsappNumber } from "@/data/site";
 
 export const metadata = {
   title: "Contato | P1 Academy",
@@ -32,7 +32,9 @@ export default function ContatoPage() {
             <div className="card">
               <Camera size={26} color="var(--cyan)" />
               <h3>Instagram</h3>
-              <p>@p1__academy para bastidores, agenda e conteúdo da comunidade.</p>
+              <p>
+                <a href={instagramUrl} target="_blank" rel="noreferrer">{instagramHandle}</a> para bastidores, agenda e conteúdo da comunidade.
+              </p>
             </div>
             <div className="card">
               <MapPin size={26} color="var(--cyan)" />
