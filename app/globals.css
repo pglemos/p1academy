@@ -4324,27 +4324,39 @@ video {
 }
 
 /* Sidebar recolhível */
-.admin-app.collapsed {
-  grid-template-columns: 76px minmax(0, 1fr);
+.admin-app {
+  transition: grid-template-columns 0.25s ease;
 }
 
+.admin-app.collapsed {
+  grid-template-columns: 84px minmax(0, 1fr);
+}
+
+/* Esconde todos os textos quando recolhido (logo, labels e botão) */
 .admin-app.collapsed .admin-sidebar-brand > strong,
+.admin-app.collapsed .admin-sidebar-brand .brand-copy,
 .admin-app.collapsed .admin-side-nav button span,
 .admin-app.collapsed .admin-collapse span {
   display: none;
 }
 
-.admin-app.collapsed .admin-side-nav button,
-.admin-app.collapsed .admin-collapse {
-  grid-template-columns: 24px;
-  justify-content: center;
-  padding: 0;
-  justify-items: center;
-}
-
+/* Marca centralizada, mostrando apenas o selo */
 .admin-app.collapsed .admin-sidebar-brand {
   justify-content: center;
-  padding: 0 12px;
+  padding: 0;
+}
+
+.admin-app.collapsed .admin-sidebar-brand .brand {
+  display: flex;
+  justify-content: center;
+}
+
+/* Ícones de navegação centralizados na coluna estreita */
+.admin-app.collapsed .admin-side-nav button,
+.admin-app.collapsed .admin-collapse {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  padding: 0;
 }
 
 /* Botões desabilitados do admin */
