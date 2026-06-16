@@ -18,6 +18,7 @@ import {
   MoreVertical,
   Plus,
   Search,
+  Send,
   Settings,
   ShieldCheck,
   Timer,
@@ -945,92 +946,250 @@ function RegistrationDetailPanel({ loading, registration, updateRegistration, sa
 }
 
 function ManualRegistrationModal({ loading, onClose, onSubmit }: { loading: boolean; onClose: () => void; onSubmit: (data: Record<string, string>) => Promise<boolean> }) {
-  const [form, setForm] = useState<Record<string, string>>({
+  const [form, setForm] = useState({
     fullName: "", cpf: "", birthDate: "", whatsapp: "", email: "", city: "",
-    age: "", weight: "", experience: "", currentLevel: "", availability: "",
-    intendedHeats: "", rankingInterest: "", preferredRaceWindows: "",
-    equipment: "", equipmentDetails: "", emergencyContactName: "",
-    emergencyContactPhone: "", medicalRestrictions: "", allergies: "",
-    medications: "", goals: "", notes: "",
+    age: "", weight: "", experience: "Já andei algumas vezes",
+    currentLevel: "A definir pela organização", availability: "",
+    intendedHeats: "Quero participar quando houver vaga",
+    rankingInterest: "Quero entrar no ranking geral",
+    preferredRaceWindows: "Sem preferência definida",
+    equipment: "Tenho capacete próprio", equipmentDetails: "",
+    emergencyContactName: "", emergencyContactPhone: "",
+    medicalRestrictions: "", allergies: "", medications: "",
+    goals: "", notes: "",
+    acceptedContact: true, acceptedRules: true,
+    acceptedResponsibility: true, acceptedImage: true,
   });
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
 
-  function update(field: string, value: string) {
+  function updateText(field: string, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function updateBool(field: string, value: boolean) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    await onSubmit(form);
+    setFormError("");
+    setFormSuccess("");
+
+    if (!form.fullName.trim() || !form.whatsapp.trim() || !form.email.trim()) {
+      setFormError("Preencha os campos obrigatórios: nome completo, WhatsApp e e-mail.");
+      return;
+    }
+
+    const ok = await onSubmit(form as unknown as Record<string, string>);
+    if (ok) {
+      setFormSuccess("Inscrição criada com sucesso.");
+    }
   }
 
   return (
-    <div className="admin-modal-overlay" onClick={onClose}>
-      <form className="admin-modal" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
-        <div className="admin-modal-head">
-          <h2>Nova Inscrição Manual</h2>
-          <button type="button" onClick={onClose}><X size={20} /></button>
+    <div className="registration-modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="registration-modal" role="dialog" aria-modal="true" aria-label="Inscrição manual do piloto">
+        <button className="registration-modal-close" type="button" onClick={onClose} aria-label="Fechar">
+          <X size={22} />
+        </button>
+        <div className="registration-modal-body">
+          <form className="championship-form" onSubmit={handleSubmit} noValidate>
+            <div className="championship-form-head">
+              <span className="eyebrow">Inscrição manual — Admin</span>
+              <h3><ClipboardList size={24} /> Nova Inscrição Legends</h3>
+              <p>Cadastro manual de piloto pela organização. Os aceites são marcados automaticamente.</p>
+            </div>
+
+            <fieldset className="form-section">
+              <legend>Dados do piloto</legend>
+              <div className="grid-2">
+                <label className="field">
+                  <span>Nome completo</span>
+                  <input name="fullName" value={form.fullName} onChange={(e) => updateText("fullName", e.target.value)} placeholder="Nome e sobrenome" required />
+                </label>
+                <label className="field">
+                  <span>WhatsApp</span>
+                  <input name="whatsapp" value={form.whatsapp} onChange={(e) => updateText("whatsapp", e.target.value)} placeholder="(21) 99999-9999" required />
+                </label>
+              </div>
+              <div className="grid-3">
+                <label className="field">
+                  <span>CPF</span>
+                  <input name="cpf" value={form.cpf} onChange={(e) => updateText("cpf", e.target.value)} placeholder="000.000.000-00" inputMode="numeric" />
+                </label>
+                <label className="field">
+                  <span>Data de nascimento</span>
+                  <input name="birthDate" value={form.birthDate} onChange={(e) => updateText("birthDate", e.target.value)} placeholder="dd/mm/aaaa" inputMode="numeric" />
+                </label>
+                <label className="field">
+                  <span>Idade</span>
+                  <input type="number" name="age" value={form.age} onChange={(e) => updateText("age", e.target.value)} placeholder="Ex: 34" inputMode="numeric" min="8" max="90" />
+                </label>
+              </div>
+              <div className="grid-2">
+                <label className="field">
+                  <span>E-mail</span>
+                  <input type="email" name="email" value={form.email} onChange={(e) => updateText("email", e.target.value)} placeholder="piloto@email.com" required />
+                </label>
+                <label className="field">
+                  <span>Cidade/UF</span>
+                  <input name="city" value={form.city} onChange={(e) => updateText("city", e.target.value)} placeholder="Ex: Belo Horizonte/MG" />
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset className="form-section">
+              <legend>Perfil competitivo</legend>
+              <label className="field">
+                <span>Peso aproximado com equipamento</span>
+                <input type="number" name="weight" value={form.weight} onChange={(e) => updateText("weight", e.target.value)} placeholder="Ex: 92" inputMode="decimal" min="30" max="180" />
+                <small className="field-hint">Informe o peso em kg para orientar lastro e organização das baterias.</small>
+              </label>
+              <div className="grid-2">
+                <label className="field">
+                  <span>Experiência em kart</span>
+                  <select name="experience" value={form.experience} onChange={(e) => updateText("experience", e.target.value)}>
+                    <option>Primeira competição</option>
+                    <option>Já andei algumas vezes</option>
+                    <option>Participo de campeonatos indoor/rental</option>
+                    <option>Tenho experiência avançada em kart</option>
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Nível declarado</span>
+                  <select name="currentLevel" value={form.currentLevel} onChange={(e) => updateText("currentLevel", e.target.value)}>
+                    <option>A definir pela organização</option>
+                    <option>Estreante</option>
+                    <option>Intermediário</option>
+                    <option>Competitivo</option>
+                    <option>Avançado</option>
+                  </select>
+                </label>
+              </div>
+              <label className="field">
+                <span>Objetivo no campeonato</span>
+                <textarea name="goals" value={form.goals} onChange={(e) => updateText("goals", e.target.value)} placeholder="Ex: aprender ritmo de tomada, disputar ranking, preparar para campeonatos, treinar constância." />
+              </label>
+            </fieldset>
+
+            <fieldset className="form-section">
+              <legend>Participação</legend>
+              <div className="grid-2">
+                <label className="field">
+                  <span>Participação desejada</span>
+                  <select name="intendedHeats" value={form.intendedHeats} onChange={(e) => updateText("intendedHeats", e.target.value)}>
+                    <option>Quero participar quando houver vaga</option>
+                    <option>Quero correr o máximo de baterias possível</option>
+                    <option>Quero participar de baterias avulsas</option>
+                    <option>Quero entrar no ranking geral</option>
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Interesse no ranking geral</span>
+                  <select name="rankingInterest" value={form.rankingInterest} onChange={(e) => updateText("rankingInterest", e.target.value)}>
+                    <option>Quero entrar no ranking geral</option>
+                    <option>Quero correr apenas baterias avulsas</option>
+                    <option>Quero entender as regras antes de decidir</option>
+                  </select>
+                </label>
+              </div>
+              <label className="field">
+                <span>Janelas preferidas</span>
+                <select name="preferredRaceWindows" value={form.preferredRaceWindows} onChange={(e) => updateText("preferredRaceWindows", e.target.value)}>
+                  <option>Sem preferência definida</option>
+                  <option>Quartas 20:30</option>
+                  <option>Quartas 21:05</option>
+                  <option>Sábados 09:15</option>
+                  <option>Posso participar em qualquer janela disponível</option>
+                </select>
+              </label>
+              <label className="field">
+                <span>Dias e horários disponíveis</span>
+                <textarea name="availability" value={form.availability} onChange={(e) => updateText("availability", e.target.value)} placeholder="Ex: quartas à noite, sábados pela manhã, datas em que não consigo correr, disponibilidade para chamadas de última hora." />
+              </label>
+            </fieldset>
+
+            <fieldset className="form-section">
+              <legend>Equipamento</legend>
+              <div className="grid-2">
+                <label className="field">
+                  <span>Equipamento disponível</span>
+                  <select name="equipment" value={form.equipment} onChange={(e) => updateText("equipment", e.target.value)}>
+                    <option>Tenho capacete próprio</option>
+                    <option>Tenho capacete e macacão próprios</option>
+                    <option>Tenho capacete, macacão, luvas e sapatilha</option>
+                    <option>Preciso usar equipamento do kartódromo</option>
+                    <option>Tenho dúvida sobre equipamentos</option>
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Detalhes do equipamento</span>
+                  <input name="equipmentDetails" value={form.equipmentDetails} onChange={(e) => updateText("equipmentDetails", e.target.value)} placeholder="Ex: capacete próprio tamanho 58, sem macacão, levo luvas." />
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset className="form-section">
+              <legend>Segurança e saúde</legend>
+              <div className="grid-2">
+                <label className="field">
+                  <span>Contato de emergência</span>
+                  <input name="emergencyContactName" value={form.emergencyContactName} onChange={(e) => updateText("emergencyContactName", e.target.value)} placeholder="Nome completo" />
+                </label>
+                <label className="field">
+                  <span>Telefone de emergência</span>
+                  <input name="emergencyContactPhone" value={form.emergencyContactPhone} onChange={(e) => updateText("emergencyContactPhone", e.target.value)} placeholder="(21) 99999-9999" />
+                </label>
+              </div>
+              <div className="grid-3">
+                <label className="field">
+                  <span>Restrições médicas</span>
+                  <input name="medicalRestrictions" value={form.medicalRestrictions} onChange={(e) => updateText("medicalRestrictions", e.target.value)} placeholder="Ex: nenhuma, lesão, restrição física." />
+                </label>
+                <label className="field">
+                  <span>Alergias</span>
+                  <input name="allergies" value={form.allergies} onChange={(e) => updateText("allergies", e.target.value)} placeholder="Ex: nenhuma, medicamento, alimento." />
+                </label>
+                <label className="field">
+                  <span>Medicamentos</span>
+                  <input name="medications" value={form.medications} onChange={(e) => updateText("medications", e.target.value)} placeholder="Uso contínuo ou eventual." />
+                </label>
+              </div>
+              <label className="field">
+                <span>Observações operacionais</span>
+                <textarea name="notes" value={form.notes} onChange={(e) => updateText("notes", e.target.value)} placeholder="Ex: necessidade de orientação especial, restrição de agenda, observação para briefing ou nenhuma." />
+              </label>
+            </fieldset>
+
+            <fieldset className="form-section form-section-compact">
+              <legend>Confirmações obrigatórias</legend>
+              <label className="check-field">
+                <input type="checkbox" checked={form.acceptedContact} onChange={(e) => updateBool("acceptedContact", e.target.checked)} />
+                <span>Autorizo a organização a entrar em contato por WhatsApp ou e-mail para confirmação de vaga, bateria, briefing e orientações do campeonato.</span>
+              </label>
+              <label className="check-field">
+                <input type="checkbox" checked={form.acceptedRules} onChange={(e) => updateBool("acceptedRules", e.target.checked)} />
+                <span>Li ou vou ler o regulamento oficial antes da primeira bateria.</span>
+              </label>
+              <label className="check-field">
+                <input type="checkbox" checked={form.acceptedResponsibility} onChange={(e) => updateBool("acceptedResponsibility", e.target.checked)} />
+                <span>Estou ciente de que a participação depende de aceite da organização, vaga disponível, briefing e termo de responsabilidade no kartódromo.</span>
+              </label>
+              <label className="check-field">
+                <input type="checkbox" checked={form.acceptedImage} onChange={(e) => updateBool("acceptedImage", e.target.checked)} />
+                <span>Autorizo o uso de imagem em fotos, vídeos, ranking e materiais da competição P1 Academy.</span>
+              </label>
+            </fieldset>
+
+            {formError ? <p className="error">{formError}</p> : null}
+            {formSuccess ? <p className="success">{formSuccess}</p> : null}
+            <button className="btn primary" type="submit" disabled={loading}>
+              <Send size={18} /> {loading ? "Criando..." : "Criar inscrição"}
+            </button>
+          </form>
         </div>
-
-        <div className="admin-modal-body">
-          <fieldset>
-            <legend>Dados pessoais</legend>
-            <div className="admin-form-grid">
-              <label><span>Nome completo *</span><input required value={form.fullName} onChange={(e) => update("fullName", e.target.value)} /></label>
-              <label><span>CPF</span><input value={form.cpf} onChange={(e) => update("cpf", e.target.value)} /></label>
-              <label><span>Data de nascimento</span><input type="date" value={form.birthDate} onChange={(e) => update("birthDate", e.target.value)} /></label>
-              <label><span>WhatsApp *</span><input required value={form.whatsapp} onChange={(e) => update("whatsapp", e.target.value)} /></label>
-              <label><span>E-mail *</span><input required type="email" value={form.email} onChange={(e) => update("email", e.target.value)} /></label>
-              <label><span>Cidade / UF</span><input value={form.city} onChange={(e) => update("city", e.target.value)} /></label>
-              <label><span>Idade</span><input type="number" value={form.age} onChange={(e) => update("age", e.target.value)} /></label>
-              <label><span>Peso (kg)</span><input type="number" value={form.weight} onChange={(e) => update("weight", e.target.value)} /></label>
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend>Perfil competitivo</legend>
-            <div className="admin-form-grid">
-              <label><span>Experiencia</span><input value={form.experience} onChange={(e) => update("experience", e.target.value)} /></label>
-              <label><span>Nivel declarado</span><input value={form.currentLevel} onChange={(e) => update("currentLevel", e.target.value)} /></label>
-              <label><span>Janelas preferidas</span><input value={form.preferredRaceWindows} onChange={(e) => update("preferredRaceWindows", e.target.value)} placeholder="ex: Sabados 09:15" /></label>
-              <label><span>Disponibilidade</span><input value={form.availability} onChange={(e) => update("availability", e.target.value)} /></label>
-              <label><span>Baterias pretendidas</span><input value={form.intendedHeats} onChange={(e) => update("intendedHeats", e.target.value)} /></label>
-              <label><span>Interesse no ranking</span><input value={form.rankingInterest} onChange={(e) => update("rankingInterest", e.target.value)} /></label>
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend>Equipamento</legend>
-            <div className="admin-form-grid">
-              <label><span>Equipamento</span><input value={form.equipment} onChange={(e) => update("equipment", e.target.value)} /></label>
-              <label><span>Detalhes</span><input value={form.equipmentDetails} onChange={(e) => update("equipmentDetails", e.target.value)} /></label>
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend>Seguranca</legend>
-            <div className="admin-form-grid">
-              <label><span>Contato de emergencia</span><input value={form.emergencyContactName} onChange={(e) => update("emergencyContactName", e.target.value)} /></label>
-              <label><span>Telefone de emergencia</span><input value={form.emergencyContactPhone} onChange={(e) => update("emergencyContactPhone", e.target.value)} /></label>
-              <label><span>Restricoes medicas</span><input value={form.medicalRestrictions} onChange={(e) => update("medicalRestrictions", e.target.value)} /></label>
-              <label><span>Alergias</span><input value={form.allergies} onChange={(e) => update("allergies", e.target.value)} /></label>
-              <label><span>Medicamentos</span><input value={form.medications} onChange={(e) => update("medications", e.target.value)} /></label>
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend>Observacoes</legend>
-            <div className="admin-form-grid">
-              <label className="admin-form-wide"><span>Objetivo no campeonato</span><input value={form.goals} onChange={(e) => update("goals", e.target.value)} /></label>
-              <label className="admin-form-wide"><span>Notas operacionais</span><input value={form.notes} onChange={(e) => update("notes", e.target.value)} /></label>
-            </div>
-          </fieldset>
-        </div>
-
-        <div className="admin-modal-foot">
-          <button type="button" onClick={onClose}>Cancelar</button>
-          <button className="admin-primary-action compact" type="submit" disabled={loading}><Plus size={18} /> Criar Inscricao</button>
-        </div>
-      </form>
+      </div>
     </div>
   );
 }
