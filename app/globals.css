@@ -4390,13 +4390,14 @@ video {
 
 .admin-system-list li {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr) auto;
+  grid-template-columns: 18px minmax(0, auto) minmax(0, 1fr);
   gap: 10px;
-  align-items: center;
+  align-items: start;
   color: #c8ccc6;
 }
 
 .admin-system-list em {
+  min-width: 0;
   color: #dfe1dd;
   font-style: normal;
   font-weight: 800;
