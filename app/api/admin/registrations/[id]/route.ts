@@ -19,21 +19,34 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   const { id } = await context.params;
   const body = await request.json().catch(() => ({}));
-  const status = typeof body.status === "string" ? body.status : "";
+  const hasStatus = typeof body.status === "string" && body.status.length > 0;
+  const status = hasStatus ? (body.status as string) : "";
+  const hasAdminNotes = typeof body.adminNotes === "string";
 
-  if (!allowedStatuses.has(status)) {
+  if (hasStatus && !allowedStatuses.has(status)) {
     return NextResponse.json({ message: "Status invalido." }, { status: 400 });
+  }
+
+  if (!hasStatus && !hasAdminNotes) {
+    return NextResponse.json({ message: "Envie um novo status ou uma nota interna." }, { status: 400 });
+  }
+
+  const updatePayload: Record<string, unknown> = {};
+
+  if (hasStatus) {
+    updatePayload.status = status;
+    updatePayload.reviewed_at = new Date().toISOString();
+    updatePayload.reviewed_by = admin.userId;
+  }
+
+  if (hasAdminNotes) {
+    updatePayload.admin_notes = body.adminNotes;
   }
 
   const supabase = getServiceSupabaseClient();
   const { data: registration, error } = await supabase
     .from("p1_registrations")
-    .update({
-      status,
-      admin_notes: typeof body.adminNotes === "string" ? body.adminNotes : null,
-      reviewed_at: new Date().toISOString(),
-      reviewed_by: admin.userId,
-    })
+    .update(updatePayload)
     .eq("id", id)
     .select("*")
     .single();

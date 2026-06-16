@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   const [registrations, drivers, stages, heats, standings] = await Promise.all([
     supabase
       .from("p1_registrations")
-      .select("id, protocol, full_name, email, whatsapp, city, current_level, preferred_race_windows, status, created_at")
+      .select("id, protocol, full_name, email, whatsapp, city, current_level, preferred_race_windows, status, admin_notes, reviewed_at, created_at, cpf, birth_date, age, weight, experience, availability, equipment, emergency_contact_name, emergency_contact_phone, goals, accepted_contact, accepted_rules, accepted_responsibility, accepted_image")
       .eq("championship_id", championship.id)
       .order("created_at", { ascending: false })
       .limit(100),

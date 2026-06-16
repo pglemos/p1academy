@@ -38,7 +38,23 @@ type RegistrationRow = {
   current_level: string | null;
   preferred_race_windows: string | null;
   status: string;
+  admin_notes: string | null;
+  reviewed_at: string | null;
   created_at: string;
+  cpf?: string | null;
+  birth_date?: string | null;
+  age?: number | null;
+  weight?: number | null;
+  experience?: string | null;
+  availability?: string | null;
+  equipment?: string | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  goals?: string | null;
+  accepted_contact?: boolean | null;
+  accepted_rules?: boolean | null;
+  accepted_responsibility?: boolean | null;
+  accepted_image?: boolean | null;
 };
 
 type DriverRow = {
@@ -113,6 +129,7 @@ export function AdminDashboard() {
   const [bootstrapToken, setBootstrapToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminTab>("inscricoes");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [stageFilter, setStageFilter] = useState("all");
@@ -238,6 +255,32 @@ export function AdminDashboard() {
     }
   }
 
+  async function saveRegistrationNote(id: string, adminNotes: string) {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`/api/admin/registrations/${id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ adminNotes }),
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setError(typeof payload.message === "string" ? payload.message : "Não foi possível salvar a nota.");
+        return;
+      }
+
+      await loadOverview();
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function bootstrapAdmin() {
     setLoading(true);
     setError("");
@@ -310,7 +353,7 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="admin-app">
+    <div className={sidebarCollapsed ? "admin-app collapsed" : "admin-app"}>
       <aside className="admin-sidebar">
         <div className="admin-sidebar-brand">
           <Logo />
@@ -318,14 +361,26 @@ export function AdminDashboard() {
         </div>
         <nav className="admin-side-nav" aria-label="Admin Legends">
           {navItems.map((item) => (
-            <button className={activeTab === item.id ? "active" : ""} key={item.id} type="button" onClick={() => setActiveTab(item.id)}>
+            <button
+              className={activeTab === item.id ? "active" : ""}
+              key={item.id}
+              type="button"
+              title={item.label}
+              onClick={() => setActiveTab(item.id)}
+            >
               {item.icon}
               <span>{item.label}</span>
             </button>
           ))}
         </nav>
-        <button className="admin-collapse" type="button">
-          <ChevronDown size={18} /> Recolher
+        <button
+          className="admin-collapse"
+          type="button"
+          aria-pressed={sidebarCollapsed}
+          title={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+          onClick={() => setSidebarCollapsed((value) => !value)}
+        >
+          <ChevronDown size={18} /> <span>{sidebarCollapsed ? "Expandir" : "Recolher"}</span>
         </button>
       </aside>
 
@@ -383,6 +438,7 @@ export function AdminDashboard() {
             statusCounts={statusCounts}
             statusFilter={statusFilter}
             updateRegistration={updateRegistration}
+            saveRegistrationNote={saveRegistrationNote}
           />
         ) : null}
       </section>
@@ -409,6 +465,7 @@ function AdminModule({
   statusCounts,
   statusFilter,
   updateRegistration,
+  saveRegistrationNote,
 }: {
   activeTab: AdminTab;
   exportRegistrationsCsv: () => void;
@@ -428,6 +485,7 @@ function AdminModule({
   statusCounts: { total: number; pending: number; approved: number; waitlist: number; rejected: number };
   statusFilter: string;
   updateRegistration: (id: string, status: string) => Promise<void>;
+  saveRegistrationNote: (id: string, adminNotes: string) => Promise<void>;
 }) {
   if (activeTab !== "inscricoes") {
     return (
@@ -474,8 +532,18 @@ function AdminModule({
           ["rejected", "Recusado"],
         ]} />
         <SelectFilter label="Etapa preferida" value={stageFilter} onChange={setStageFilter} options={[["all", "Todas"], ...stageOptions.map((stage) => [stage, stage] as [string, string])]} />
-        <button className="admin-filter-button" type="button">
-          <Filter size={18} /> Filtros
+        <button
+          className="admin-filter-button"
+          type="button"
+          title="Limpar filtros"
+          disabled={statusFilter === "all" && stageFilter === "all" && searchTerm.trim() === ""}
+          onClick={() => {
+            setSearchTerm("");
+            setStatusFilter("all");
+            setStageFilter("all");
+          }}
+        >
+          <Filter size={18} /> Limpar filtros
         </button>
       </div>
 
@@ -528,7 +596,7 @@ function AdminModule({
           </div>
         </div>
 
-        <RegistrationDetailPanel loading={loading} registration={selectedRegistration} updateRegistration={updateRegistration} />
+        <RegistrationDetailPanel key={selectedRegistration?.id ?? "none"} loading={loading} registration={selectedRegistration} updateRegistration={updateRegistration} saveRegistrationNote={saveRegistrationNote} />
       </div>
     </section>
   );
@@ -590,6 +658,10 @@ function OperationalGrid({ activeTab, nextStage, overview, setActiveTab }: { act
     );
   }
 
+  if (activeTab === "config") {
+    return <SystemModule overview={overview} />;
+  }
+
   return (
     <div className="admin-document-grid">
       <a href="/regulamentos/calendario-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={22} /><strong>Calendário oficial</strong><span>PDF Legends 2026</span></a>
@@ -598,7 +670,55 @@ function OperationalGrid({ activeTab, nextStage, overview, setActiveTab }: { act
   );
 }
 
-function RegistrationDetailPanel({ loading, registration, updateRegistration }: { loading: boolean; registration: RegistrationRow | null; updateRegistration: (id: string, status: string) => Promise<void> }) {
+function SystemModule({ overview }: { overview: Overview }) {
+  const publishedHeats = overview.heats.filter((heat) => heat.is_published).length;
+  const reviewed = overview.registrations.filter((registration) => registration.status !== "pending").length;
+
+  return (
+    <div className="admin-system-grid">
+      <div className="admin-system-block">
+        <h3>Integrações</h3>
+        <ul className="admin-system-list">
+          <li><ShieldCheck size={16} /> <span>Banco de dados Supabase</span> <em className="ok">Conectado</em></li>
+          <li><ShieldCheck size={16} /> <span>Sessão administrativa</span> <em className="ok">Ativa</em></li>
+          <li><Trophy size={16} /> <span>Campeonato</span> <em className="ok">{overview.championship.name} {overview.championship.season}</em></li>
+        </ul>
+      </div>
+
+      <div className="admin-system-block">
+        <h3>Resumo operacional</h3>
+        <ul className="admin-system-list">
+          <li><ClipboardList size={16} /> <span>Inscrições</span> <em>{overview.registrations.length}</em></li>
+          <li><ClipboardList size={16} /> <span>Inscrições revisadas</span> <em>{reviewed}</em></li>
+          <li><Users size={16} /> <span>Pilotos ativos</span> <em>{overview.drivers.length}</em></li>
+          <li><CalendarDays size={16} /> <span>Etapas no calendário</span> <em>{overview.stages.length}</em></li>
+          <li><Timer size={16} /> <span>Baterias publicadas</span> <em>{publishedHeats}</em></li>
+          <li><Trophy size={16} /> <span>Pilotos no ranking</span> <em>{overview.standings.length}</em></li>
+        </ul>
+      </div>
+
+      <div className="admin-system-block">
+        <h3>Conta</h3>
+        <ul className="admin-system-list">
+          <li><Mail size={16} /> <span>Administrador</span> <em>{overview.admin.email}</em></li>
+        </ul>
+      </div>
+
+      <div className="admin-system-block">
+        <h3>Documentos oficiais</h3>
+        <div className="admin-document-grid compact">
+          <a href="/regulamentos/calendario-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={20} /><strong>Calendário oficial</strong><span>PDF Legends 2026</span></a>
+          <a href="/regulamentos/regulamento-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={20} /><strong>Regulamento oficial</strong><span>PDF do campeonato</span></a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RegistrationDetailPanel({ loading, registration, updateRegistration, saveRegistrationNote }: { loading: boolean; registration: RegistrationRow | null; updateRegistration: (id: string, status: string) => Promise<void>; saveRegistrationNote: (id: string, adminNotes: string) => Promise<void> }) {
+  const [detailTab, setDetailTab] = useState<"perfil" | "documentos" | "historico">("perfil");
+  const [noteDraft, setNoteDraft] = useState(registration?.admin_notes ?? "");
+
   if (!registration) {
     return (
       <aside className="admin-detail-panel empty">
@@ -608,6 +728,8 @@ function RegistrationDetailPanel({ loading, registration, updateRegistration }: 
       </aside>
     );
   }
+
+  const noteChanged = noteDraft.trim() !== (registration.admin_notes ?? "").trim();
 
   return (
     <aside className="admin-detail-panel">
@@ -620,29 +742,93 @@ function RegistrationDetailPanel({ loading, registration, updateRegistration }: 
       </div>
 
       <div className="admin-detail-tabs">
-        <button className="active" type="button">Perfil</button>
-        <button type="button">Documentos</button>
-        <button type="button">Histórico</button>
+        <button className={detailTab === "perfil" ? "active" : ""} type="button" onClick={() => setDetailTab("perfil")}>Perfil</button>
+        <button className={detailTab === "documentos" ? "active" : ""} type="button" onClick={() => setDetailTab("documentos")}>Documentos</button>
+        <button className={detailTab === "historico" ? "active" : ""} type="button" onClick={() => setDetailTab("historico")}>Histórico</button>
       </div>
 
-      <DetailSection title="Dados pessoais" rows={[
-        ["WhatsApp", registration.whatsapp],
-        ["E-mail", registration.email],
-        ["Cidade / UF", registration.city || "Não informado"],
-        ["Categoria desejada", "Legends"],
-        ["Data da inscrição", formatDateTime(registration.created_at)],
-      ]} />
+      {detailTab === "perfil" ? (
+        <>
+          <DetailSection title="Dados pessoais" rows={[
+            ["WhatsApp", registration.whatsapp],
+            ["E-mail", registration.email],
+            ["Cidade / UF", registration.city || "Não informado"],
+            ["CPF", registration.cpf || "Não informado"],
+            ["Idade", registration.age ? `${registration.age} anos` : "Não informado"],
+            ["Categoria desejada", "Legends"],
+            ["Data da inscrição", formatDateTime(registration.created_at)],
+          ]} />
 
-      <DetailSection title="Perfil competitivo" rows={[
-        ["Nível atual", registration.current_level ?? "Não informado"],
-        ["Etapa preferida", registration.preferred_race_windows ?? "Todas as etapas"],
-        ["Status interno", translateStatus(registration.status)],
-      ]} />
+          <DetailSection title="Perfil competitivo" rows={[
+            ["Nível atual", registration.current_level ?? "Não informado"],
+            ["Experiência", registration.experience ?? "Não informado"],
+            ["Peso declarado", registration.weight ? `${registration.weight} kg` : "Não informado"],
+            ["Etapa preferida", registration.preferred_race_windows ?? "Todas as etapas"],
+            ["Disponibilidade", registration.availability ?? "Não informado"],
+            ["Status interno", translateStatus(registration.status)],
+          ]} />
+        </>
+      ) : null}
+
+      {detailTab === "documentos" ? (
+        <>
+          <DetailSection title="Confirmações do piloto" rows={[
+            ["Autoriza contato", boolLabel(registration.accepted_contact)],
+            ["Leu o regulamento", boolLabel(registration.accepted_rules)],
+            ["Ciente das condições", boolLabel(registration.accepted_responsibility)],
+            ["Autoriza uso de imagem", boolLabel(registration.accepted_image)],
+          ]} />
+
+          <DetailSection title="Segurança" rows={[
+            ["Contato de emergência", registration.emergency_contact_name || "Não informado"],
+            ["Telefone de emergência", registration.emergency_contact_phone || "Não informado"],
+            ["Equipamento", registration.equipment ?? "Não informado"],
+          ]} />
+
+          <div className="admin-detail-docs">
+            <strong>Documentos oficiais</strong>
+            <a href="/regulamentos/regulamento-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={16} /> Regulamento oficial</a>
+            <a href="/regulamentos/calendario-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={16} /> Calendário oficial</a>
+          </div>
+        </>
+      ) : null}
+
+      {detailTab === "historico" ? (
+        <div className="admin-detail-timeline">
+          <div className="admin-timeline-item">
+            <span className="admin-timeline-dot" />
+            <div>
+              <strong>Inscrição recebida</strong>
+              <span>{formatDateTime(registration.created_at)}</span>
+            </div>
+          </div>
+          {registration.reviewed_at ? (
+            <div className="admin-timeline-item">
+              <span className="admin-timeline-dot" />
+              <div>
+                <strong>Status atualizado para {translateStatus(registration.status)}</strong>
+                <span>{formatDateTime(registration.reviewed_at)}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="admin-timeline-item pending">
+              <span className="admin-timeline-dot" />
+              <div>
+                <strong>Aguardando triagem</strong>
+                <span>Use as ações rápidas para aprovar, recusar ou enviar para a lista de espera.</span>
+              </div>
+            </div>
+          )}
+          {registration.goals ? (
+            <DetailSection title="Objetivo no campeonato" rows={[["Declarado", registration.goals]]} />
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="admin-detail-note">
         <strong>Notas internas</strong>
-        <textarea placeholder="Adicionar nota interna..." />
-        <button type="button">Salvar nota</button>
+        <textarea value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Adicionar nota interna..." />
+        <button type="button" disabled={loading || !noteChanged} onClick={() => saveRegistrationNote(registration.id, noteDraft.trim())}>Salvar nota</button>
       </div>
 
       <div className="admin-quick-actions">
@@ -657,6 +843,10 @@ function RegistrationDetailPanel({ loading, registration, updateRegistration }: 
       </div>
     </aside>
   );
+}
+
+function boolLabel(value: boolean | null | undefined) {
+  return value ? "Sim" : "Não";
 }
 
 function ModuleHeader({ action, kicker, subtitle, title }: { action: ReactNode; kicker: string; subtitle: string; title: string }) {
