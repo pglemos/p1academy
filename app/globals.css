@@ -4633,6 +4633,139 @@ video {
   background: rgba(255, 255, 255, 0.3);
 }
 
+/* Modal de inscrição manual */
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  padding: 24px;
+}
+
+.admin-modal {
+  display: grid;
+  gap: 0;
+  width: 100%;
+  max-width: 720px;
+  max-height: 85vh;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  background: #111314;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.admin-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-modal-head h2 {
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  color: #f1f2ef;
+}
+
+.admin-modal-head button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: transparent;
+  color: #a3a8a2;
+  cursor: pointer;
+}
+
+.admin-modal-body {
+  display: grid;
+  gap: 20px;
+  padding: 22px;
+  overflow-y: auto;
+}
+
+.admin-modal-body fieldset {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.admin-modal-body legend {
+  color: var(--acid);
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding: 0 8px;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-form-grid label {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-form-grid label span {
+  color: #b8bcb7;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.admin-form-grid input {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #f1f2ef;
+  font-size: 0.9rem;
+}
+
+.admin-form-grid input:focus {
+  outline: 2px solid var(--acid);
+  outline-offset: -1px;
+}
+
+.admin-form-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-modal-foot button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  background: transparent;
+  color: #d7d9d4;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

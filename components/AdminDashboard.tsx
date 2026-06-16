@@ -16,6 +16,7 @@ import {
   Medal,
   MessageCircle,
   MoreVertical,
+  Plus,
   Search,
   Settings,
   ShieldCheck,
@@ -23,6 +24,7 @@ import {
   Trophy,
   UserPlus,
   Users,
+  X,
 } from "lucide-react";
 import { getBrowserSupabaseClient } from "@/lib/p1BrowserSupabase";
 import { Logo } from "./Logo";
@@ -133,6 +135,7 @@ export function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [stageFilter, setStageFilter] = useState("all");
   const [selectedRegistrationId, setSelectedRegistrationId] = useState("");
+  const [showManualForm, setShowManualForm] = useState(false);
 
   const statusCounts = useMemo(() => {
     const registrations = overview?.registrations ?? [];
@@ -280,6 +283,34 @@ export function AdminDashboard() {
     }
   }
 
+  async function createManualRegistration(formData: Record<string, string>) {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/admin/registrations", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setError(typeof payload.message === "string" ? payload.message : "Não foi possível criar a inscrição.");
+        return false;
+      }
+
+      setShowManualForm(false);
+      await loadOverview();
+      return true;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function bootstrapAdmin() {
     setLoading(true);
     setError("");
@@ -420,6 +451,7 @@ export function AdminDashboard() {
         {overview ? (
           <AdminModule
             activeTab={activeTab}
+            createManualRegistration={createManualRegistration}
             exportRegistrationsCsv={exportRegistrationsCsv}
             filteredRegistrations={filteredRegistrations}
             loading={loading}
@@ -432,6 +464,8 @@ export function AdminDashboard() {
             setSelectedRegistrationId={setSelectedRegistrationId}
             setStageFilter={setStageFilter}
             setStatusFilter={setStatusFilter}
+            showManualForm={showManualForm}
+            setShowManualForm={setShowManualForm}
             stageFilter={stageFilter}
             stageOptions={stageOptions}
             statusCounts={statusCounts}
@@ -447,6 +481,7 @@ export function AdminDashboard() {
 
 function AdminModule({
   activeTab,
+  createManualRegistration,
   exportRegistrationsCsv,
   filteredRegistrations,
   loading,
@@ -459,6 +494,8 @@ function AdminModule({
   setSelectedRegistrationId,
   setStageFilter,
   setStatusFilter,
+  showManualForm,
+  setShowManualForm,
   stageFilter,
   stageOptions,
   statusCounts,
@@ -467,6 +504,7 @@ function AdminModule({
   saveRegistrationNote,
 }: {
   activeTab: AdminTab;
+  createManualRegistration: (formData: Record<string, string>) => Promise<boolean>;
   exportRegistrationsCsv: () => void;
   filteredRegistrations: RegistrationRow[];
   loading: boolean;
@@ -479,6 +517,8 @@ function AdminModule({
   setSelectedRegistrationId: (id: string) => void;
   setStageFilter: (value: string) => void;
   setStatusFilter: (value: string) => void;
+  showManualForm: boolean;
+  setShowManualForm: (value: boolean) => void;
   stageFilter: string;
   stageOptions: string[];
   statusCounts: { total: number; pending: number; approved: number; waitlist: number; rejected: number };
@@ -506,8 +546,15 @@ function AdminModule({
         kicker="P1 Academy Legends Kart Series"
         title="Gestão de Inscrições"
         subtitle="Triagem, aprovação e contato dos pilotos inscritos"
-        action={<button className="admin-export" type="button" onClick={exportRegistrationsCsv}><Download size={18} /> Exportar CSV</button>}
+        action={
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button className="admin-primary-action compact" type="button" onClick={() => setShowManualForm(true)}><Plus size={18} /> Nova Inscrição</button>
+            <button className="admin-export" type="button" onClick={exportRegistrationsCsv}><Download size={18} /> Exportar CSV</button>
+          </div>
+        }
       />
+
+      {showManualForm ? <ManualRegistrationModal loading={loading} onClose={() => setShowManualForm(false)} onSubmit={createManualRegistration} /> : null}
 
       <div className="admin-stat-row">
         <StatusCard label="Total inscritos" value={statusCounts.total} tone="white" detail="100%" />
@@ -894,6 +941,97 @@ function RegistrationDetailPanel({ loading, registration, updateRegistration, sa
         <a href={`mailto:${registration.email}`}><Mail size={17} /> Enviar e-mail</a>
       </div>
     </aside>
+  );
+}
+
+function ManualRegistrationModal({ loading, onClose, onSubmit }: { loading: boolean; onClose: () => void; onSubmit: (data: Record<string, string>) => Promise<boolean> }) {
+  const [form, setForm] = useState<Record<string, string>>({
+    fullName: "", cpf: "", birthDate: "", whatsapp: "", email: "", city: "",
+    age: "", weight: "", experience: "", currentLevel: "", availability: "",
+    intendedHeats: "", rankingInterest: "", preferredRaceWindows: "",
+    equipment: "", equipmentDetails: "", emergencyContactName: "",
+    emergencyContactPhone: "", medicalRestrictions: "", allergies: "",
+    medications: "", goals: "", notes: "",
+  });
+
+  function update(field: string, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    await onSubmit(form);
+  }
+
+  return (
+    <div className="admin-modal-overlay" onClick={onClose}>
+      <form className="admin-modal" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
+        <div className="admin-modal-head">
+          <h2>Nova Inscrição Manual</h2>
+          <button type="button" onClick={onClose}><X size={20} /></button>
+        </div>
+
+        <div className="admin-modal-body">
+          <fieldset>
+            <legend>Dados pessoais</legend>
+            <div className="admin-form-grid">
+              <label><span>Nome completo *</span><input required value={form.fullName} onChange={(e) => update("fullName", e.target.value)} /></label>
+              <label><span>CPF</span><input value={form.cpf} onChange={(e) => update("cpf", e.target.value)} /></label>
+              <label><span>Data de nascimento</span><input type="date" value={form.birthDate} onChange={(e) => update("birthDate", e.target.value)} /></label>
+              <label><span>WhatsApp *</span><input required value={form.whatsapp} onChange={(e) => update("whatsapp", e.target.value)} /></label>
+              <label><span>E-mail *</span><input required type="email" value={form.email} onChange={(e) => update("email", e.target.value)} /></label>
+              <label><span>Cidade / UF</span><input value={form.city} onChange={(e) => update("city", e.target.value)} /></label>
+              <label><span>Idade</span><input type="number" value={form.age} onChange={(e) => update("age", e.target.value)} /></label>
+              <label><span>Peso (kg)</span><input type="number" value={form.weight} onChange={(e) => update("weight", e.target.value)} /></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Perfil competitivo</legend>
+            <div className="admin-form-grid">
+              <label><span>Experiencia</span><input value={form.experience} onChange={(e) => update("experience", e.target.value)} /></label>
+              <label><span>Nivel declarado</span><input value={form.currentLevel} onChange={(e) => update("currentLevel", e.target.value)} /></label>
+              <label><span>Janelas preferidas</span><input value={form.preferredRaceWindows} onChange={(e) => update("preferredRaceWindows", e.target.value)} placeholder="ex: Sabados 09:15" /></label>
+              <label><span>Disponibilidade</span><input value={form.availability} onChange={(e) => update("availability", e.target.value)} /></label>
+              <label><span>Baterias pretendidas</span><input value={form.intendedHeats} onChange={(e) => update("intendedHeats", e.target.value)} /></label>
+              <label><span>Interesse no ranking</span><input value={form.rankingInterest} onChange={(e) => update("rankingInterest", e.target.value)} /></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Equipamento</legend>
+            <div className="admin-form-grid">
+              <label><span>Equipamento</span><input value={form.equipment} onChange={(e) => update("equipment", e.target.value)} /></label>
+              <label><span>Detalhes</span><input value={form.equipmentDetails} onChange={(e) => update("equipmentDetails", e.target.value)} /></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Seguranca</legend>
+            <div className="admin-form-grid">
+              <label><span>Contato de emergencia</span><input value={form.emergencyContactName} onChange={(e) => update("emergencyContactName", e.target.value)} /></label>
+              <label><span>Telefone de emergencia</span><input value={form.emergencyContactPhone} onChange={(e) => update("emergencyContactPhone", e.target.value)} /></label>
+              <label><span>Restricoes medicas</span><input value={form.medicalRestrictions} onChange={(e) => update("medicalRestrictions", e.target.value)} /></label>
+              <label><span>Alergias</span><input value={form.allergies} onChange={(e) => update("allergies", e.target.value)} /></label>
+              <label><span>Medicamentos</span><input value={form.medications} onChange={(e) => update("medications", e.target.value)} /></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Observacoes</legend>
+            <div className="admin-form-grid">
+              <label className="admin-form-wide"><span>Objetivo no campeonato</span><input value={form.goals} onChange={(e) => update("goals", e.target.value)} /></label>
+              <label className="admin-form-wide"><span>Notas operacionais</span><input value={form.notes} onChange={(e) => update("notes", e.target.value)} /></label>
+            </div>
+          </fieldset>
+        </div>
+
+        <div className="admin-modal-foot">
+          <button type="button" onClick={onClose}>Cancelar</button>
+          <button className="admin-primary-action compact" type="submit" disabled={loading}><Plus size={18} /> Criar Inscricao</button>
+        </div>
+      </form>
+    </div>
   );
 }
 
