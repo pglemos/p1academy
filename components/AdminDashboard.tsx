@@ -1100,7 +1100,8 @@ function ManualRegistrationModal({ loading, onClose, onSubmit }: { loading: bool
                   <option>Sem preferência definida</option>
                   <option>Quartas 20:30</option>
                   <option>Quartas 21:05</option>
-                  <option>Sábados 09:15</option>
+                  <option>Sábados 09:00</option>
+                  <option>Sábados 09:30</option>
                   <option>Posso participar em qualquer janela disponível</option>
                 </select>
               </label>

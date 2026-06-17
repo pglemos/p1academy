@@ -26,6 +26,8 @@ export const dynamic = "force-dynamic";
 export default async function CampeonatosPage() {
   const publicData = await getLegendsPublicData();
   const { championship, calendarSummary, calendarMonths, ranking, results } = publicData;
+  const weekdayDisplay = calendarSummary.weekdayWindows.replace(/^Quartas\s+/i, "").replace(" e ", " / ");
+  const saturdayDisplay = calendarSummary.saturdayWindow.replace(/^Sábados\s+/i, "").replace(" e ", " / ");
   const currentEdition = [
     ["Edição atual", championship.edition],
     ["Temporada", championship.season],
@@ -178,12 +180,12 @@ export default async function CampeonatosPage() {
               <span>período do campeonato</span>
             </Reveal>
             <Reveal className="metric-card">
-              <strong>20:30 / 21:05</strong>
+              <strong>{weekdayDisplay}</strong>
               <span>janelas de quarta</span>
             </Reveal>
             <Reveal className="metric-card">
-              <strong>09:15</strong>
-              <span>janela de sábado</span>
+              <strong>{saturdayDisplay}</strong>
+              <span>janelas de sábado</span>
             </Reveal>
           </div>
 
