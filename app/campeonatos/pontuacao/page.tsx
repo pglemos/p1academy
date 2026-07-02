@@ -114,6 +114,9 @@ export default async function LegendsPontuacaoPage() {
             <h2>Classificação completa</h2>
             <div className="accent-line" />
             <p>Todos os pilotos com pontuação válida nas baterias publicadas.</p>
+            <a className="btn secondary compact-download" href="/api/campeonatos/legends/pdf/geral" target="_blank" rel="noreferrer">
+              <Download size={18} /> Baixar resultado geral
+            </a>
           </Reveal>
 
           <div className="table-like legends-public-table legends-ranking-table">

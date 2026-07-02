@@ -1774,6 +1774,10 @@ video {
   white-space: nowrap;
 }
 
+.compact-download {
+  width: fit-content;
+}
+
 .status-pill {
   justify-self: end;
   margin-right: 12px;
@@ -3232,6 +3236,10 @@ grid-template-columns: 1fr;
 
   .legends-public-table .compact-action {
     justify-self: stretch;
+    width: 100%;
+  }
+
+  .compact-download {
     width: 100%;
   }
 
