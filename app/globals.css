@@ -1693,6 +1693,10 @@ video {
   background: transparent;
 }
 
+.row.results-row {
+  grid-template-columns: 1.1fr 0.55fr 0.9fr 0.45fr auto;
+}
+
 .row:nth-child(even) {
   background: #141414;
 }
@@ -3147,9 +3151,10 @@ video {
     font-size: 1.18rem;
   }
 
-  .row {
-    grid-template-columns: 1fr;
-  }
+.row,
+.row.results-row {
+grid-template-columns: 1fr;
+}
 
   .scoring-control,
   .scoring-summary,

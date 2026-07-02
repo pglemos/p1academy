@@ -1,31 +1,27 @@
 import Link from "next/link";
 import { Calculator, Download, Trophy } from "lucide-react";
-import { LegendsScoringApp } from "@/components/LegendsScoringApp";
 import { PageHero } from "@/components/PageHero";
 import { Reveal } from "@/components/Motion";
 import { legendsCompetition, legendsPdf } from "@/data/legends";
-import type { HeatInput } from "@/lib/legendsScoring";
+import { getLegendsPublicData } from "@/lib/p1Data";
 
 export const metadata = {
   title: "Sistema de Pontuação Legends Kart Series | P1 Academy",
 };
 
-type LegendsPontuacaoPageProps = {
-  searchParams?: Promise<{
-    data?: string | string[];
-  }>;
-};
+export const dynamic = "force-dynamic";
 
-export default async function LegendsPontuacaoPage({ searchParams }: LegendsPontuacaoPageProps) {
-  const resolvedSearchParams = await searchParams;
-  const initialHeat = decodeHeatParam(resolvedSearchParams?.data);
+export default async function LegendsPontuacaoPage() {
+  const publicData = await getLegendsPublicData();
+  const publishedResults = publicData.results.filter((result) => result.winner !== "A definir");
+  const publishedRanking = publicData.ranking.filter((row) => row.points !== "-");
 
   return (
     <>
       <PageHero
         compact
         title="Sistema de pontuação Legends"
-        text="Painel público e operacional para receber a cronometragem em tempo real, calcular a pontuação da bateria, publicar o resultado e permitir download em PDF."
+        text="Consulta pública dos resultados oficiais, classificação atual e regra de pontuação da Legends Kart Series."
         image="/images/timing-telemetry.png"
       />
 
@@ -34,17 +30,17 @@ export default async function LegendsPontuacaoPage({ searchParams }: LegendsPont
           <Reveal className="legends-status">
             <div>
               <span className="eyebrow">Regra oficial</span>
-              <h2>Ao vivo, sem subir PDF</h2>
+              <h2>Tomada direta, pontuação por tempo</h2>
               <p>
-                Quando a cronometragem estiver ativa, o site consulta a fonte oficial em intervalos curtos, normaliza os dados da bateria e recalcula a tabela automaticamente. Em bateria regular, o melhor tempo soma 10,000 pontos. Na Super Final, a base é 5,000 pontos.
+                Em bateria regular, o melhor tempo soma 10,000 pontos. Os demais pilotos pontuam pela diferença em segundos para a melhor volta da bateria. Na Super Final, a base é 5,000 pontos.
               </p>
             </div>
             <div className="button-row">
               <a className="btn secondary" href={legendsPdf} target="_blank" rel="noreferrer">
                 <Download size={18} /> Regulamento
               </a>
-              <Link className="btn ghost" href="/campeonatos">
-                <Trophy size={18} /> Hub Legends
+              <Link className="btn ghost" href="/admin">
+                <Trophy size={18} /> Admin
               </Link>
             </div>
           </Reveal>
@@ -67,55 +63,81 @@ export default async function LegendsPontuacaoPage({ searchParams }: LegendsPont
             </Reveal>
             <Reveal className="metric-card">
               <Calculator size={22} />
-              <strong>10</strong>
-              <span>melhores resultados válidos</span>
+              <strong>{publishedRanking.length || "0"}</strong>
+              <span>pilotos classificados</span>
             </Reveal>
           </div>
         </div>
       </section>
 
       <section className="section tight carbon-section">
-        <div className="container">
-          <LegendsScoringApp
-            initialHeat={initialHeat}
-            initialMessage={initialHeat ? "Resultado carregado a partir do link público." : ""}
-          />
+        <div className="container split">
+          <Reveal className="section-head">
+            <Trophy size={30} color="var(--acid)" />
+            <h2>Resultados publicados</h2>
+            <div className="accent-line" />
+            <p>Resultados oficiais publicados no admin para a Legends Kart Series 2026.</p>
+          </Reveal>
+          <div className="table-like">
+            {publishedResults.map((item) => (
+              <Reveal className="row results-row" key={item.heat}>
+                <strong>{item.heat}</strong>
+                <span>{item.date}</span>
+                <span>{item.winner}</span>
+                <span>{item.bestLap}</span>
+                {item.pdfHref ? (
+                  <a className="btn ghost" href={item.pdfHref} target="_blank" rel="noreferrer">
+                    <Download size={18} /> Baixar PDF
+                  </a>
+                ) : (
+                  <span>-</span>
+                )}
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
       <section className="section tight">
+        <div className="container split">
+          <Reveal className="section-head">
+            <Calculator size={30} color="var(--acid)" />
+            <h2>Classificação completa</h2>
+            <div className="accent-line" />
+            <p>Todos os pilotos com pontuação válida nas baterias publicadas.</p>
+          </Reveal>
+          <div className="table-like">
+            {publishedRanking.map((item) => (
+              <Reveal className="row" key={`${item.position}-${item.driver}`}>
+                <strong>{item.position} {item.driver}</strong>
+                <span>{item.level}</span>
+                <span>{item.points} pontos</span>
+                <span>{item.valid}</span>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section tight carbon-section">
         <div className="container grid-2 align-start">
           <Reveal className="section-head">
-            <h2>Como usar no dia da bateria</h2>
+            <h2>Lançamento somente no admin</h2>
             <div className="accent-line" />
             <p>
-              Com a integração da cronometragem configurada, os pilotos acessam o mesmo endereço público para acompanhar tempos, diferenças, pontuação e baixar o PDF completo do resultado. O fallback manual fica disponível apenas para contingência operacional.
+              Esta página pública é apenas para consulta. O lançamento, correção e publicação de baterias ficam restritos ao painel administrativo.
             </p>
+            <Link className="btn primary" href="/admin">
+              <Trophy size={18} /> Abrir admin
+            </Link>
           </Reveal>
           <Reveal className="legends-panel">
             <h3>{legendsCompetition.name}</h3>
-            <p>O integrador entende campos típicos de cronometragem: posição, número do competidor, piloto, melhor volta, diferenças, total de voltas, velocidade média e UF.</p>
-            <p>O cálculo respeita diferença para o melhor tempo, ajuste de empates por ordem oficial, pontuação mínima acima de 9 segundos e base reduzida para Super Final.</p>
+            <p>Os dados exibidos são carregados das baterias publicadas oficialmente.</p>
+            <p>Campos de edição foram removidos desta rota pública.</p>
           </Reveal>
         </div>
       </section>
     </>
   );
-}
-
-function decodeHeatParam(data?: string | string[]): HeatInput | null {
-  const value = Array.isArray(data) ? data[0] : data;
-  if (!value) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(Buffer.from(value, "base64").toString("utf-8")) as HeatInput;
-  } catch {
-    try {
-      return JSON.parse(Buffer.from(decodeURIComponent(value), "base64").toString("utf-8")) as HeatInput;
-    } catch {
-      return null;
-    }
-  }
 }

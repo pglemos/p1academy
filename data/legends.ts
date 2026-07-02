@@ -213,15 +213,52 @@ export const legendsAchievements = [
 ];
 
 export const legendsRankingPreview = [
-  { position: "01", driver: "Aguardando primeira bateria", level: "A definir", points: "-", valid: "0/10" },
-  { position: "02", driver: "Aguardando primeira bateria", level: "A definir", points: "-", valid: "0/10" },
-  { position: "03", driver: "Aguardando primeira bateria", level: "A definir", points: "-", valid: "0/10" },
-  { position: "04", driver: "Aguardando primeira bateria", level: "A definir", points: "-", valid: "0/10" },
+
+  { position: "01", driver: "Arthur Ferreira Duarte Camilo Santos", level: "A definir", points: "19,765", valid: "2/10" },
+
+  { position: "02", driver: "Agenor Júnior", level: "A definir", points: "19,577", valid: "2/10" },
+
+  { position: "03", driver: "Gegela", level: "A definir", points: "19,562", valid: "2/10" },
+
+  { position: "04", driver: "Rafael Soares - I", level: "A definir", points: "19,451", valid: "2/10" },
+
+  { position: "05", driver: "Fabio Filho", level: "A definir", points: "19,414", valid: "2/10" },
+
+  { position: "06", driver: "Flavio Victor Câmara", level: "A definir", points: "19,366", valid: "2/10" },
+
+  { position: "07", driver: "Enzo Neves Câmara", level: "A definir", points: "19,365", valid: "2/10" },
+
+  { position: "08", driver: "Fabio Nogueira", level: "A definir", points: "19,265", valid: "2/10" },
+
+  { position: "09", driver: "Pablo Fonseca", level: "A definir", points: "19,147", valid: "2/10" },
+
+  { position: "10", driver: "Alexandre Konovaloff", level: "A definir", points: "19,046", valid: "2/10" },
+
+  { position: "11", driver: "Toninho Da Prata Silveira", level: "A definir", points: "18,892", valid: "2/10" },
+
+  { position: "12", driver: "Vitor Hugo", level: "A definir", points: "18,864", valid: "2/10" },
+
+  { position: "13", driver: "Bernardo Ferreira Duarte", level: "A definir", points: "18,830", valid: "2/10" },
+
+  { position: "14", driver: "Davi Silva De Mendonça", level: "A definir", points: "18,722", valid: "2/10" },
+
+  { position: "15", driver: "Raphael Mattioli", level: "A definir", points: "18,676", valid: "2/10" },
+
+  { position: "16", driver: "Edmar Freitas", level: "A definir", points: "18,561", valid: "2/10" },
+
+  { position: "17", driver: "Felipe Da Silveira Silva", level: "A definir", points: "18,484", valid: "2/10" },
+
+  { position: "18", driver: "Marcos Felipe Lomanto", level: "A definir", points: "18,333", valid: "2/10" },
+
+  { position: "19", driver: "Renato De Oliveira Ribeiro", level: "A definir", points: "18,220", valid: "2/10" },
+
+  { position: "20", driver: "Rodrigo Boris", level: "A definir", points: "18,160", valid: "2/10" },
+
 ];
 
 export const legendsResultsPreview = [
-  { heat: "Bateria 01", date: "Em breve", winner: "A definir", bestLap: "-", points: "10,000" },
-  { heat: "Bateria 02", date: "Em breve", winner: "A definir", bestLap: "-", points: "10,000" },
+  { heat: "Bateria 01", date: "01/07/2026", winner: "Arthur Ferreira Duarte Camilo Santos", bestLap: "1:04.103", points: "10,000" },
+  { heat: "Bateria 02", date: "01/07/2026", winner: "Vitor Hugo", bestLap: "1:04.350", points: "10,000" },
   { heat: "Super Final", date: "Última etapa", winner: "A definir", bestLap: "-", points: "5,000" },
 ];
 

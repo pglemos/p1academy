@@ -96,13 +96,12 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
         .eq("championship_id", championship.id)
         .order("sort_order", { ascending: true })
         .returns<StageRow[]>(),
-      supabase
-        .from("p1_public_standings")
-        .select("position, driver_name, total, valid_regular_results, wins")
-        .eq("championship_slug", championshipSlug)
-        .order("position", { ascending: true })
-        .limit(20)
-        .returns<StandingRow[]>(),
+        supabase
+          .from("p1_public_standings")
+          .select("position, driver_name, total, valid_regular_results, wins")
+          .eq("championship_slug", championshipSlug)
+          .order("position", { ascending: true })
+          .returns<StandingRow[]>(),
       supabase
         .from("p1_heats")
         .select("id, title, heat_date, type")
@@ -114,7 +113,15 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
         .returns<HeatRow[]>(),
     ]);
 
-    const results = await loadHeatResults(heats ?? []);
+    const orderedHeats = [...(heats ?? [])].sort((a, b) => {
+      const byDate = a.heat_date.localeCompare(b.heat_date);
+      if (byDate !== 0) {
+        return byDate;
+      }
+
+      return a.title.localeCompare(b.title, "pt-BR");
+    });
+    const results = await loadHeatResults(orderedHeats);
 
     return {
       source: "supabase",
@@ -246,6 +253,7 @@ async function loadHeatResults(heats: HeatRow[]) {
       winner: winner?.driver_name ?? "Resultado pendente",
       bestLap: winner ? formatTimingValue(winner.official_ms) : "-",
       points: winner ? formatScore(Number(winner.score)) : heat.type === "super_final" ? "5,000" : "10,000",
+      pdfHref: `/api/campeonatos/legends/pdf/${heat.id}`,
     };
   });
 }

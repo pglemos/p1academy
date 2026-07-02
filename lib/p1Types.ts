@@ -54,6 +54,7 @@ export type P1ResultRow = {
   winner: string;
   bestLap: string;
   points: string;
+  pdfHref?: string;
 };
 
 export type P1PublicData = {

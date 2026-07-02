@@ -125,7 +125,7 @@ export const regulations = [
 ];
 
 export const rankings = [
-  { name: "Aguardando primeira bateria", points: 0, category: "A definir", best: "-" },
+  { name: "Arthur Ferreira Duarte Camilo Santos", points: 19.765, category: "Legends Kart Series", best: "1:04.103" },
 ];
 
 export const schedule = [
@@ -156,7 +156,7 @@ export const tips = [
 ];
 
 export const recordes = [
-  { track: "Legends Kart Series", driver: "Aguardando primeira bateria", time: "-" },
+  { track: "Legends Kart Series", driver: "Arthur Ferreira Duarte Camilo Santos", time: "1:04.103" },
 ];
 
 export const iconHighlights = [
