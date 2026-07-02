@@ -67,6 +67,8 @@ type DriverRow = {
   city: string | null;
   current_level: string | null;
   status: string;
+  public_profile?: boolean | null;
+  weight?: number | null;
 };
 
 type StageRow = {
@@ -78,6 +80,7 @@ type StageRow = {
   weekday: string;
   status: string;
   max_seats: number;
+  is_published?: boolean | null;
 };
 
 type HeatRow = {
@@ -87,6 +90,8 @@ type HeatRow = {
   type: string;
   source: string;
   is_published: boolean;
+  track_layout?: string | null;
+  category?: string | null;
 };
 
 type StandingRow = {
@@ -101,7 +106,7 @@ type StandingRow = {
 
 type Overview = {
   admin: { email: string };
-  championship: { name: string; season: string };
+  championship: { name: string; season: string; status?: string; is_published?: boolean | null };
   registrations: RegistrationRow[];
   drivers: DriverRow[];
   stages: StageRow[];
@@ -312,6 +317,78 @@ export function AdminDashboard() {
     }
   }
 
+  async function sendAdminMutation(path: string, options: RequestInit, fallbackMessage: string) {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(path, {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          ...(options.headers ?? {}),
+        },
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setError(typeof payload.message === "string" ? payload.message : fallbackMessage);
+        return false;
+      }
+
+      await loadOverview();
+      return true;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function updateDriver(id: string, payload: Record<string, unknown>) {
+    await sendAdminMutation(
+      `/api/admin/drivers/${id}`,
+      { method: "PATCH", body: JSON.stringify(payload) },
+      "Não foi possível atualizar o piloto.",
+    );
+  }
+
+  async function updateStage(id: string, payload: Record<string, unknown>) {
+    await sendAdminMutation(
+      `/api/admin/stages/${id}`,
+      { method: "PATCH", body: JSON.stringify(payload) },
+      "Não foi possível atualizar a etapa.",
+    );
+  }
+
+  async function updateHeat(id: string, payload: Record<string, unknown>) {
+    await sendAdminMutation(
+      `/api/admin/heats/${id}`,
+      { method: "PATCH", body: JSON.stringify(payload) },
+      "Não foi possível atualizar a bateria.",
+    );
+  }
+
+  async function deleteHeat(id: string) {
+    const confirmed = window.confirm("Excluir esta bateria e todos os resultados vinculados?");
+    if (!confirmed) {
+      return;
+    }
+
+    await sendAdminMutation(
+      `/api/admin/heats/${id}`,
+      { method: "DELETE" },
+      "Não foi possível excluir a bateria.",
+    );
+  }
+
+  async function updateChampionship(payload: Record<string, unknown>) {
+    await sendAdminMutation(
+      "/api/admin/championship",
+      { method: "PATCH", body: JSON.stringify(payload) },
+      "Não foi possível atualizar o campeonato.",
+    );
+  }
+
   async function bootstrapAdmin() {
     setLoading(true);
     setError("");
@@ -471,7 +548,12 @@ export function AdminDashboard() {
             stageOptions={stageOptions}
             statusCounts={statusCounts}
             statusFilter={statusFilter}
+            deleteHeat={deleteHeat}
+            updateChampionship={updateChampionship}
+            updateDriver={updateDriver}
+            updateHeat={updateHeat}
             updateRegistration={updateRegistration}
+            updateStage={updateStage}
             saveRegistrationNote={saveRegistrationNote}
           />
         ) : null}
@@ -501,7 +583,12 @@ function AdminModule({
   stageOptions,
   statusCounts,
   statusFilter,
+  deleteHeat,
+  updateChampionship,
+  updateDriver,
+  updateHeat,
   updateRegistration,
+  updateStage,
   saveRegistrationNote,
 }: {
   activeTab: AdminTab;
@@ -524,7 +611,12 @@ function AdminModule({
   stageOptions: string[];
   statusCounts: { total: number; pending: number; approved: number; waitlist: number; rejected: number };
   statusFilter: string;
+  deleteHeat: (id: string) => Promise<void>;
+  updateChampionship: (payload: Record<string, unknown>) => Promise<void>;
+  updateDriver: (id: string, payload: Record<string, unknown>) => Promise<void>;
+  updateHeat: (id: string, payload: Record<string, unknown>) => Promise<void>;
   updateRegistration: (id: string, status: string) => Promise<void>;
+  updateStage: (id: string, payload: Record<string, unknown>) => Promise<void>;
   saveRegistrationNote: (id: string, adminNotes: string) => Promise<void>;
 }) {
   if (activeTab !== "inscricoes") {
@@ -536,7 +628,18 @@ function AdminModule({
           subtitle="Controle integrado do Legends Kart Series 2026"
           action={activeTab === "baterias" ? <a className="admin-primary-action" href="/campeonatos/pontuacao"><Timer size={18} /> Lançar bateria</a> : null}
         />
-        <OperationalGrid activeTab={activeTab} overview={overview} nextStage={nextStage} setActiveTab={setActiveTab} />
+        <OperationalGrid
+          activeTab={activeTab}
+          deleteHeat={deleteHeat}
+          loading={loading}
+          overview={overview}
+          nextStage={nextStage}
+          setActiveTab={setActiveTab}
+          updateChampionship={updateChampionship}
+          updateDriver={updateDriver}
+          updateHeat={updateHeat}
+          updateStage={updateStage}
+        />
       </section>
     );
   }
@@ -649,7 +752,29 @@ function AdminModule({
   );
 }
 
-function OperationalGrid({ activeTab, nextStage, overview, setActiveTab }: { activeTab: AdminTab; nextStage: StageRow | undefined; overview: Overview; setActiveTab: (tab: AdminTab) => void }) {
+function OperationalGrid({
+  activeTab,
+  deleteHeat,
+  loading,
+  nextStage,
+  overview,
+  setActiveTab,
+  updateChampionship,
+  updateDriver,
+  updateHeat,
+  updateStage,
+}: {
+  activeTab: AdminTab;
+  deleteHeat: (id: string) => Promise<void>;
+  loading: boolean;
+  nextStage: StageRow | undefined;
+  overview: Overview;
+  setActiveTab: (tab: AdminTab) => void;
+  updateChampionship: (payload: Record<string, unknown>) => Promise<void>;
+  updateDriver: (id: string, payload: Record<string, unknown>) => Promise<void>;
+  updateHeat: (id: string, payload: Record<string, unknown>) => Promise<void>;
+  updateStage: (id: string, payload: Record<string, unknown>) => Promise<void>;
+}) {
   if (activeTab === "dashboard") {
     const recent = overview.registrations.slice(0, 5);
     const upcoming = overview.stages.filter((stage) => stage.status !== "completed" && stage.status !== "cancelled").slice(0, 6);
@@ -706,42 +831,15 @@ function OperationalGrid({ activeTab, nextStage, overview, setActiveTab }: { act
   }
 
   if (activeTab === "pilotos") {
-    if (overview.drivers.length === 0) {
-      return <EmptyPanel icon={<Users size={30} />} title="Nenhum piloto aprovado ainda" text="Pilotos aprovados na triagem de inscrições aparecem aqui." />;
-    }
-    return (
-      <div className="admin-simple-table">
-        <div className="admin-simple-head"><span>Piloto</span><span>Cidade</span><span>Nível</span><span>Status</span></div>
-        {overview.drivers.map((driver) => (
-          <div key={driver.id}><strong>{driver.display_name}</strong><span>{driver.city ?? "Cidade não informada"}</span><span>{driver.current_level ?? "Legends"}</span><StatusBadge status={driver.status} /></div>
-        ))}
-      </div>
-    );
+    return <DriversModule drivers={overview.drivers} loading={loading} updateDriver={updateDriver} />;
   }
 
   if (activeTab === "etapas") {
-    return (
-      <div className="admin-simple-table">
-        <div className="admin-simple-head"><span>Etapa</span><span>Dia</span><span>Data e hora</span><span>Status</span></div>
-        {overview.stages.map((stage) => (
-          <div key={stage.id}><strong>{stage.stage_code}</strong><span>{stage.weekday}</span><span>{formatDate(stage.scheduled_date)} às {stage.scheduled_time.slice(0, 5)}</span><StatusBadge status={stage.status} /></div>
-        ))}
-      </div>
-    );
+    return <StagesModule loading={loading} stages={overview.stages} updateStage={updateStage} />;
   }
 
   if (activeTab === "baterias") {
-    if (overview.heats.length === 0) {
-      return <EmptyPanel icon={<Flag size={30} />} title="Nenhuma bateria publicada ainda" text="Lance uma bateria pelo sistema de pontuação para gerar resultados." />;
-    }
-    return (
-      <div className="admin-simple-table">
-        <div className="admin-simple-head"><span>Bateria</span><span>Data</span><span>Tipo</span><span>Fonte</span></div>
-        {overview.heats.map((heat) => (
-          <div key={heat.id}><strong>{heat.title}</strong><span>{formatDate(heat.heat_date)}</span><span>{heat.type === "super_final" ? "Super Final" : "Regular"}</span><span>{translateSource(heat.source)}</span></div>
-        ))}
-      </div>
-    );
+    return <HeatsModule deleteHeat={deleteHeat} heats={overview.heats} loading={loading} updateHeat={updateHeat} />;
   }
 
   if (activeTab === "ranking") {
@@ -759,18 +857,163 @@ function OperationalGrid({ activeTab, nextStage, overview, setActiveTab }: { act
   }
 
   if (activeTab === "config") {
-    return <SystemModule overview={overview} />;
+    return <SystemModule loading={loading} overview={overview} updateChampionship={updateChampionship} />;
   }
 
   return (
-    <div className="admin-document-grid">
-      <a href="/regulamentos/calendario-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={22} /><strong>Calendário oficial</strong><span>PDF Legends 2026</span></a>
-      <a href="/regulamentos/regulamento-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={22} /><strong>Regulamento oficial</strong><span>PDF do campeonato</span></a>
+    <DocumentsModule heats={overview.heats} />
+  );
+}
+
+function DriversModule({
+  drivers,
+  loading,
+  updateDriver,
+}: {
+  drivers: DriverRow[];
+  loading: boolean;
+  updateDriver: (id: string, payload: Record<string, unknown>) => Promise<void>;
+}) {
+  if (drivers.length === 0) {
+    return <EmptyPanel icon={<Users size={30} />} title="Nenhum piloto aprovado ainda" text="Pilotos aprovados na triagem de inscrições aparecem aqui." />;
+  }
+
+  return (
+    <div className="admin-simple-table admin-operational-table">
+      <div className="admin-simple-head admin-simple-head-5"><span>Piloto</span><span>Contato</span><span>Nível</span><span>Status</span><span>Ações</span></div>
+      {drivers.map((driver) => (
+        <div className="admin-operation-row admin-operation-row-5" key={driver.id}>
+          <strong>{driver.display_name}</strong>
+          <span>{driver.city ?? "Cidade não informada"}<small>{driver.email ?? "sem e-mail"}</small></span>
+          <select value={driver.current_level ?? ""} disabled={loading} onChange={(event) => updateDriver(driver.id, { currentLevel: event.target.value })}>
+            <option value="">Legends</option>
+            <option value="Estreante">Estreante</option>
+            <option value="Intermediário">Intermediário</option>
+            <option value="Competitivo">Competitivo</option>
+            <option value="Avançado">Avançado</option>
+            <option value="A definir pela organização">A definir</option>
+          </select>
+          <select value={driver.status} disabled={loading} onChange={(event) => updateDriver(driver.id, { status: event.target.value })}>
+            <option value="active">Ativo</option>
+            <option value="inactive">Inativo</option>
+            <option value="suspended">Suspenso</option>
+          </select>
+          <label className="admin-switch">
+            <input type="checkbox" checked={driver.public_profile ?? true} disabled={loading} onChange={(event) => updateDriver(driver.id, { publicProfile: event.target.checked })} />
+            <span>Perfil público</span>
+          </label>
+        </div>
+      ))}
     </div>
   );
 }
 
-function SystemModule({ overview }: { overview: Overview }) {
+function StagesModule({
+  loading,
+  stages,
+  updateStage,
+}: {
+  loading: boolean;
+  stages: StageRow[];
+  updateStage: (id: string, payload: Record<string, unknown>) => Promise<void>;
+}) {
+  return (
+    <div className="admin-simple-table admin-operational-table">
+      <div className="admin-simple-head admin-simple-head-5"><span>Etapa</span><span>Data e hora</span><span>Vagas</span><span>Status</span><span>Publicação</span></div>
+      {stages.map((stage) => (
+        <div className="admin-operation-row admin-operation-row-5" key={stage.id}>
+          <strong>{stage.stage_code}<small>{stage.weekday}</small></strong>
+          <span>{formatDate(stage.scheduled_date)} às {stage.scheduled_time.slice(0, 5)}</span>
+          <input type="number" min={0} value={stage.max_seats} disabled={loading} onChange={(event) => updateStage(stage.id, { maxSeats: Number(event.target.value) })} />
+          <select value={stage.status} disabled={loading} onChange={(event) => updateStage(stage.id, { status: event.target.value })}>
+            <option value="scheduled">Programada</option>
+            <option value="open">Aberta</option>
+            <option value="full">Lotada</option>
+            <option value="completed">Concluída</option>
+            <option value="cancelled">Cancelada</option>
+          </select>
+          <label className="admin-switch">
+            <input type="checkbox" checked={stage.is_published ?? true} disabled={loading} onChange={(event) => updateStage(stage.id, { isPublished: event.target.checked })} />
+            <span>{stage.is_published ?? true ? "Publicado" : "Oculto"}</span>
+          </label>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HeatsModule({
+  deleteHeat,
+  heats,
+  loading,
+  updateHeat,
+}: {
+  deleteHeat: (id: string) => Promise<void>;
+  heats: HeatRow[];
+  loading: boolean;
+  updateHeat: (id: string, payload: Record<string, unknown>) => Promise<void>;
+}) {
+  if (heats.length === 0) {
+    return <EmptyPanel icon={<Flag size={30} />} title="Nenhuma bateria publicada ainda" text="Lance uma bateria pelo sistema de pontuação para gerar resultados." />;
+  }
+
+  return (
+    <div className="admin-simple-table admin-operational-table">
+      <div className="admin-simple-head admin-simple-head-5"><span>Bateria</span><span>Data</span><span>Tipo</span><span>Publicação</span><span>Ações</span></div>
+      {heats.map((heat) => (
+        <div className="admin-operation-row admin-operation-row-5" key={heat.id}>
+          <strong>{heat.title}<small>{translateSource(heat.source)} · {heat.track_layout ?? "Traçado não informado"}</small></strong>
+          <span>{formatDate(heat.heat_date)}</span>
+          <span>{heat.type === "super_final" ? "Super Final" : "Regular"}</span>
+          <label className="admin-switch">
+            <input type="checkbox" checked={heat.is_published} disabled={loading} onChange={(event) => updateHeat(heat.id, { isPublished: event.target.checked })} />
+            <span>{heat.is_published ? "Publicado" : "Oculto"}</span>
+          </label>
+          <span className="admin-action-row">
+            <a href={`/api/campeonatos/legends/pdf/${heat.id}`} target="_blank" rel="noreferrer"><Download size={15} /> PDF</a>
+            <button type="button" disabled={loading} onClick={() => deleteHeat(heat.id)}><X size={15} /> Excluir</button>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DocumentsModule({ heats }: { heats: HeatRow[] }) {
+  return (
+    <div className="admin-document-stack">
+      <div className="admin-document-grid">
+        <a href="/regulamentos/calendario-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={22} /><strong>Calendário oficial</strong><span>PDF Legends 2026</span></a>
+        <a href="/regulamentos/regulamento-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={22} /><strong>Regulamento oficial</strong><span>PDF do campeonato</span></a>
+        <a href="/api/campeonatos/legends/pdf" target="_blank" rel="noreferrer"><FileText size={22} /><strong>Relatório geral</strong><span>PDF de resultados</span></a>
+      </div>
+      {heats.length ? (
+        <div className="admin-system-block">
+          <h3>PDFs por bateria</h3>
+          <div className="admin-document-list">
+            {heats.map((heat) => (
+              <a href={`/api/campeonatos/legends/pdf/${heat.id}`} target="_blank" rel="noreferrer" key={heat.id}>
+                <FileText size={16} />
+                <span>{heat.title}</span>
+                <em>{formatDate(heat.heat_date)}</em>
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function SystemModule({
+  loading,
+  overview,
+  updateChampionship,
+}: {
+  loading: boolean;
+  overview: Overview;
+  updateChampionship: (payload: Record<string, unknown>) => Promise<void>;
+}) {
   const publishedHeats = overview.heats.filter((heat) => heat.is_published).length;
   const reviewed = overview.registrations.filter((registration) => registration.status !== "pending").length;
 
@@ -783,6 +1026,31 @@ function SystemModule({ overview }: { overview: Overview }) {
           <li><ShieldCheck size={16} /> <span>Sessão administrativa</span> <em className="ok">Ativa</em></li>
           <li><Trophy size={16} /> <span>Campeonato</span> <em className="ok">{overview.championship.name} {overview.championship.season}</em></li>
         </ul>
+      </div>
+
+      <div className="admin-system-block">
+        <h3>Operação do campeonato</h3>
+        <div className="admin-control-stack">
+          <label className="admin-select">
+            <span>Status</span>
+            <select value={overview.championship.status ?? "active"} disabled={loading} onChange={(event) => updateChampionship({ status: event.target.value })}>
+              <option value="Calendário oficial publicado">Calendário publicado</option>
+              <option value="draft">Rascunho</option>
+              <option value="active">Ativo</option>
+              <option value="completed">Concluído</option>
+              <option value="archived">Arquivado</option>
+            </select>
+          </label>
+          <label className="admin-switch">
+            <input
+              type="checkbox"
+              checked={overview.championship.is_published ?? true}
+              disabled={loading}
+              onChange={(event) => updateChampionship({ isPublished: event.target.checked })}
+            />
+            <span>{overview.championship.is_published ?? true ? "Público no site" : "Oculto do site"}</span>
+          </label>
+        </div>
       </div>
 
       <div className="admin-system-block">

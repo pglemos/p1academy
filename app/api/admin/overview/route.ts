@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   const supabase = getServiceSupabaseClient();
   const { data: championship, error: championshipError } = await supabase
     .from("p1_championships")
-    .select("id, slug, name, season")
+    .select("id, slug, name, season, status, is_published")
     .eq("slug", "legends-2026")
     .single();
 
@@ -31,18 +31,18 @@ export async function GET(request: Request) {
       .limit(100),
     supabase
       .from("p1_drivers")
-      .select("id, display_name, email, whatsapp, city, current_level, status, created_at")
+      .select("id, display_name, email, whatsapp, city, current_level, weight, status, public_profile, created_at")
       .eq("championship_id", championship.id)
       .order("display_name", { ascending: true })
       .limit(100),
     supabase
       .from("p1_stages")
-      .select("id, stage_code, title, scheduled_date, scheduled_time, weekday, status, max_seats")
+      .select("id, stage_code, title, scheduled_date, scheduled_time, weekday, status, max_seats, is_published")
       .eq("championship_id", championship.id)
       .order("sort_order", { ascending: true }),
     supabase
       .from("p1_heats")
-      .select("id, title, heat_date, type, source, is_published, created_at")
+      .select("id, title, heat_date, type, source, is_published, track_layout, category, created_at")
       .eq("championship_id", championship.id)
       .order("heat_date", { ascending: false })
       .limit(50),

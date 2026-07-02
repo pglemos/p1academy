@@ -32,7 +32,8 @@ export default async function LegendsPontuacaoPage() {
               <span className="eyebrow">Regra oficial</span>
               <h2>Tomada direta, pontuação por tempo</h2>
               <p>
-                Em bateria regular, o melhor tempo soma 10,000 pontos. Os demais pilotos pontuam pela diferença em segundos para a melhor volta da bateria. Na Super Final, a base é 5,000 pontos.
+                Em bateria regular, o melhor tempo soma 10,000 pontos. Os demais pilotos pontuam pela diferença em
+                segundos para a melhor volta da bateria. Na Super Final, a base é 5,000 pontos.
               </p>
             </div>
             <div className="button-row">
@@ -71,14 +72,22 @@ export default async function LegendsPontuacaoPage() {
       </section>
 
       <section className="section tight carbon-section">
-        <div className="container split">
+        <div className="container legends-public-layout">
           <Reveal className="section-head">
             <Trophy size={30} color="var(--acid)" />
             <h2>Resultados publicados</h2>
             <div className="accent-line" />
             <p>Resultados oficiais publicados no admin para a Legends Kart Series 2026.</p>
           </Reveal>
-          <div className="table-like">
+
+          <div className="table-like legends-public-table">
+            <div className="row results-row results-row-head" aria-hidden="true">
+              <strong>Bateria</strong>
+              <span>Data</span>
+              <span>Vencedor</span>
+              <span>Melhor volta</span>
+              <span>PDF</span>
+            </div>
             {publishedResults.map((item) => (
               <Reveal className="row results-row" key={item.heat}>
                 <strong>{item.heat}</strong>
@@ -86,7 +95,7 @@ export default async function LegendsPontuacaoPage() {
                 <span>{item.winner}</span>
                 <span>{item.bestLap}</span>
                 {item.pdfHref ? (
-                  <a className="btn ghost" href={item.pdfHref} target="_blank" rel="noreferrer">
+                  <a className="btn ghost compact-action" href={item.pdfHref} target="_blank" rel="noreferrer">
                     <Download size={18} /> Baixar PDF
                   </a>
                 ) : (
@@ -99,16 +108,23 @@ export default async function LegendsPontuacaoPage() {
       </section>
 
       <section className="section tight">
-        <div className="container split">
+        <div className="container legends-public-layout">
           <Reveal className="section-head">
             <Calculator size={30} color="var(--acid)" />
             <h2>Classificação completa</h2>
             <div className="accent-line" />
             <p>Todos os pilotos com pontuação válida nas baterias publicadas.</p>
           </Reveal>
-          <div className="table-like">
+
+          <div className="table-like legends-public-table legends-ranking-table">
+            <div className="row ranking-row ranking-row-head" aria-hidden="true">
+              <strong>Piloto</strong>
+              <span>Status</span>
+              <span>Pontos</span>
+              <span>Baterias</span>
+            </div>
             {publishedRanking.map((item) => (
-              <Reveal className="row" key={`${item.position}-${item.driver}`}>
+              <Reveal className="row ranking-row" key={`${item.position}-${item.driver}`}>
                 <strong>{item.position} {item.driver}</strong>
                 <span>{item.level}</span>
                 <span>{item.points} pontos</span>
@@ -125,12 +141,14 @@ export default async function LegendsPontuacaoPage() {
             <h2>Lançamento somente no admin</h2>
             <div className="accent-line" />
             <p>
-              Esta página pública é apenas para consulta. O lançamento, correção e publicação de baterias ficam restritos ao painel administrativo.
+              Esta página pública é apenas para consulta. O lançamento, correção e publicação de baterias ficam
+              restritos ao painel administrativo.
             </p>
             <Link className="btn primary" href="/admin">
               <Trophy size={18} /> Abrir admin
             </Link>
           </Reveal>
+
           <Reveal className="legends-panel">
             <h3>{legendsCompetition.name}</h3>
             <p>Os dados exibidos são carregados das baterias publicadas oficialmente.</p>

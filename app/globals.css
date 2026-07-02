@@ -1713,6 +1713,67 @@ video {
   font-size: 0.9rem;
 }
 
+.legends-public-layout {
+  display: grid;
+  gap: 28px;
+}
+
+.legends-public-layout .section-head {
+  max-width: 760px;
+}
+
+.legends-public-table {
+  border-top: 1px solid var(--line);
+}
+
+.legends-public-table .row {
+  min-height: 56px;
+  padding: 14px 12px;
+}
+
+.legends-public-table .row:nth-child(even) {
+  background: #111210;
+}
+
+.legends-public-table .row:nth-child(odd) {
+  background: #0d0e0d;
+}
+
+.legends-public-table .results-row,
+.row.results-row {
+  grid-template-columns: minmax(150px, 1.1fr) 0.55fr minmax(190px, 1.35fr) 0.62fr auto;
+}
+
+.legends-public-table .ranking-row {
+  grid-template-columns: minmax(260px, 2fr) 0.9fr 0.9fr 0.55fr;
+}
+
+.legends-public-table .results-row-head,
+.legends-public-table .ranking-row-head {
+  min-height: 42px;
+  background: var(--acid) !important;
+}
+
+.legends-public-table .results-row-head strong,
+.legends-public-table .results-row-head span,
+.legends-public-table .ranking-row-head strong,
+.legends-public-table .ranking-row-head span {
+  color: #080908 !important;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.legends-public-table .compact-action {
+  justify-self: end;
+  width: auto;
+  min-height: 38px;
+  padding-inline: 12px;
+  white-space: nowrap;
+}
+
 .status-pill {
   justify-self: end;
   margin-right: 12px;
@@ -3156,6 +3217,24 @@ video {
 grid-template-columns: 1fr;
 }
 
+  .legends-public-table .row,
+  .legends-public-table .results-row,
+  .legends-public-table .ranking-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 16px;
+  }
+
+  .legends-public-table .results-row-head,
+  .legends-public-table .ranking-row-head {
+    display: none;
+  }
+
+  .legends-public-table .compact-action {
+    justify-self: stretch;
+    width: 100%;
+  }
+
   .scoring-control,
   .scoring-summary,
   .scoring-results {
@@ -4568,6 +4647,131 @@ grid-template-columns: 1fr;
 
 .admin-document-grid.compact a {
   min-height: 92px;
+}
+
+.admin-operational-table {
+  gap: 0;
+  overflow: visible;
+  overflow-x: auto;
+}
+
+.admin-simple-table .admin-simple-head.admin-simple-head-5,
+.admin-operation-row-5 {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.35fr) minmax(135px, 0.85fr) minmax(110px, 0.65fr) minmax(115px, 0.75fr) minmax(120px, 0.8fr);
+}
+
+.admin-simple-table > div.admin-operation-row-5 {
+  grid-template-columns: minmax(170px, 1.35fr) minmax(135px, 0.85fr) minmax(110px, 0.65fr) minmax(115px, 0.75fr) minmax(120px, 0.8fr);
+}
+
+.admin-operation-row {
+  min-width: 720px;
+  min-height: 92px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.admin-operation-row strong,
+.admin-operation-row span {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-operation-row small {
+  color: #858b84;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.admin-operation-row select,
+.admin-operation-row input[type="number"],
+.admin-control-stack select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  padding: 0 10px;
+  color: #f1f2ef;
+  background: #111315;
+  font: inherit;
+}
+
+.admin-switch {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #c7cbc4;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.admin-switch input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--acid);
+}
+
+.admin-action-row {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-action-row a,
+.admin-action-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  padding: 0 10px;
+  color: #f1f2ef;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.admin-action-row button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.admin-document-stack,
+.admin-control-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-document-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-document-list a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0 12px;
+  color: #f1f2ef;
+  text-decoration: none;
+}
+
+.admin-document-list em {
+  color: #9fa59d;
+  font-size: 0.78rem;
+  font-style: normal;
 }
 
 /* Detalhe: documentos + timeline */
