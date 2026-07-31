@@ -87,7 +87,7 @@ export async function GET() {
     return new Response("Resultados nao encontrados.", { status: 500 });
   }
 
-  const pdf = buildLegendsOverallPdf({
+  const pdf = await buildLegendsOverallPdf({
     championshipName: championship.name,
     season: championship.season,
     generatedAt: new Intl.DateTimeFormat("pt-BR", {

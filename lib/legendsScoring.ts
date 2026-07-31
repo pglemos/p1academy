@@ -234,9 +234,9 @@ export function calculateStandings(heats: HeatInput[]): StandingRow[] {
         return;
       }
 
-      const driverId = result.id;
-      const existing = rows.get(driverId) ?? {
-        driverId,
+      const driverKey = slugifyDriverKey(result.name) || result.id;
+      const existing = rows.get(driverKey) ?? {
+        driverId: driverKey,
         name: result.name,
         total: 0,
         regularTotal: 0,
@@ -256,7 +256,7 @@ export function calculateStandings(heats: HeatInput[]): StandingRow[] {
         }
       }
 
-      rows.set(driverId, existing);
+      rows.set(driverKey, existing);
     });
   });
 
@@ -308,3 +308,13 @@ function normalizeMilliseconds(value?: string): number {
 function roundScore(score: number): number {
   return Math.round(score * 1000) / 1000;
 }
+
+export function slugifyDriverKey(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+

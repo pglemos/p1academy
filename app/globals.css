@@ -1931,6 +1931,64 @@ video {
   color: var(--muted);
 }
 
+.track-record-note {
+  border-left: 3px solid var(--acid);
+  padding-left: 14px;
+  color: var(--text);
+}
+
+.track-record {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+  border: 1px solid rgba(234, 234, 0, 0.26);
+  padding: 12px;
+  background:
+    linear-gradient(90deg, rgba(234, 234, 0, 0.12), transparent 70%),
+    rgba(7, 7, 7, 0.46);
+}
+
+.track-record span {
+  color: var(--acid);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.track-record strong {
+  color: var(--text);
+  font-family: var(--font-headline), sans-serif;
+  font-size: 1.45rem;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.track-record small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+.track-record.compact strong {
+  font-size: 1.8rem;
+}
+
+.track-record.empty {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.track-record.empty strong {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
 .track-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

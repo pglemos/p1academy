@@ -92,10 +92,13 @@ export function parseTimingReportText(text: string): HeatInput | null {
       index = nextIndex + 1;
     }
 
+    const canonicalName = canonicalizeDriverName(name);
+    const driverId = slugifyDriverName(canonicalName) || competitorNumber || `pos-${position}`;
+
     drivers.push({
-      id: competitorNumber || `pos-${position}`,
+      id: driverId,
       sourcePosition: position,
-      name,
+      name: canonicalName,
       kart: competitorNumber,
       bestTime,
       status: parseTimingValueToMs(bestTime) === null ? "no-time" : "ok",
@@ -403,3 +406,107 @@ function extractGeneratedAt(lines: string[]): string | undefined {
   const line = lines.find((item) => item.includes("DATA/HORA"));
   return line?.replace("DATA/HORA:", "").trim();
 }
+
+const canonicalDriverAliases: Record<string, string> = {
+  "agenorjunior": "Agenor Júnior",
+  "alexandrekonovaloff": "Alexandre Konovaloff",
+  "alexandrekonovaloffjannott": "Alexandre Konovaloff",
+  "andrefelisberto": "André Felisberto - I",
+  "andrefelisbertoi": "André Felisberto - I",
+  "arthurferreiraduartecamilosantos": "Arthur Ferreira Duarte Camilo Santos",
+  "arthurferreiraduartecamil": "Arthur Ferreira Duarte Camilo Santos",
+  "bernardoferreiraduarte": "Bernardo Ferreira Duarte",
+  "bernardoferreiraduartesan": "Bernardo Ferreira Duarte",
+  "bernardonogueirapitangueiramendes": "Bernardo Nogueira Pitangueira Mendes",
+  "bernardonogueirapitangueir": "Bernardo Nogueira Pitangueira Mendes",
+  "brauliocezarbonoto": "Bráulio Cezar Bonoto",
+  "brunoprocopio": "Bruno Procopio",
+  "cauahonorato": "Cáua Honorato",
+  "daviquielalmeida": "Davi Quiel Almeida",
+  "davisilvademendonca": "Davi Silva De Mendonça",
+  "donisantosandrade": "Doni Santos Andrade",
+  "ederlucioangioles": "Ederlucio Angioles",
+  "edmarfreitas": "Edmar Freitas",
+  "enzonevescamara": "Enzo Neves Câmara",
+  "evandrolagesantosfraiha": "Evandro Lage Santos Fraiha",
+  "fabiofilho": "Fabio Filho",
+  "fabionogueira": "Fabio Nogueira",
+  "felipedasilveirasilva": "Felipe Da Silveira Silva",
+  "fernandoaugusto": "Fernando Augusto",
+  "flaviovictorcamara": "Flavio Victor Câmara",
+  "gabrielfaria": "Gabriel Faria",
+  "gegela": "Gegela",
+  "guilhermefaria": "Guilherme Faria",
+  "haroldoalves": "Haroldo Alves",
+  "jacsonfelipemattosamorim": "Jacson Felipe Mattos Amorim",
+  "jonathanlincoln": "Jonathan Lincoln",
+  "leandropduarte": "Leandro P Duarte",
+  "leonardomapaamaral": "Leonardo Mapa Amaral",
+  "lucaslima": "Lucas Lima",
+  "luccapradogarcia": "Lucca Prado Garcia",
+  "luizeloi": "Luiz Eloi",
+  "marcelohenriqueaguiar": "Marcelo Henrique Aguiar",
+  "marcelohenriqueaguiarmarques": "Marcelo Henrique Aguiar",
+  "marcosfelipelomanto": "Marcos Felipe Lomanto",
+  "marcosfelipelomantodossantos": "Marcos Felipe Lomanto",
+  "matteorinoldi": "Matteo Rinoldi",
+  "muriloargolo": "Murilo Argolo",
+  "nelsoncastro": "Nelson Castro",
+  "newtonangelini": "Newton Rhomel Beck Angelini",
+  "newtonrhomelbeckangelini": "Newton Rhomel Beck Angelini",
+  "pablofonseca": "Pablo Fonseca",
+  "pedroguilhermelemos": "Pedro Guilherme Lemos",
+  "rafaelsoaresi": "Rafael Soares - I",
+  "raphaelmattioli": "Raphael Mattioli",
+  "renatocesarmoreiradasilva": "Renato César Moreira da Silva",
+  "renatodeoliveiraribeiro": "Renato De Oliveira Ribeiro",
+  "robertlara": "Robert Lara",
+  "rodrigoboris": "Rodrigo Boris",
+  "rodrigosalvador": "Rodrigo Salvador",
+  "teniloruandejesusalves": "Tenilo Ruan De Jesus Alves",
+  "toninhodapratasilveira": "Toninho Da Prata Silveira",
+  "vandersomgoesdemoura": "Vanderson Gomes de Moura",
+  "vandersongoesdemoura": "Vanderson Gomes de Moura",
+  "vandersongomesdemoura": "Vanderson Gomes de Moura",
+  "viniciushenriqueamaral": "Vinicius Henrique Amaral",
+  "vitorhugo": "Vitor Hugo",
+  "vitorhugomarinsamaral": "Vitor Hugo Marins Amaral",
+  "walysonassis": "Walyson Assis",
+  "wesleyalmeidacardoso": "Wesley Almeida Cardoso",
+  "nathansoares": "Nathan Soares",
+  "deysnnerbrambilla": "Deysnner Brambilla",
+  "fernandomarcielgodoy": "Fernando Marciel Godoy",
+  "wanderthiagooliveirabarbosa": "Wanderthiago Oliveira Barbosa",
+  "wanderthiagooliveirabarbos": "Wanderthiago Oliveira Barbosa",
+  "williamjavertpinheirosimas": "William Javert Pinheiro Simas",
+};
+
+export function canonicalizeDriverName(rawName: string): string {
+  const normalizedKey = rawName
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+  if (canonicalDriverAliases[normalizedKey]) {
+    return canonicalDriverAliases[normalizedKey];
+  }
+
+  for (const [key, value] of Object.entries(canonicalDriverAliases)) {
+    if (normalizedKey.startsWith(key) || key.startsWith(normalizedKey)) {
+      return value;
+    }
+  }
+
+  return rawName.trim();
+}
+
+export function slugifyDriverName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
