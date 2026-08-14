@@ -37,6 +37,7 @@ type ResultRow = {
   driver_name: string;
   score: number | string;
   position: number | null;
+  official_ms: number | null;
   status: string;
 };
 
@@ -58,7 +59,7 @@ export async function GET() {
     .eq("championship_id", championship.id)
     .eq("is_published", true)
     .order("heat_date", { ascending: true })
-    .order("created_at", { ascending: true })
+    .order("title", { ascending: true })
     .returns<HeatRow[]>();
 
   if (heatsError || !heats?.length) {
@@ -78,7 +79,7 @@ export async function GET() {
 
   const { data: results, error: resultsError } = await supabase
     .from("p1_heat_results")
-    .select("heat_id, driver_name, score, position, status")
+    .select("heat_id, driver_name, score, position, official_ms, status")
     .in("heat_id", heats.map((heat) => heat.id))
     .eq("status", "ok")
     .returns<ResultRow[]>();
@@ -113,6 +114,7 @@ export async function GET() {
       driverName: row.driver_name,
       score: Number(row.score),
       position: row.position,
+      officialMs: row.official_ms,
     })),
   });
 

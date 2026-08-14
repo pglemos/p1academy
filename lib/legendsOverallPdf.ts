@@ -26,6 +26,7 @@ export type LegendsOverallResult = {
   driverName: string;
   score: number;
   position: number | null;
+  officialMs: number | null;
 };
 
 type PdfImage = {
@@ -36,6 +37,7 @@ type PdfImage = {
 
 type OverallRow = LegendsOverallStanding & {
   heatScores: Map<string, LegendsOverallResult>;
+  discardedHeatIds: Set<string>;
 };
 
 type ScoreColumn = {
@@ -65,6 +67,7 @@ export function buildLegendsOverallPdf(input: {
 }
 
 function buildRows(input: {
+  heats: LegendsOverallHeat[];
   standings: LegendsOverallStanding[];
   results: LegendsOverallResult[];
 }): OverallRow[] {
@@ -76,10 +79,27 @@ function buildRows(input: {
     resultMap.set(key, byHeat);
   });
 
+  const regularHeatIds = new Set(input.heats.filter((heat) => heat.type === "regular").map((heat) => heat.id));
+  const discardedByDriver = new Map<string, Set<string>>();
+
+  resultMap.forEach((byHeat, driverKey) => {
+    const regularResults = [...byHeat.values()]
+      .filter((result) => regularHeatIds.has(result.heatId))
+      .sort(compareResults);
+    discardedByDriver.set(driverKey, new Set(regularResults.slice(10).map((result) => result.heatId)));
+  });
+
   return input.standings.map((standing) => ({
     ...standing,
     heatScores: resultMap.get(normalizeKey(standing.driverName)) ?? new Map<string, LegendsOverallResult>(),
+    discardedHeatIds: discardedByDriver.get(normalizeKey(standing.driverName)) ?? new Set<string>(),
   }));
+}
+
+function compareResults(a: LegendsOverallResult, b: LegendsOverallResult) {
+  return b.score - a.score
+    || (a.officialMs ?? Number.MAX_SAFE_INTEGER) - (b.officialMs ?? Number.MAX_SAFE_INTEGER)
+    || (a.position ?? Number.MAX_SAFE_INTEGER) - (b.position ?? Number.MAX_SAFE_INTEGER);
 }
 
 function drawBackground(commands: string[]) {
@@ -189,7 +209,7 @@ function drawTable(
   const bodyFont = Math.min(8.7, rowHeight * 0.53);
   const smallFont = Math.min(8.2, rowHeight * 0.5);
   const totalFont = Math.min(15, rowHeight * 0.76);
-  const cols = tableColumns(x + 10);
+  const cols = tableColumns(x + 10, scoreColumns.length, x + width - 10);
 
   rect(commands, x, y, width, height, "#0f100f");
   strokeRect(commands, x, y, width, height, "#c69216", 1.8);
@@ -203,7 +223,11 @@ function drawTable(
   text(commands, `${input.heats.length} RESULTADOS LANCADOS`, x + width - 164, y + 24, 10, "F1", "#d6d3cb");
 
   rect(commands, x + 10, headerY, width - 20, 40, "#171914");
-  text(commands, "PONTUACOES PUBLICADAS", 820, headerY + 12, 8, "F1", "#bdb8ad");
+  if (cols.scores.length > 0) {
+    const scoreStart = cols.scores[0].x;
+    const lastScore = cols.scores[cols.scores.length - 1];
+    centeredText(commands, "PONTUACOES PUBLICADAS", (scoreStart + lastScore.x + lastScore.w) / 2, headerY + 12, 8, "F1", "#bdb8ad");
+  }
   drawHeaders(commands, cols, scoreColumns, headerY);
 
   rows.forEach((row, index) => {
@@ -222,12 +246,14 @@ function drawTable(
       const col = cols.scores[columnIndex];
       const result = column.heatId ? row.heatScores.get(column.heatId) : undefined;
       if (!result) {
-        text(commands, "X", col.x + col.w / 2 - 3, top + baseline, smallFont, "F2", "#a7a7a0");
+        centeredText(commands, "X", col.x + col.w / 2, top + baseline, smallFont, "F2", "#a7a7a0");
         return;
       }
-      const hot = result.position === 1 || result.score >= 9.99;
+      const discarded = row.discardedHeatIds.has(result.heatId);
+      const hot = !discarded && (result.position === 1 || result.score >= 9.99);
       if (hot) rect(commands, col.x, top, col.w, rowHeight, "#f2bf1d");
-      text(commands, formatScore(result.score), col.x + 20, top + baseline, smallFont, "F1", hot ? "#111111" : "#f3f0e8");
+      if (discarded) rect(commands, col.x, top, col.w, rowHeight, "#3b2d16");
+      centeredText(commands, formatScore(result.score), col.x + col.w / 2, top + baseline, smallFont, "F1", hot ? "#111111" : discarded ? "#d1a653" : "#f3f0e8");
     });
 
     text(commands, formatScore(row.total), cols.total.x + 21, top + Math.min(14.8, rowHeight * 0.83), totalFont, "F1", "#f4bd18");
@@ -252,27 +278,28 @@ function drawHeaders(commands: string[], cols: ReturnType<typeof tableColumns>, 
   scoreColumns.forEach((column, index) => {
     const col = cols.scores[index];
     const [top, bottom] = column.label.split(" ");
-    text(commands, top, col.x + col.w / 2 - 4, y + 19, 7.4, "F1", "#f1eee6");
-    text(commands, bottom ?? "", col.x + col.w / 2 - 8, y + 30, 7.4, "F1", "#f1eee6");
+    centeredText(commands, top, col.x + col.w / 2, y + 19, 7.4, "F1", "#f1eee6");
+    centeredText(commands, bottom ?? "", col.x + col.w / 2, y + 30, 7.4, "F1", "#f1eee6");
   });
   header("TOTAL", cols.total.x, cols.total.w);
   header("POS", cols.final.x, cols.final.w);
 }
 
-function tableColumns(startX: number) {
+function tableColumns(startX: number, scoreColumnCount: number, rightEdge: number) {
   const pos = { x: startX, w: 59 };
   const driver = { x: pos.x + pos.w, w: 293 };
   const bat = { x: driver.x + driver.w, w: 72 };
   const vit = { x: bat.x + bat.w, w: 58 };
-  const scores = Array.from({ length: 11 }, (_, index) => ({
-    x: vit.x + vit.w + index * (index === 10 ? 86 : 73),
-    w: index === 10 ? 86 : 73,
-  }));
-  for (let index = 1; index < scores.length; index += 1) {
-    scores[index].x = scores[index - 1].x + scores[index - 1].w;
-  }
-  const total = { x: scores[10].x + scores[10].w, w: 93 };
+  const total = { x: 0, w: 93 };
   const final = { x: total.x + total.w, w: 56 };
+  const scoreAvailable = rightEdge - (vit.x + vit.w) - total.w - final.w;
+  const scoreWidth = scoreColumnCount > 0 ? Math.min(73, scoreAvailable / scoreColumnCount) : 0;
+  const scores = Array.from({ length: scoreColumnCount }, (_, index) => ({
+    x: vit.x + vit.w + index * scoreWidth,
+    w: scoreWidth,
+  }));
+  total.x = vit.x + vit.w + scoreWidth * scoreColumnCount;
+  final.x = total.x + total.w;
   return { pos, driver, bat, vit, scores, total, final, fixed: { pos, driver, bat, vit } };
 }
 
@@ -286,24 +313,13 @@ function drawFooter(commands: string[], hasLogo: boolean) {
 }
 
 function buildScoreColumns(heats: LegendsOverallHeat[]): ScoreColumn[] {
-  const regularByNumber = new Map<number, LegendsOverallHeat>();
-  let fallbackRegularIndex = 1;
-  let superFinal: LegendsOverallHeat | undefined;
-  heats.forEach((heat) => {
-    if (heat.type === "super_final") {
-      superFinal = heat;
-      return;
-    }
-    const number = heatNumber(heat.title) ?? fallbackRegularIndex;
-    regularByNumber.set(number, heat);
-    fallbackRegularIndex += 1;
-  });
-
-  const columns: ScoreColumn[] = [];
-  for (let index = 1; index <= 10; index += 1) {
-    columns.push({ label: `P ${String(index).padStart(2, "0")}`, heatId: regularByNumber.get(index)?.id ?? null });
-  }
-  columns.push({ label: "SUPER FINAL", heatId: superFinal?.id ?? null });
+  const regularHeats = heats.filter((heat) => heat.type === "regular");
+  const columns = regularHeats.map((heat, index) => ({
+    label: `P ${String(index + 1).padStart(2, "0")}`,
+    heatId: heat.id,
+  }));
+  const superFinal = heats.find((heat) => heat.type === "super_final");
+  if (superFinal) columns.push({ label: "SUPER FINAL", heatId: superFinal.id });
   return columns;
 }
 
@@ -311,8 +327,8 @@ function makePdf(stream: string, logo: PdfImage | null): Uint8Array {
   const objects: string[] = [
     "<< /Type /Catalog /Pages 2 0 R >>",
     "<< /Type /Pages /Kids [6 0 R] /Count 1 >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
   ];
 
   if (logo) {
@@ -398,6 +414,19 @@ function text(
   commands.push("ET");
 }
 
+function centeredText(
+  commands: string[],
+  value: string,
+  centerX: number,
+  y: number,
+  size: number,
+  font: "F1" | "F2",
+  color: string,
+) {
+  const estimatedWidth = value.length * size * 0.48;
+  text(commands, value, centerX - estimatedWidth / 2, y, size, font, color);
+}
+
 function rgb(hex: string): [string, string, string] {
   const value = hex.replace("#", "");
   return [fixed(parseInt(value.slice(0, 2), 16) / 255), fixed(parseInt(value.slice(2, 4), 16) / 255), fixed(parseInt(value.slice(4, 6), 16) / 255)];
@@ -412,16 +441,11 @@ function escapePdf(value: string): string {
 }
 
 function sanitizePdfText(value: string): string {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[º°]/g, "o").replace(/[^\x20-\x7e]/g, "");
+  return value.replace(/[º°]/g, "o").replace(/[^\x20-\xff]/g, "");
 }
 
 function normalizeKey(value: string): string {
   return value.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-function heatNumber(title: string): number | null {
-  const match = title.match(/(\d+)/);
-  return match ? Number(match[1]) : null;
 }
 
 function trim(value: string, maxLength: number): string {
