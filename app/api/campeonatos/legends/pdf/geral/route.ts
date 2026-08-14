@@ -28,7 +28,10 @@ type StandingRow = {
   position: number;
   driver_name: string;
   total: number | string;
+  regular_total: number | string;
+  super_final_total: number | string;
   valid_regular_results: number;
+  discarded_regular_results: number;
   wins: number;
 };
 
@@ -68,7 +71,7 @@ export async function GET() {
 
   const { data: standings, error: standingsError } = await supabase
     .from("p1_public_standings")
-    .select("position, driver_name, total, valid_regular_results, wins")
+    .select("position, driver_name, total, regular_total, super_final_total, valid_regular_results, discarded_regular_results, wins")
     .eq("championship_slug", championshipSlug)
     .order("position", { ascending: true })
     .returns<StandingRow[]>();
@@ -106,7 +109,10 @@ export async function GET() {
       position: Number(row.position),
       driverName: row.driver_name,
       total: Number(row.total),
+      regularTotal: Number(row.regular_total),
+      superFinalTotal: Number(row.super_final_total),
       validRegularResults: Number(row.valid_regular_results),
+      discardedRegularResults: Number(row.discarded_regular_results),
       wins: Number(row.wins),
     })),
     results: (results ?? []).map<LegendsOverallResult>((row) => ({

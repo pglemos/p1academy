@@ -284,10 +284,12 @@ export function calculateStandings(heats: HeatInput[]): StandingRow[] {
         return b.wins - a.wins;
       }
 
-      const longest = Math.max(a.bestScores.length, b.bestScores.length);
+      const aTieBreakScores = a.bestScores.slice(a.wins, MAX_VALID_REGULAR_RESULTS);
+      const bTieBreakScores = b.bestScores.slice(b.wins, MAX_VALID_REGULAR_RESULTS);
+      const longest = Math.max(aTieBreakScores.length, bTieBreakScores.length);
       for (let index = 0; index < longest; index += 1) {
-        const aScore = a.bestScores[index] ?? 0;
-        const bScore = b.bestScores[index] ?? 0;
+        const aScore = aTieBreakScores[index] ?? 0;
+        const bScore = bTieBreakScores[index] ?? 0;
         if (bScore !== aScore) {
           return bScore - aScore;
         }
@@ -317,4 +319,3 @@ export function slugifyDriverKey(name: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 }
-

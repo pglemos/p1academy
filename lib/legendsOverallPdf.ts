@@ -1,3 +1,13 @@
+/*
+ * Impeccable v4 direction contract - seed 466a50a4.
+ * THESIS: a score report read like a film cutting bench, where every heat is a frame and every retained discard remains auditable.
+ * OWN-WORLD: true black, work-print white, Legends gold and tape orange; punched rails, flat frames, tabular numbers and precise separators.
+ * STORY: the reader sees who leads, follows the published chronology, understands the formula, then audits each pilot's counted and retained scores.
+ * FIRST VIEWPORT: overview header, leaders, two-row heat rail, formula, states and tie-break rules before the full matrix begins.
+ * FORM: Read mode, delegated build of the assigned grounded direction, seed 466a50a4.
+ * FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+ */
+
 import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { formatScore } from "./legendsScoring";
@@ -5,6 +15,24 @@ import { formatScore } from "./legendsScoring";
 const pageWidth = 1491;
 const pageHeight = 1055;
 const logoPath = path.join(process.cwd(), "public", "brand", "legends-kart-series-logo.jpg");
+const rowsPerPage = 21;
+const columnsPerMatrixPage = 16;
+
+const colors = {
+  background: "#090B0B",
+  header: "#101414",
+  surface: "#151A19",
+  surfaceAlt: "#1A201E",
+  ink: "#F2F0E7",
+  muted: "#B7B8AE",
+  faint: "#858A80",
+  line: "#4B5147",
+  gold: "#F2B51B",
+  orange: "#ED6430",
+  discard: "#442C22",
+  discardText: "#F0A45D",
+  darkInk: "#171A16",
+};
 
 export type LegendsOverallHeat = {
   id: string;
@@ -17,7 +45,10 @@ export type LegendsOverallStanding = {
   position: number;
   driverName: string;
   total: number;
+  regularTotal?: number;
+  superFinalTotal?: number;
   validRegularResults: number;
+  discardedRegularResults?: number;
   wins: number;
 };
 
@@ -38,12 +69,18 @@ type PdfImage = {
 type OverallRow = LegendsOverallStanding & {
   heatScores: Map<string, LegendsOverallResult>;
   discardedHeatIds: Set<string>;
+  discardedCount: number;
 };
 
 type ScoreColumn = {
   label: string;
-  heatId: string | null;
+  heatId: string;
+  date: string;
+  title: string;
+  type: "regular" | "super_final";
 };
+
+type TableColumn = { x: number; w: number };
 
 export function buildLegendsOverallPdf(input: {
   championshipName: string;
@@ -54,16 +91,29 @@ export function buildLegendsOverallPdf(input: {
   results: LegendsOverallResult[];
 }): Uint8Array {
   const rows = buildRows(input);
+  const columns = buildScoreColumns(input.heats);
+  const rowGroups = chunk(rows, rowsPerPage);
+  const columnGroups = chunk(columns, columnsPerMatrixPage);
+  const rankingPageCount = Math.max(1, rowGroups.length) * Math.max(1, columnGroups.length);
+  const pageCount = 1 + rankingPageCount;
   const logo = loadLogo();
-  const commands: string[] = [];
+  const pages: string[] = [];
 
-  drawBackground(commands);
-  drawHeader(commands, input, Boolean(logo));
-  drawPodium(commands, rows);
-  drawTable(commands, input, rows, buildScoreColumns(input.heats));
-  drawFooter(commands, Boolean(logo));
+  const overviewCommands: string[] = [];
+  drawOverviewPage(overviewCommands, input, rows, columns, 1, pageCount, Boolean(logo));
+  pages.push(overviewCommands.join("\n"));
 
-  return makePdf(commands.join("\n"), logo);
+  let pageNumber = 2;
+  for (const rowGroup of rowGroups.length ? rowGroups : [[]]) {
+    for (const columnGroup of columnGroups.length ? columnGroups : [[]]) {
+      const commands: string[] = [];
+      drawRankingPage(commands, input, rowGroup, columnGroup, rows.length, pageNumber, pageCount, Boolean(logo));
+      pages.push(commands.join("\n"));
+      pageNumber += 1;
+    }
+  }
+
+  return makePdf(pages, logo);
 }
 
 function buildRows(input: {
@@ -79,7 +129,7 @@ function buildRows(input: {
     resultMap.set(key, byHeat);
   });
 
-  const regularHeatIds = new Set(input.heats.filter((heat) => heat.type === "regular").map((heat) => heat.id));
+  const regularHeatIds = new Set(input.heats.filter((heat) => normalizeHeatType(heat.type) === "regular").map((heat) => heat.id));
   const discardedByDriver = new Map<string, Set<string>>();
 
   resultMap.forEach((byHeat, driverKey) => {
@@ -89,244 +139,386 @@ function buildRows(input: {
     discardedByDriver.set(driverKey, new Set(regularResults.slice(10).map((result) => result.heatId)));
   });
 
-  return input.standings.map((standing) => ({
-    ...standing,
-    heatScores: resultMap.get(normalizeKey(standing.driverName)) ?? new Map<string, LegendsOverallResult>(),
-    discardedHeatIds: discardedByDriver.get(normalizeKey(standing.driverName)) ?? new Set<string>(),
-  }));
+  return input.standings.map((standing) => {
+    const driverKey = normalizeKey(standing.driverName);
+    const discardedHeatIds = discardedByDriver.get(driverKey) ?? new Set<string>();
+    return {
+      ...standing,
+      heatScores: resultMap.get(driverKey) ?? new Map<string, LegendsOverallResult>(),
+      discardedHeatIds,
+      discardedCount: standing.discardedRegularResults ?? discardedHeatIds.size,
+    };
+  });
 }
 
 function compareResults(a: LegendsOverallResult, b: LegendsOverallResult) {
   return b.score - a.score
     || (a.officialMs ?? Number.MAX_SAFE_INTEGER) - (b.officialMs ?? Number.MAX_SAFE_INTEGER)
-    || (a.position ?? Number.MAX_SAFE_INTEGER) - (b.position ?? Number.MAX_SAFE_INTEGER);
+    || (a.position ?? Number.MAX_SAFE_INTEGER) - (b.position ?? Number.MAX_SAFE_INTEGER)
+    || a.heatId.localeCompare(b.heatId);
 }
 
-function drawBackground(commands: string[]) {
-  rect(commands, 0, 0, pageWidth, pageHeight, "#080909");
-  rect(commands, 0, 0, pageWidth, 68, "#10120f");
-  rect(commands, 0, 147, pageWidth, 2.2, "#c99215");
-  rect(commands, 0, 257, pageWidth, 2.2, "#c99215");
-  rect(commands, 0, 0, 304, 163, "#0f100e");
-
-  for (let x = -100; x < pageWidth; x += 44) {
-    line(commands, x, 0, x + 250, 260, "#151914", 0.8);
-  }
-
-  line(commands, 972, 20, 948, 104, "#f5c41d", 8);
-  line(commands, 993, 20, 970, 92, "#b98515", 3);
-  line(commands, 1028, 23, 1468, 23, "#72520f", 1);
-}
-
-function drawHeader(
+function drawOverviewPage(
   commands: string[],
   input: {
+    championshipName: string;
     season: string;
     generatedAt: string;
     heats: LegendsOverallHeat[];
     standings: LegendsOverallStanding[];
   },
+  rows: OverallRow[],
+  columns: ScoreColumn[],
+  pageNumber: number,
+  pageCount: number,
   hasLogo: boolean,
 ) {
-  if (hasLogo) {
-    image(commands, "Logo", 62, 13, 210, 132);
-  } else {
-    text(commands, "LEGENDS", 78, 72, 38, "F1", "#f4be16");
-  }
-
-  text(commands, "LEGENDS KART SERIES", 344, 50, 20, "F1", "#f4be16", 6);
-  text(commands, "RESULTADO GERAL", 337, 121, 62, "F1", "#44443f", -1);
-  text(commands, "RESULTADO GERAL", 337, 116, 62, "F1", "#f0eee9", -1);
-  text(commands, "CLASSIFICACAO OFICIAL POR PONTUACAO ACUMULADA", 336, 158, 12, "F1", "#c5c0b5", 5);
-
-  text(commands, "TEMPORADA", 1030, 50, 11, "F1", "#9e9a8f", 1.3);
-  text(commands, input.season, 1030, 83, 27, "F1", "#f5c21d");
-  line(commands, 1178, 42, 1206, 94, "#aa7d16", 1.2);
-  text(commands, "ATUALIZADO EM", 1217, 50, 11, "F1", "#9e9a8f", 1.3);
-  text(commands, input.generatedAt, 1217, 80, 20, "F1", "#f0eee9");
-
-  drawSummary(commands, 952, 96, "2", String(input.heats.length), "RESULTADOS", "LANCADOS");
-  drawSummary(commands, 1124, 96, "3", String(input.standings.length), "PILOTOS", "NO CAMPEONATO");
-  drawSummary(commands, 1296, 96, "4", "10 + SF", "BATERIAS", "VALIDAS");
+  drawPageShell(commands, hasLogo);
+  drawDocumentHeader(commands, input, "CLASSIFICAÇÃO GERAL", "VISÃO OFICIAL / LEITURA RÁPIDA");
+  drawMetricRail(commands, input, rows.length, columns);
+  drawPodium(commands, rows);
+  drawTimeline(commands, columns);
+  drawOverviewRules(commands);
+  drawFooter(commands, pageNumber, pageCount, "REGULAMENTO 8.1-8.7 / DADOS PUBLICADOS");
 }
 
-function drawSummary(
-  commands: string[],
-  x: number,
-  y: number,
-  iconText: string,
-  value: string,
-  label1: string,
-  label2: string,
-) {
-  rect(commands, x, y, 172, 72, "#171914");
-  strokeRect(commands, x, y, 172, 72, "#b68413", 1);
-  circleApprox(commands, x + 35, y + 36, 20, "#272922");
-  text(commands, iconText, x + 29, y + 44, 16, "F1", "#f5c21d");
-  text(commands, value, x + 68, y + 35, value.length > 3 ? 25 : 29, "F1", "#f5c21d");
-  text(commands, label1, x + 68, y + 50, 8.5, "F1", "#d2cfc7");
-  text(commands, label2, x + 68, y + 61, 8.5, "F1", "#d2cfc7");
-}
-
-function drawPodium(commands: string[], rows: OverallRow[]) {
-  const configs = [
-    { x: 20, w: 505, rank: "1", title: "LIDER GERAL", fill: "#f4c21d" },
-    { x: 541, w: 440, rank: "2", title: "2o COLOCADO", fill: "#d8d8d4" },
-    { x: 997, w: 430, rank: "3", title: "3o COLOCADO", fill: "#c46f2e" },
-  ];
-
-  rows.slice(0, 3).forEach((row, index) => {
-    const card = configs[index];
-    rect(commands, card.x, 182, card.w, 74, "#151714");
-    strokeRect(commands, card.x, 182, card.w, 74, "#c99315", 1.2);
-    rect(commands, card.x + 42, 193, 54, 48, card.fill);
-    text(commands, card.rank, card.x + 61, 230, 34, "F1", "#111111");
-    text(commands, card.title, card.x + 113, 209, 9, "F1", "#9f9b90");
-    text(commands, trim(row.driverName, index === 0 ? 30 : 22), card.x + 113, 232, 17, "F1", "#f7f5ee");
-    text(commands, formatScore(row.total), card.x + card.w - 106, 235, 28, "F1", "#f6c21d");
-  });
-}
-
-function drawTable(
+function drawRankingPage(
   commands: string[],
   input: {
     season: string;
+    generatedAt: string;
     heats: LegendsOverallHeat[];
-    standings: LegendsOverallStanding[];
   },
   rows: OverallRow[],
-  scoreColumns: ScoreColumn[],
+  columns: ScoreColumn[],
+  totalRows: number,
+  pageNumber: number,
+  pageCount: number,
+  hasLogo: boolean,
 ) {
-  const x = 13;
-  const y = 270;
-  const width = 1466;
-  const height = 704;
-  const headerY = y + 38;
-  const bodyY = headerY + 40;
-  const availableBodyHeight = y + height - 18 - bodyY;
-  const rowHeight = Math.min(18.45, availableBodyHeight / Math.max(1, rows.length));
-  const baseline = Math.min(13.2, rowHeight * 0.74);
-  const bodyFont = Math.min(8.7, rowHeight * 0.53);
-  const smallFont = Math.min(8.2, rowHeight * 0.5);
-  const totalFont = Math.min(15, rowHeight * 0.76);
-  const cols = tableColumns(x + 10, scoreColumns.length, x + width - 10);
+  drawPageShell(commands, hasLogo);
+  const firstPosition = rows[0]?.position ?? 0;
+  const lastPosition = rows[rows.length - 1]?.position ?? 0;
+  const matrixLabel = columns.length ? `${columns[0].label}-${columns[columns.length - 1].label}` : "SEM BATERIAS";
+  drawDocumentHeader(commands, input, "MATRIZ DE PONTUAÇÃO", `PILOTOS ${firstPosition}-${lastPosition} / ${matrixLabel}`);
+  drawMatrixLegend(commands, totalRows, input.heats.length > columns.length);
+  drawRankingTable(commands, rows, columns);
+  drawFooter(commands, pageNumber, pageCount, "P = ORDEM CRONOLÓGICA / D = RESULTADO RETIDO");
+}
 
-  rect(commands, x, y, width, height, "#0f100f");
-  strokeRect(commands, x, y, width, height, "#c69216", 1.8);
-  text(commands, input.season, x + 25, y + 28, 21, "F1", "#f0eee7");
-  text(commands, "-", x + 89, y + 28, 18, "F1", "#dd4c2b");
-  text(commands, "CLASSIFICACAO GERAL", x + 112, y + 28, 21, "F1", "#f0eee7");
-  text(commands, "-", x + 377, y + 28, 18, "F1", "#dd4c2b");
-  text(commands, "LEGENDS KART SERIES", x + 401, y + 28, 21, "F1", "#f0eee7");
-  text(commands, `${input.standings.length} PILOTOS`, x + width - 260, y + 24, 10, "F1", "#d6d3cb");
-  text(commands, "-", x + width - 180, y + 24, 10, "F1", "#dd4c2b");
-  text(commands, `${input.heats.length} RESULTADOS LANCADOS`, x + width - 164, y + 24, 10, "F1", "#d6d3cb");
+function drawPageShell(commands: string[], hasLogo: boolean) {
+  rect(commands, 0, 0, pageWidth, pageHeight, colors.background);
+  rect(commands, 0, 0, pageWidth, 104, colors.header);
+  line(commands, 0, 104, pageWidth, 104, colors.orange, 2);
+  line(commands, 0, 1014, pageWidth, 1014, colors.line, 0.8);
 
-  rect(commands, x + 10, headerY, width - 20, 40, "#171914");
-  if (cols.scores.length > 0) {
-    const scoreStart = cols.scores[0].x;
-    const lastScore = cols.scores[cols.scores.length - 1];
-    centeredText(commands, "PONTUACOES PUBLICADAS", (scoreStart + lastScore.x + lastScore.w) / 2, headerY + 12, 8, "F1", "#bdb8ad");
+  if (hasLogo) {
+    image(commands, "Logo", 38, 16, 96, 80);
+  } else {
+    text(commands, "LEGENDS", 42, 55, 25, "F1", colors.gold, 1.5);
   }
-  drawHeaders(commands, cols, scoreColumns, headerY);
+
+  drawPerforationRail(commands, 148, 19, pageWidth - 148, colors.line);
+}
+
+function drawDocumentHeader(
+  commands: string[],
+  input: { season: string; generatedAt: string },
+  title: string,
+  context: string,
+) {
+  text(commands, "LEGENDS KART SERIES", 166, 31, 13, "F1", colors.gold, 2.5);
+  text(commands, title, 166, 74, 34, "F1", colors.ink, -0.45);
+  text(commands, context, 168, 94, 9.5, "F2", colors.muted, 1.5);
+
+  text(commands, "TEMPORADA", 1110, 29, 8.5, "F1", colors.faint, 1.6);
+  text(commands, input.season, 1110, 63, 23, "F1", colors.gold);
+  line(commands, 1211, 23, 1231, 75, colors.orange, 1.2);
+  text(commands, "ATUALIZADO", 1250, 29, 8.5, "F1", colors.faint, 1.6);
+  text(commands, input.generatedAt, 1250, 61, 16, "F1", colors.ink);
+}
+
+function drawMetricRail(
+  commands: string[],
+  input: { heats: LegendsOverallHeat[] },
+  driverCount: number,
+  columns: ScoreColumn[],
+) {
+  const x = 42;
+  const y = 128;
+  const width = pageWidth - 84;
+  const height = 64;
+  const metrics = [
+    { label: "PILOTOS", value: String(driverCount), note: "na classificação" },
+    { label: "PUBLICADAS", value: String(input.heats.length), note: "baterias lançadas" },
+    { label: "REGULARES", value: String(columns.filter((column) => column.type === "regular").length), note: "em ordem cronológica" },
+    { label: "LIMITE", value: "10 + SF", note: "resultados válidos" },
+  ];
+  rect(commands, x, y, width, height, colors.surface);
+  strokeRect(commands, x, y, width, height, colors.line, 0.8);
+  const metricWidth = width / metrics.length;
+  metrics.forEach((metric, index) => {
+    const metricX = x + index * metricWidth;
+    if (index > 0) line(commands, metricX, y + 11, metricX, y + height - 11, colors.line, 0.8);
+    text(commands, metric.label, metricX + 20, y + 19, 8.5, "F1", colors.orange, 1.4);
+    text(commands, metric.value, metricX + 20, y + 48, 23, "F1", colors.ink);
+    text(commands, metric.note, metricX + metricWidth - 142, y + 47, 8.3, "F2", colors.muted);
+  });
+}
+
+function drawPodium(commands: string[], rows: OverallRow[]) {
+  text(commands, "QUEM LIDERA AGORA", 42, 232, 10, "F1", colors.orange, 1.8);
+  const cards = [
+    { x: 42, width: 443, rank: "1", label: "LIDER GERAL", accent: colors.gold },
+    { x: 524, width: 443, rank: "2", label: "SEGUNDO", accent: "#D2D5CB" },
+    { x: 1006, width: 443, rank: "3", label: "TERCEIRO", accent: colors.orange },
+  ];
+
+  cards.forEach((card, index) => {
+    const row = rows[index];
+    rect(commands, card.x, 250, card.width, 104, colors.surface);
+    strokeRect(commands, card.x, 250, card.width, 104, colors.line, 0.8);
+    rect(commands, card.x, 250, 7, 104, card.accent);
+    rect(commands, card.x + 23, 269, 61, 61, card.accent);
+    text(commands, card.rank, card.x + 44, 311, 32, "F1", colors.darkInk);
+    text(commands, card.label, card.x + 109, 275, 8.5, "F1", colors.faint, 1.3);
+    text(commands, fitText(row?.driverName ?? "A definir", 184, 16, 38), card.x + 109, 304, 16, "F1", colors.ink);
+    text(commands, row ? formatScore(row.total) : "-", card.x + card.width - 128, 307, 25, "F1", colors.gold);
+    text(commands, row ? `${row.wins} vitória${row.wins === 1 ? "" : "s"}` : "", card.x + 109, 326, 8.5, "F2", colors.muted);
+  });
+}
+
+function drawTimeline(commands: string[], columns: ScoreColumn[]) {
+  text(commands, "RÉGUA DA TEMPORADA", 42, 386, 10, "F1", colors.orange, 1.8);
+  text(commands, "P = resultado publicado em ordem cronológica; a Super Final entra como SF quando publicada.", 229, 386, 9, "F2", colors.muted);
+
+  const visibleColumns = columns.slice(0, 14);
+  const perRow = 7;
+  const gap = 9;
+  const x = 42;
+  const width = (pageWidth - 84 - gap * (perRow - 1)) / perRow;
+  visibleColumns.forEach((column, index) => {
+    const row = Math.floor(index / perRow);
+    const columnIndex = index % perRow;
+    const cellX = x + columnIndex * (width + gap);
+    const cellY = 404 + row * 64;
+    rect(commands, cellX, cellY, width, 52, colors.surface);
+    strokeRect(commands, cellX, cellY, width, 52, colors.line, 0.8);
+    rect(commands, cellX, cellY, width, 5, column.type === "super_final" ? colors.gold : colors.orange);
+    drawPerforations(commands, cellX + 12, cellY + 12, width - 24, colors.line);
+    text(commands, column.label, cellX + 13, cellY + 30, 12, "F1", colors.ink);
+    text(commands, column.date, cellX + width - 52, cellY + 30, 8.5, "F1", colors.gold);
+    text(commands, fitText(column.title, width - 26, 8.5, 24), cellX + 13, cellY + 44, 8.5, "F2", colors.muted);
+  });
+
+  if (columns.length > visibleColumns.length) {
+    text(commands, `+ ${columns.length - visibleColumns.length} resultados na matriz`, 42, 548, 8.5, "F2", colors.orange);
+  }
+}
+
+function drawOverviewRules(commands: string[]) {
+  const y = 570;
+  const leftX = 42;
+  const gap = 18;
+  const leftWidth = 706;
+  const rightX = leftX + leftWidth + gap;
+  const rightWidth = pageWidth - rightX - 42;
+  const height = 386;
+
+  rect(commands, leftX, y, leftWidth, height, colors.surface);
+  rect(commands, rightX, y, rightWidth, height, colors.surface);
+  strokeRect(commands, leftX, y, leftWidth, height, colors.line, 0.8);
+  strokeRect(commands, rightX, y, rightWidth, height, colors.line, 0.8);
+
+  text(commands, "COMO NASCE A PONTUAÇÃO", leftX + 22, y + 32, 10, "F1", colors.orange, 1.6);
+  text(commands, "BATERIA REGULAR", leftX + 22, y + 70, 9, "F1", colors.gold, 1.2);
+  text(commands, "10,000 - diferença em segundos para o melhor tempo", leftX + 22, y + 94, 14, "F1", colors.ink);
+  text(commands, "Ex.: 0,500 s mais lento = 9,500 pontos.", leftX + 22, y + 116, 10, "F2", colors.muted);
+
+  drawRuleLine(commands, leftX + 22, y + 157, "8.1", "Cada resultado parte da melhor volta da bateria.");
+  drawRuleLine(commands, leftX + 22, y + 191, "8.2", "Empate: primeiro registro mantém o tempo; os seguintes somam 0,001 s.");
+  drawRuleLine(commands, leftX + 22, y + 225, "8.3", "Diferença superior a 9 s: pontuação mínima de 1,000.");
+  drawRuleLine(commands, leftX + 22, y + 259, "8.4", "Até 10 melhores corridas; ausências e DSQ podem ser descartados.");
+  drawRuleLine(commands, leftX + 22, y + 293, "8.5", "A Super Final soma uma corrida extra com base de 5,000.");
+  drawRuleLine(commands, leftX + 22, y + 327, "8.6", "O descarte acontece ao longo da competição.");
+
+  text(commands, "COMO LER A MATRIZ", rightX + 22, y + 32, 10, "F1", colors.orange, 1.6);
+  drawStateKey(commands, rightX + 22, y + 69, colors.gold, "V", "vitória / resultado de 10,000");
+  drawStateKey(commands, rightX + 22, y + 105, colors.discard, "D", "retido / pior resultado, não soma");
+  drawStateKey(commands, rightX + 22, y + 141, colors.surfaceAlt, "-", "sem resultado publicado / ausência");
+  drawStateKey(commands, rightX + 22, y + 177, colors.orange, "SF", "Super Final, quando existir");
+
+  text(commands, "DESEMPATE 8.7", rightX + 22, y + 232, 9, "F1", colors.gold, 1.2);
+  text(commands, "1. maior número de vitórias", rightX + 22, y + 258, 11, "F1", colors.ink);
+  text(commands, "2. melhor pontuação abaixo das vitórias", rightX + 22, y + 281, 11, "F1", colors.ink);
+  text(commands, "3. melhor 2ª pontuação abaixo das vitórias", rightX + 22, y + 304, 11, "F1", colors.ink);
+  text(commands, "4. assim sucessivamente até a última válida", rightX + 22, y + 327, 11, "F1", colors.ink);
+  text(commands, "5. sorteio", rightX + 22, y + 350, 11, "F1", colors.orange);
+}
+
+function drawRuleLine(commands: string[], x: number, y: number, rule: string, value: string) {
+  text(commands, rule, x, y, 8.5, "F1", colors.orange, 0.8);
+  text(commands, fitText(value, 600, 9.5, 85), x + 43, y, 9.5, "F2", colors.ink);
+}
+
+function drawStateKey(commands: string[], x: number, y: number, fill: string, marker: string, label: string) {
+  rect(commands, x, y - 13, 37, 24, fill);
+  strokeRect(commands, x, y - 13, 37, 24, colors.line, 0.6);
+  centeredText(commands, marker, x + 18.5, y + 4, marker.length > 1 ? 8 : 11, "F1", fill === colors.gold ? colors.darkInk : colors.ink);
+  text(commands, label, x + 50, y + 4, 9.5, "F2", colors.ink);
+}
+
+function drawMatrixLegend(commands: string[], totalRows: number, hasMoreColumns: boolean) {
+  const y = 128;
+  text(commands, `${totalRows} pilotos / cada linha mantém a pontuação por bateria para conferência.`, 42, y + 15, 9, "F2", colors.muted);
+  text(commands, "V vitória", 700, y + 15, 8.5, "F1", colors.gold);
+  text(commands, "D retido", 794, y + 15, 8.5, "F1", colors.discardText);
+  text(commands, "- sem resultado", 892, y + 15, 8.5, "F1", colors.muted);
+  if (hasMoreColumns) {
+    text(commands, "continuação das baterias", 1080, y + 15, 8.5, "F1", colors.orange);
+  }
+}
+
+function drawRankingTable(commands: string[], rows: OverallRow[], scoreColumns: ScoreColumn[]) {
+  const x = 22;
+  const y = 168;
+  const width = pageWidth - 44;
+  const headerHeight = 60;
+  const bottom = 976;
+  const bodyY = y + headerHeight;
+  const rowHeight = Math.min(42, (bottom - bodyY) / Math.max(rows.length, 1));
+  const baseline = rowHeight * 0.64;
+  const fontSize = Math.min(11, Math.max(9.2, rowHeight * 0.31));
+  const scoreFontSize = Math.min(9.7, Math.max(8.3, rowHeight * 0.27));
+  const columns = tableColumns(x + 8, scoreColumns.length, x + width - 8);
+
+  rect(commands, x, y, width, bottom - y, colors.surface);
+  strokeRect(commands, x, y, width, bottom - y, colors.line, 0.9);
+  rect(commands, x + 8, y + 8, width - 16, headerHeight - 8, colors.header);
+  drawTableHeaders(commands, columns, scoreColumns, y + 8);
 
   rows.forEach((row, index) => {
     const top = bodyY + index * rowHeight;
-    const fill = index % 2 === 0 ? "#20231d" : "#151815";
-    rect(commands, x + 10, top, width - 20, rowHeight, fill);
+    const fill = index % 2 === 0 ? colors.surface : colors.surfaceAlt;
+    rect(commands, x + 8, top, width - 16, rowHeight, fill);
 
-    const posFill = row.position <= 10 ? "#f0c11f" : "#e8e6de";
-    rect(commands, cols.pos.x, top, cols.pos.w, rowHeight, posFill);
-    text(commands, String(row.position), cols.pos.x + 26, top + baseline, bodyFont, "F1", "#111111");
-    text(commands, trim(row.driverName, 34), cols.driver.x + 10, top + baseline, bodyFont, "F1", row.position <= 3 ? "#f2c021" : "#f3f0e8");
-    text(commands, `${row.validRegularResults}/10`, cols.bat.x + 24, top + baseline, smallFont, "F1", "#f3f0e8");
-    text(commands, String(row.wins), cols.vit.x + 26, top + baseline, smallFont, "F1", "#f3f0e8");
+    const rankFill = row.position <= 3 ? colors.gold : colors.header;
+    rect(commands, columns.pos.x, top, columns.pos.w, rowHeight, rankFill);
+    centeredText(commands, String(row.position), columns.pos.x + columns.pos.w / 2, top + baseline, fontSize, "F1", row.position <= 3 ? colors.darkInk : colors.ink);
+    text(commands, fitText(row.driverName, columns.driver.w - 18, fontSize, 44), columns.driver.x + 10, top + baseline, fontSize, "F1", row.position <= 3 ? colors.gold : colors.ink);
+    centeredText(commands, `${row.validRegularResults}/10`, columns.valid.x + columns.valid.w / 2, top + baseline, fontSize - 0.5, "F1", colors.ink);
+    centeredText(commands, String(row.discardedCount), columns.discarded.x + columns.discarded.w / 2, top + baseline, fontSize - 0.5, "F1", row.discardedCount ? colors.discardText : colors.faint);
+    centeredText(commands, String(row.wins), columns.wins.x + columns.wins.w / 2, top + baseline, fontSize - 0.5, "F1", row.wins ? colors.gold : colors.faint);
 
     scoreColumns.forEach((column, columnIndex) => {
-      const col = cols.scores[columnIndex];
-      const result = column.heatId ? row.heatScores.get(column.heatId) : undefined;
-      if (!result) {
-        centeredText(commands, "X", col.x + col.w / 2, top + baseline, smallFont, "F2", "#a7a7a0");
-        return;
-      }
-      const discarded = row.discardedHeatIds.has(result.heatId);
-      const hot = !discarded && (result.position === 1 || result.score >= 9.99);
-      if (hot) rect(commands, col.x, top, col.w, rowHeight, "#f2bf1d");
-      if (discarded) rect(commands, col.x, top, col.w, rowHeight, "#3b2d16");
-      centeredText(commands, formatScore(result.score), col.x + col.w / 2, top + baseline, smallFont, "F1", hot ? "#111111" : discarded ? "#d1a653" : "#f3f0e8");
+      const scoreColumn = columns.scores[columnIndex];
+      const result = row.heatScores.get(column.heatId);
+      drawScoreCell(commands, column, result, row.discardedHeatIds.has(column.heatId), scoreColumn.x, top, scoreColumn.w, rowHeight, scoreFontSize);
     });
 
-    text(commands, formatScore(row.total), cols.total.x + 21, top + Math.min(14.8, rowHeight * 0.83), totalFont, "F1", "#f4bd18");
-    text(commands, `${row.position}o`, cols.final.x + 23, top + baseline, smallFont, "F1", "#f3f0e8");
-    line(commands, x + 10, top + rowHeight, x + width - 10, top + rowHeight, "#52421b", 0.45);
+    rect(commands, columns.total.x, top, columns.total.w, rowHeight, colors.header);
+    text(commands, formatScore(row.total), columns.total.x + 10, top + baseline, Math.min(14, fontSize + 2.5), "F1", colors.gold);
+    line(commands, x + 8, top + rowHeight, x + width - 8, top + rowHeight, colors.line, 0.5);
   });
 
-  const bottom = bodyY + rows.length * rowHeight;
-  [...Object.values(cols.fixed), ...cols.scores, cols.total, cols.final].forEach((col) => {
-    line(commands, col.x, headerY, col.x, bottom, "#7a5a16", 0.45);
-  });
+  const tableBottom = bodyY + rows.length * rowHeight;
+  const verticals: TableColumn[] = [columns.pos, columns.driver, columns.valid, columns.discarded, columns.wins, ...columns.scores, columns.total];
+  verticals.forEach((column) => line(commands, column.x, y + 8, column.x, tableBottom, colors.line, 0.45));
+  line(commands, columns.total.x + columns.total.w, y + 8, columns.total.x + columns.total.w, tableBottom, colors.line, 0.45);
+
 }
 
-function drawHeaders(commands: string[], cols: ReturnType<typeof tableColumns>, scoreColumns: ScoreColumn[], y: number) {
-  const header = (label: string, x: number, w: number) => {
-    text(commands, label, x + Math.max(8, w / 2 - label.length * 2.3), y + 25, label.length > 5 ? 7.4 : 8.5, "F1", "#f1eee6");
-  };
-  header("POS", cols.pos.x, cols.pos.w);
-  header("PILOTO", cols.driver.x, cols.driver.w);
-  header("BAT", cols.bat.x, cols.bat.w);
-  header("VIT", cols.vit.x, cols.vit.w);
+function drawScoreCell(
+  commands: string[],
+  column: ScoreColumn,
+  result: LegendsOverallResult | undefined,
+  discarded: boolean,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fontSize: number,
+) {
+  if (!result) {
+    centeredText(commands, "-", x + width / 2, y + height * 0.64, fontSize + 0.5, "F1", colors.faint);
+    return;
+  }
+
+  if (discarded) {
+    rect(commands, x, y, width, height, colors.discard);
+    rect(commands, x, y, width, 3, colors.orange);
+    text(commands, "D", x + width - 12, y + 10, 6.5, "F1", colors.discardText);
+  } else if (result.position === 1) {
+    rect(commands, x, y, width, height, colors.gold);
+    text(commands, "V", x + width - 12, y + 10, 6.5, "F1", colors.darkInk);
+  }
+
+  const color = discarded ? colors.discardText : result.position === 1 ? colors.darkInk : colors.ink;
+  centeredText(commands, formatScore(result.score), x + width / 2, y + height * 0.64, fontSize, "F1", color);
+  if (column.type === "super_final" && !discarded) {
+    line(commands, x + 8, y + height - 4, x + width - 8, y + height - 4, colors.gold, 1);
+  }
+}
+
+function drawTableHeaders(commands: string[], columns: ReturnType<typeof tableColumns>, scoreColumns: ScoreColumn[], y: number) {
+  centeredText(commands, "POS", columns.pos.x + columns.pos.w / 2, y + 38, 8.2, "F1", colors.ink);
+  text(commands, "PILOTO", columns.driver.x + 10, y + 38, 8.2, "F1", colors.ink, 1.1);
+  centeredText(commands, "VÁLIDAS", columns.valid.x + columns.valid.w / 2, y + 30, 7.4, "F1", colors.ink);
+  centeredText(commands, "/10", columns.valid.x + columns.valid.w / 2, y + 45, 7.4, "F2", colors.muted);
+  centeredText(commands, "RET.", columns.discarded.x + columns.discarded.w / 2, y + 38, 7.4, "F1", colors.ink);
+  centeredText(commands, "VIT.", columns.wins.x + columns.wins.w / 2, y + 38, 7.4, "F1", colors.ink);
   scoreColumns.forEach((column, index) => {
-    const col = cols.scores[index];
-    const [top, bottom] = column.label.split(" ");
-    centeredText(commands, top, col.x + col.w / 2, y + 19, 7.4, "F1", "#f1eee6");
-    centeredText(commands, bottom ?? "", col.x + col.w / 2, y + 30, 7.4, "F1", "#f1eee6");
+    const scoreColumn = columns.scores[index];
+    centeredText(commands, column.label, scoreColumn.x + scoreColumn.w / 2, y + 28, 7.2, "F1", colors.ink);
+    centeredText(commands, column.date, scoreColumn.x + scoreColumn.w / 2, y + 44, 7, "F2", column.type === "super_final" ? colors.gold : colors.muted);
   });
-  header("TOTAL", cols.total.x, cols.total.w);
-  header("POS", cols.final.x, cols.final.w);
+  centeredText(commands, "TOTAL", columns.total.x + columns.total.w / 2, y + 38, 8, "F1", colors.gold);
 }
 
 function tableColumns(startX: number, scoreColumnCount: number, rightEdge: number) {
-  const pos = { x: startX, w: 59 };
-  const driver = { x: pos.x + pos.w, w: 293 };
-  const bat = { x: driver.x + driver.w, w: 72 };
-  const vit = { x: bat.x + bat.w, w: 58 };
-  const total = { x: 0, w: 93 };
-  const final = { x: total.x + total.w, w: 56 };
-  const scoreAvailable = rightEdge - (vit.x + vit.w) - total.w - final.w;
-  const scoreWidth = scoreColumnCount > 0 ? Math.min(73, scoreAvailable / scoreColumnCount) : 0;
+  const pos = { x: startX, w: 52 };
+  const driver = { x: pos.x + pos.w, w: 270 };
+  const valid = { x: driver.x + driver.w, w: 72 };
+  const discarded = { x: valid.x + valid.w, w: 54 };
+  const wins = { x: discarded.x + discarded.w, w: 50 };
+  const total = { x: 0, w: 101 };
+  const scoreAvailable = rightEdge - (wins.x + wins.w) - total.w;
+  const scoreWidth = scoreColumnCount > 0 ? scoreAvailable / scoreColumnCount : 0;
   const scores = Array.from({ length: scoreColumnCount }, (_, index) => ({
-    x: vit.x + vit.w + index * scoreWidth,
+    x: wins.x + wins.w + index * scoreWidth,
     w: scoreWidth,
   }));
-  total.x = vit.x + vit.w + scoreWidth * scoreColumnCount;
-  final.x = total.x + total.w;
-  return { pos, driver, bat, vit, scores, total, final, fixed: { pos, driver, bat, vit } };
+  total.x = wins.x + wins.w + scoreWidth * scoreColumnCount;
+  return { pos, driver, valid, discarded, wins, scores, total };
 }
 
-function drawFooter(commands: string[], hasLogo: boolean) {
-  text(commands, "RESULTADO GERAL OFICIAL - PONTOS POR BATERIA PUBLICADA, TOTAL ACUMULADO E POSICAO FINAL.", 31, 1026, 8, "F2", "#b8b5ab");
-  line(commands, 488, 1020, 699, 1020, "#bc8315", 1);
-  if (hasLogo) image(commands, "Logo", 718, 997, 55, 48);
-  line(commands, 797, 1020, 1127, 1020, "#bc8315", 1);
-  text(commands, "LEGENDS KART SERIES", 1162, 1026, 11, "F1", "#f3bd18", 2);
-  text(commands, "/  PAGINA 1 DE 1", 1356, 1026, 11, "F2", "#bdb9ad", 1);
+function drawFooter(commands: string[], pageNumber: number, pageCount: number, leftText: string) {
+  text(commands, leftText, 42, 1035, 8.2, "F2", colors.faint, 0.5);
+  line(commands, 450, 1030, 650, 1030, colors.orange, 1);
+  text(commands, "LEGENDS KART SERIES", 1130, 1035, 9.5, "F1", colors.gold, 1.8);
+  text(commands, `PÁGINA ${pageNumber} DE ${pageCount}`, 1341, 1035, 8.2, "F2", colors.muted, 0.6);
 }
 
-function buildScoreColumns(heats: LegendsOverallHeat[]): ScoreColumn[] {
-  const regularHeats = heats.filter((heat) => heat.type === "regular");
-  const columns = regularHeats.map((heat, index) => ({
-    label: `P ${String(index + 1).padStart(2, "0")}`,
-    heatId: heat.id,
-  }));
-  const superFinal = heats.find((heat) => heat.type === "super_final");
-  if (superFinal) columns.push({ label: "SUPER FINAL", heatId: superFinal.id });
-  return columns;
+function drawPerforationRail(commands: string[], x: number, y: number, width: number, color: string) {
+  line(commands, x, y, x + width, y, color, 0.7);
+  for (let current = x + 12; current < x + width - 8; current += 27) {
+    rect(commands, current, y - 3, 10, 6, color);
+  }
 }
 
-function makePdf(stream: string, logo: PdfImage | null): Uint8Array {
+function drawPerforations(commands: string[], x: number, y: number, width: number, color: string) {
+  for (let current = x; current < x + width; current += 22) {
+    rect(commands, current, y, 8, 3, color);
+  }
+}
+
+function makePdf(streams: string[], logo: PdfImage | null): Uint8Array {
+  const pageCount = streams.length;
+  const pageStartId = 6;
+  const contentStartId = pageStartId + pageCount;
   const objects: string[] = [
     "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [6 0 R] /Count 1 >>",
+    `<< /Type /Pages /Kids [${Array.from({ length: pageCount }, (_, index) => `${pageStartId + index} 0 R`).join(" ")}] /Count ${pageCount} >>`,
     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>",
     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
   ];
@@ -338,8 +530,12 @@ function makePdf(stream: string, logo: PdfImage | null): Uint8Array {
   }
 
   const xObject = logo ? "/XObject << /Logo 5 0 R >>" : "";
-  objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> ${xObject} >> /Contents 7 0 R >>`);
-  objects.push(`<< /Length ${Buffer.byteLength(stream, "binary")} >>\nstream\n${stream}\nendstream`);
+  streams.forEach((stream, index) => {
+    objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> ${xObject} >> /Contents ${contentStartId + index} 0 R >>`);
+  });
+  streams.forEach((stream) => {
+    objects.push(`<< /Length ${Buffer.byteLength(stream, "binary")} >>\nstream\n${stream}\nendstream`);
+  });
 
   const adjustedObjects = objects.map((object, index) => `${index + 1} 0 obj\n${object}\nendobj\n`);
   let pdf = "%PDF-1.4\n";
@@ -382,10 +578,6 @@ function line(commands: string[], x1: number, y1: number, x2: number, y2: number
   commands.push(`${fixed(x1)} ${fixed(pageHeight - y1)} m ${fixed(x2)} ${fixed(pageHeight - y2)} l S`);
 }
 
-function circleApprox(commands: string[], x: number, y: number, radius: number, color: string) {
-  rect(commands, x - radius, y - radius, radius * 2, radius * 2, color);
-}
-
 function image(commands: string[], name: string, x: number, y: number, width: number, height: number) {
   commands.push("q");
   commands.push(`${fixed(width)} 0 0 ${fixed(height)} ${fixed(x)} ${fixed(pageHeight - y - height)} cm`);
@@ -423,7 +615,7 @@ function centeredText(
   font: "F1" | "F2",
   color: string,
 ) {
-  const estimatedWidth = value.length * size * 0.48;
+  const estimatedWidth = textWidth(value, size);
   text(commands, value, centerX - estimatedWidth / 2, y, size, font, color);
 }
 
@@ -441,13 +633,66 @@ function escapePdf(value: string): string {
 }
 
 function sanitizePdfText(value: string): string {
-  return value.replace(/[º°]/g, "o").replace(/[^\x20-\xff]/g, "");
+  return value
+    .replace(/[º°]/g, "o")
+    .replace(/[–—]/g, "-")
+    .replace(/[“”]/g, '"')
+    .replace(/[’]/g, "'")
+    .replace(/[^\x20-\xff]/g, "");
 }
 
 function normalizeKey(value: string): string {
   return value.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-function trim(value: string, maxLength: number): string {
-  return value.length <= maxLength ? value : `${value.slice(0, Math.max(0, maxLength - 3))}...`;
+function normalizeHeatType(value: string): "regular" | "super_final" {
+  return value === "super_final" || value === "super-final" ? "super_final" : "regular";
+}
+
+function buildScoreColumns(heats: LegendsOverallHeat[]): ScoreColumn[] {
+  const orderedHeats = [...heats].sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title, "pt-BR"));
+  const regularColumns = orderedHeats
+    .filter((heat) => normalizeHeatType(heat.type) === "regular")
+    .map((heat, index) => ({
+      label: `P${String(index + 1).padStart(2, "0")}`,
+      heatId: heat.id,
+      date: formatDateShort(heat.date),
+      title: heat.title,
+      type: "regular" as const,
+    }));
+  const superFinalColumns = orderedHeats
+    .filter((heat) => normalizeHeatType(heat.type) === "super_final")
+    .map((heat) => ({
+      label: "SF",
+      heatId: heat.id,
+      date: formatDateShort(heat.date),
+      title: heat.title,
+      type: "super_final" as const,
+    }));
+  return [...regularColumns, ...superFinalColumns];
+}
+
+function formatDateShort(value: string): string {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[3]}/${match[2]}` : value.slice(0, 5);
+}
+
+function chunk<T>(values: T[], size: number): T[][] {
+  const groups: T[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    groups.push(values.slice(index, index + size));
+  }
+  return groups;
+}
+
+function textWidth(value: string, size: number): number {
+  return value.length * size * 0.48;
+}
+
+function fitText(value: string, maxWidth: number, size: number, maxLength: number): string {
+  let candidate = value.length <= maxLength ? value : `${value.slice(0, Math.max(0, maxLength - 3))}...`;
+  while (candidate.length > 4 && textWidth(candidate, size) > maxWidth) {
+    candidate = `${candidate.slice(0, -4)}...`;
+  }
+  return candidate;
 }

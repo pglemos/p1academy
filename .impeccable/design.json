@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-14T05:20:00.000Z",
+  "title": "Design System: Legends Kart Series Official Reports",
+  "extensions": {
+    "colorMeta": {
+      "background": { "role": "neutral", "displayName": "True Black", "canonical": "#090B0B", "tonalRamp": ["#090B0B", "#101414", "#151A19", "#1A201E", "#4B5147", "#858A80", "#B7B8AE", "#F2F0E7"] },
+      "legends-gold": { "role": "primary", "displayName": "Legends Gold", "canonical": "#F2B51B", "tonalRamp": ["#3A2B06", "#684C08", "#986F0C", "#C28F12", "#F2B51B", "#F6C64C", "#F9DA82", "#FFF0C3"] },
+      "tape-orange": { "role": "secondary", "displayName": "Tape Orange", "canonical": "#ED6430", "tonalRamp": ["#3D160B", "#6D2613", "#9E3C1D", "#C94F27", "#ED6430", "#F48B63", "#F8B69C", "#FDE1D7"] },
+      "discard-brown": { "role": "tertiary", "displayName": "Retained Brown", "canonical": "#442C22", "tonalRamp": ["#160D09", "#241610", "#342119", "#442C22", "#684334", "#8F604D", "#C2917B", "#EAC8B7"] },
+      "ink": { "role": "neutral", "displayName": "Work-Print White", "canonical": "#F2F0E7", "tonalRamp": ["#20211F", "#3E3F3B", "#686963", "#92938A", "#B7B8AE", "#D0CEC4", "#E1DFD6", "#F2F0E7"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Report Display", "purpose": "Large report titles and overview identity." },
+      "body": { "displayName": "Workhorse Sans", "purpose": "Readable formulas, pilot names and score cells with extractable text." },
+      "label": { "displayName": "Tracked Labels", "purpose": "Small uppercase section names and matrix headers." }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": [],
+    "components": [
+      {
+        "name": "Score Cell",
+        "kind": "custom",
+        "refersTo": "score-cell",
+        "description": "A three-decimal score with explicit winner, retained or unavailable state.",
+        "html": "<div class=\"ds-score-cell\"><span>9,645</span><small>V</small></div>",
+        "css": ".ds-score-cell { background: #151A19; color: #F2F0E7; min-width: 56px; padding: 10px 8px; font: 700 10px Helvetica, Arial, sans-serif; text-align: center; } .ds-score-cell small { color: #ED6430; display: block; font-size: 7px; } .ds-score-cell:hover { background: #1A201E; } .ds-score-cell:focus-visible { outline: 2px solid #F2B51B; outline-offset: 2px; }"
+      },
+      {
+        "name": "Report Frame",
+        "kind": "card",
+        "refersTo": "report-frame",
+        "description": "A square-cornered work surface for leaders, rules or chronology.",
+        "html": "<section class=\"ds-report-frame\"><h3>RÉGUA DA TEMPORADA</h3><p>P01 · 01/07</p></section>",
+        "css": ".ds-report-frame { background: #151A19; color: #F2F0E7; border: 1px solid #4B5147; border-top: 5px solid #ED6430; border-radius: 0; padding: 14px 22px; font-family: Helvetica, Arial, sans-serif; } .ds-report-frame h3 { color: #ED6430; font-size: 10px; letter-spacing: 1.6px; margin: 0 0 12px; } .ds-report-frame p { color: #B7B8AE; font-size: 9px; margin: 0; }"
+      }
+    ]
+  },
+  "narrative": {
+    "northStar": "The Work-Print Rail",
+    "overview": "The official report treats the championship as a film cutting bench: each published heat is a frame on a chronological rail, the score is the working print, and a discarded result remains visible as retained material rather than disappearing. The system is flat, high-contrast and audit-first.",
+    "keyCharacteristics": ["Chronological heat rail", "Explicit V/D/- state markers", "Separated totals", "Rules before matrix"],
+    "rules": [
+      { "name": "The Marking-Tape Rule", "body": "Orange marks state and wayfinding; it never replaces the data itself.", "section": "colors" },
+      { "name": "The Work-Print Rule", "body": "A retained result stays visible and labeled even when it does not enter the total.", "section": "colors" },
+      { "name": "The Data-First Rule", "body": "Display scale belongs to the title, leaders and totals; the matrix never sacrifices a score to create a dramatic headline.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Do not add a shadow or decorative texture where a tonal surface or a 1-point rule already explains the hierarchy.", "section": "elevation" }
+    ],
+    "dos": ["Do keep the regulation summary before the first ranking matrix.", "Do label chronology, victory, retained discard, absence and Super Final.", "Do preserve three decimal places and exact driver spelling.", "Do split long rankings before reducing reading size."],
+    "donts": ["Don't compress all pilots into a single page.", "Don't use an accent without a textual state marker.", "Don't hide discarded results.", "Don't invent a Super Final or lottery outcome."]
+  }
+}
