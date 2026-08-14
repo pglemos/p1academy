@@ -183,7 +183,8 @@ function drawTable(
   const height = 704;
   const headerY = y + 38;
   const bodyY = headerY + 40;
-  const rowHeight = Math.min(18.45, Math.max(13.4, (y + height - 18 - bodyY) / Math.max(1, rows.length)));
+  const availableBodyHeight = y + height - 18 - bodyY;
+  const rowHeight = Math.min(18.45, availableBodyHeight / Math.max(1, rows.length));
   const baseline = Math.min(13.2, rowHeight * 0.74);
   const bodyFont = Math.min(8.7, rowHeight * 0.53);
   const smallFont = Math.min(8.2, rowHeight * 0.5);
