@@ -109,7 +109,6 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
         .eq("is_published", true)
         .order("heat_date", { ascending: false })
         .order("created_at", { ascending: false })
-        .limit(12)
         .returns<HeatRow[]>(),
     ]);
 
