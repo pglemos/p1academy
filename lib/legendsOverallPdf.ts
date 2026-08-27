@@ -308,7 +308,7 @@ function drawTimeline(commands: string[], columns: ScoreColumn[]) {
     drawPerforations(commands, cellX + 12, cellY + 12, width - 24, colors.line);
     text(commands, column.label, cellX + 13, cellY + 30, 12, "F1", colors.ink);
     text(commands, column.date, cellX + width - 52, cellY + 30, 8.5, "F1", colors.gold);
-    text(commands, fitText(column.title, width - 26, 8.5, 24), cellX + 13, cellY + 44, 8.5, "F2", colors.muted);
+    text(commands, fitText(column.title, width - 26, 8.5, 60), cellX + 13, cellY + 44, 8.5, "F2", colors.muted);
   });
 
   if (columns.length > visibleColumns.length) {
@@ -470,7 +470,10 @@ function drawTableHeaders(commands: string[], columns: ReturnType<typeof tableCo
   scoreColumns.forEach((column, index) => {
     const scoreColumn = columns.scores[index];
     const batteryNumber = getLegendsHeatNumber(column.title);
-    const batteryLabel = batteryNumber === null ? column.label : `B${String(batteryNumber).padStart(2, "0")}`;
+    const roman = getLegendsRomanNumeral(column.title);
+    const batteryLabel = batteryNumber === null
+      ? column.label
+      : `B${String(batteryNumber).padStart(2, "0")}${roman ? ` / ${roman}` : ""}`;
     centeredText(commands, batteryLabel, scoreColumn.x + scoreColumn.w / 2, y + 20, 7, "F1", colors.ink);
     centeredText(commands, column.label, scoreColumn.x + scoreColumn.w / 2, y + 33, 6.5, "F2", colors.muted);
     centeredText(commands, column.date, scoreColumn.x + scoreColumn.w / 2, y + 47, 7, "F2", column.type === "super_final" ? colors.gold : colors.muted);
@@ -660,7 +663,7 @@ function buildScoreColumns(heats: LegendsOverallHeat[]): ScoreColumn[] {
       label: `P${String(index + 1).padStart(2, "0")}`,
       heatId: heat.id,
       date: formatDateShort(heat.date),
-      title: heat.title,
+      title: formatRegularHeatTitle(index + 1),
       type: "regular" as const,
     }));
   const superFinalColumns = orderedHeats
@@ -673,6 +676,30 @@ function buildScoreColumns(heats: LegendsOverallHeat[]): ScoreColumn[] {
       type: "super_final" as const,
     }));
   return [...regularColumns, ...superFinalColumns];
+}
+
+function formatRegularHeatTitle(number: number) {
+  const roman = toRoman(number);
+  return `Bateria ${String(number).padStart(2, "0")} - Legends ${roman}`;
+}
+
+function getLegendsRomanNumeral(title: string) {
+  return title.match(/Legends\s+([IVXLCDM]+)/i)?.[1]?.toUpperCase() ?? null;
+}
+
+function toRoman(value: number) {
+  const numerals: Array<[number, string]> = [[10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]];
+  let remainder = value;
+  let result = "";
+
+  numerals.forEach(([arabic, roman]) => {
+    while (remainder >= arabic) {
+      result += roman;
+      remainder -= arabic;
+    }
+  });
+
+  return result;
 }
 
 function formatDateShort(value: string): string {
