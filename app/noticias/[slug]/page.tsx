@@ -68,8 +68,34 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: NewsDetailProps) {
   const { slug } = await params;
   const post = posts.find((item) => item.slug === slug);
+  if (!post) {
+    return {
+      title: "Notícia não encontrada | P1 Academy",
+    };
+  }
+
   return {
-    title: post ? `${post.title} | P1 Academy` : "Notícia | P1 Academy",
+    title: `${post.title} | P1 Academy`,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: "article",
+      publishedTime: post.date,
+      authors: [post.source],
+      images: [
+        {
+          url: post.image,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [post.image],
+    },
   };
 }
 
@@ -86,29 +112,33 @@ export default async function NewsDetailPage({ params }: NewsDetailProps) {
   return (
     <>
       <PageHero title={post.title} text={post.excerpt} image={post.image} compact />
-      <section className="section">
+      <article className="section" itemScope itemType="https://schema.org/NewsArticle">
+        <meta itemProp="headline" content={post.title} />
+        <meta itemProp="datePublished" content={post.date} />
+        <meta itemProp="image" content={post.image} />
+        <meta itemProp="author" content={post.source} />
         <div className="container split news-detail-layout">
           <Reveal>
             <MediaFrame label={post.source} src={post.image} alt={post.title} tall />
           </Reveal>
-          <Reveal className="card article-detail">
+          <Reveal className="card article-detail" itemProp="articleBody">
             <p className="news-meta">{post.date} | {post.category} | {post.source}</p>
             <p className="source-disclosure">{getSourceDisclosure(post)}</p>
             <h3>{post.category}</h3>
-            {articleContent.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
+            {articleContent.map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
             ))}
             <div className="button-row">
               <a className="btn primary" href={post.sourceUrl} target="_blank" rel="noreferrer">
-                Fonte original
+                Acessar Fonte Original ({post.source})
               </a>
               <Link className="btn secondary" href="/noticias">
-                Voltar para notícias
+                Voltar para Notícias
               </Link>
             </div>
           </Reveal>
         </div>
-      </section>
+      </article>
     </>
   );
 }
