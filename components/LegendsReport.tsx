@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { isSuperFinalHeatType, type P1ClassificationCell, type P1ClassificationHeat, type P1ClassificationRow, type P1RankingRow, type P1ResultRow } from "@/lib/p1Types";
-import { formatScore, formatTimingValue, getLegendsHeatNumber } from "@/lib/legendsScoring";
+import type { P1ClassificationRow, P1RankingRow, P1ResultRow } from "@/lib/p1Types";
+import { formatTimingValue } from "@/lib/legendsScoring";
 
 type ReportMastheadProps = {
   publishedAt: string | null;
@@ -79,93 +79,30 @@ export function ReportTitleBand({
   );
 }
 
-export function ClassificationTable({
-  heats,
-  rows,
-  limit,
-  labelledBy,
-  completedCount,
-}: {
-  heats: P1ClassificationHeat[];
-  rows: P1ClassificationRow[];
-  limit?: number;
-  labelledBy?: string;
-  completedCount?: number;
-}) {
-  const regularHeats = heats.filter((heat) => !isSuperFinalHeatType(heat.type));
-  const superFinal = heats.find((heat) => isSuperFinalHeatType(heat.type));
-  const visibleRows = limit ? rows.slice(0, limit) : rows;
-  const hintId = labelledBy ? `${labelledBy}-scroll-hint` : "classification-table-scroll-hint";
-
-  if (!heats.length || !rows.length) {
-    return <p className="report-empty-state">Nenhuma classificação publicada no momento.</p>;
+export function ReportLeaderStrip({ rows }: { rows: P1ClassificationRow[] }) {
+  if (!rows.length) {
+    return null;
   }
 
-  const regularColumnCount = Math.max(regularHeats.length, 1);
-
   return (
-    <div className="report-table-frame">
-      <div className="report-table-heading">
-        <span>Resultados por bateria: {regularHeats.length}</span>
-        <strong>Ordem cronológica · {visibleRows.length} pilotos exibidos</strong>
+    <section className="report-leader-strip" aria-labelledby="report-leader-title">
+      <div className="report-leader-intro">
+        <h2 id="report-leader-title">Líderes atuais</h2>
+        <p>Os primeiros colocados aparecem antes da matriz para uma consulta rápida.</p>
       </div>
-      <ReportMatrixKey />
-      <p className="report-table-hint" id={hintId}>Cada coluna representa uma bateria publicada. A numeração segue a relação oficial e os resultados retidos continuam visíveis para conferência.</p>
-      <div className="report-table-scroll" role="region" aria-label="Matriz de pontuação" aria-describedby={hintId} tabIndex={0}>
-        <table className="report-classification-table" aria-labelledby={labelledBy}>
-          <caption className="report-visually-hidden">Classificação geral da Legends Kart Series por bateria publicada.</caption>
-          <thead>
-            <tr className="report-table-band">
-              <th className="report-sticky-rank" rowSpan={2} scope="col">Pos.</th>
-              <th className="report-sticky-driver" rowSpan={2} scope="col">Piloto</th>
-              <th className="report-level-head" rowSpan={2} scope="col">Nível</th>
-              <th className="report-meta-head" rowSpan={2} scope="col">Part.</th>
-              <th className="report-meta-head" rowSpan={2} scope="col">Ret.</th>
-              <th colSpan={regularColumnCount} scope="colgroup">Pontuações por bateria · ordem cronológica</th>
-              {superFinal ? <th className="report-super-final-head" rowSpan={2} scope="col">SF</th> : null}
-              <th className="report-total-head" rowSpan={2} scope="col">Total</th>
-              <th className="report-last-position" rowSpan={2} scope="col">Pos.</th>
-            </tr>
-            <tr className="report-table-columns">
-              {regularHeats.length ? regularHeats.map((heat) => (
-                <th key={heat.id} scope="col" aria-label={`${heat.title}, ${heat.date}`} title={`${heat.title} / ${heat.date}`}>
-                  <span>{getHeatShortLabel(heat.title)}</span>
-                  <small>{getHeatColumnMeta(heat)}</small>
-                </th>
-              )) : <th scope="col"><span>Regulares</span><small>sem lançamento</small></th>}
-            </tr>
-          </thead>
-          <tbody>
-            {visibleRows.map((row) => {
-              return (
-                <tr key={`${row.position}-${row.driver}`}>
-                  <td className="report-sticky-rank report-rank-value">
-                    <strong>{row.position}</strong>
-                  </td>
-                  <td className="report-sticky-driver report-driver-value">
-                    <strong>{row.driver}</strong>
-                  </td>
-                  <td className="report-level-cell">{row.level}</td>
-                  <td className="report-number-cell">{row.participationCount || "-"}</td>
-                  <td className="report-number-cell">{row.discarded || "-"}</td>
-                  {regularHeats.length ? regularHeats.map((heat) => (
-                    <ClassificationScoreCell cell={row.cells[heat.id]} heat={heat} key={`${row.position}-${heat.id}`} />
-                  )) : <ClassificationScoreCell />}
-                  {superFinal ? <ClassificationScoreCell cell={row.cells[superFinal.id]} heat={superFinal} isSuperFinal /> : null}
-                  <td className="report-total-cell" title={`Total ${row.points}: ${row.regularPoints} regulares + ${row.superFinalPoints} Super Final`}>
-                    <strong>{row.points}</strong>
-                    <small>{row.wins} vit. · {row.valid} vál.</small>
-                  </td>
-                  <td className="report-last-position report-rank-value"><strong>{row.position}</strong></td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      {limit && rows.length > limit ? <p className="report-table-footnote">Mostrando os {limit} primeiros pilotos. A matriz completa está na página de pontuação.</p> : null}
-      {completedCount !== undefined ? <p className="report-table-source">Fonte publicada: {completedCount} de {heats.length} baterias completas. Passe o cursor sobre uma pontuação para ver sua bateria de origem.</p> : null}
-    </div>
+      <ol className="report-leader-list">
+        {rows.slice(0, 3).map((row) => (
+          <li key={`${row.position}-${row.driver}`}>
+            <span className="report-leader-position">{row.position}</span>
+            <span className="report-leader-driver">
+              <strong>{row.driver}</strong>
+              <small>{row.wins} vitórias · {row.valid} válidas</small>
+            </span>
+            <strong className="report-leader-total">{row.points}</strong>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
@@ -226,67 +163,6 @@ export function ReportRankingSummary({ rows, labelledBy }: { rows: P1RankingRow[
   );
 }
 
-function ClassificationScoreCell({
-  cell,
-  heat,
-  isSuperFinal = false,
-}: {
-  cell?: P1ClassificationCell;
-  heat?: P1ClassificationHeat;
-  isSuperFinal?: boolean;
-}) {
-  const status = cell?.status ?? "missing";
-  const label = getScoreLabel(cell, status);
-  const ariaLabel = getScoreAriaLabel(cell, status, heat);
-
-  return (
-    <td className={`report-score-cell is-${status}${cell?.position === 1 ? " is-win" : ""}${isSuperFinal ? " is-super-final" : ""}`} aria-label={ariaLabel} title={ariaLabel}>
-      <span>{label}</span>
-      {cell?.position === 1 && status === "ok" ? <small>V</small> : null}
-      {status === "discarded" ? <small>D</small> : null}
-    </td>
-  );
-}
-
-function getHeatShortLabel(title: string) {
-  const number = getLegendsHeatNumber(title);
-  return number === null ? title : `Bateria ${String(number).padStart(2, "0")}`;
-}
-
-function getHeatColumnMeta(heat: P1ClassificationHeat) {
-  const category = heat.title.match(/Legends\s+[IVXLCDM]+/i)?.[0] ?? "Legends";
-  return `${category} · ${heat.date.slice(0, 5)}`;
-}
-
-function getScoreLabel(cell: P1ClassificationCell | undefined, status: P1ClassificationCell["status"]) {
-  if (status === "missing") {
-    return "-";
-  }
-  if (status === "dsq") {
-    return "DSQ";
-  }
-  if (status === "no-time") {
-    return "S/T";
-  }
-  return cell?.score === null || cell?.score === undefined ? "-" : formatScore(cell.score);
-}
-
-function getScoreAriaLabel(cell: P1ClassificationCell | undefined, status: P1ClassificationCell["status"], heat?: P1ClassificationHeat) {
-  const heatLabel = heat ? `${heat.title}, ${heat.date}` : "Super Final";
-  if (status === "missing") {
-    return `Sem resultado em ${heatLabel}`;
-  }
-  if (status === "dsq") {
-    return `Desclassificado em ${heatLabel}`;
-  }
-  if (status === "no-time") {
-    return `Sem tempo válido em ${heatLabel}`;
-  }
-  const score = cell?.score === null || cell?.score === undefined ? "sem pontuação" : `${formatScore(cell.score)} pontos`;
-  const state = status === "discarded" ? "resultado retido fora do total" : cell?.position === 1 ? "vitória" : "resultado válido";
-  return `${score}, ${state}, ${heatLabel}`;
-}
-
 export function ReportResultRegister({ results }: { results: P1ResultRow[] }) {
   return (
     <div className="report-register-frame">
@@ -314,13 +190,14 @@ export function ReportResultRegister({ results }: { results: P1ResultRow[] }) {
                 <td>{result.complete ? result.winner : "Resultado incompleto"}</td>
                 <td className="report-time-cell">{result.bestLap}</td>
                 <td>
-                  {result.pdfHref ? <a className="report-text-link" href={result.pdfHref} target="_blank" rel="noreferrer">Abrir PDF</a> : "-"}
+                  {result.pdfHref ? <a className="report-text-link" href={result.pdfHref} target="_blank" rel="noreferrer" aria-label={`Abrir PDF de ${result.heat}, ${result.date}`} title={`Abrir PDF de ${result.heat}, ${result.date}`}>Abrir PDF</a> : "-"}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <p className="report-register-hint">Em telas menores, deslize horizontalmente para consultar todas as colunas.</p>
     </div>
   );
 }

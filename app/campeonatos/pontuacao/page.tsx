@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { ClassificationTable } from "@/components/LegendsClassificationTable";
 import {
-  ClassificationTable,
   LegendsReportMasthead,
   ReportFormula,
+  ReportLeaderStrip,
   ReportRankingSummary,
   ReportResultRegister,
   ReportTitleBand,
@@ -25,6 +26,8 @@ export default async function LegendsPontuacaoPage() {
   const resultCount = classification.heats.length || publishedResults.length;
   const lastHeatDate = classification.heats.at(-1)?.date ?? publishedResults.at(-1)?.date ?? "Sem publicação";
   const regularHeatCount = classification.heats.filter((heat) => !isSuperFinalHeatType(heat.type)).length || resultCount;
+  const superFinalHeat = classification.heats.find((heat) => isSuperFinalHeatType(heat.type));
+  const hasPublishedSuperFinal = Boolean(superFinalHeat && publishedResults.some((result) => result.heat === superFinalHeat.title && result.complete));
 
   return (
     <div className="legends-report-page legends-report-score">
@@ -39,6 +42,7 @@ export default async function LegendsPontuacaoPage() {
           resultNote={`${completeResultCount} completas`}
           pilotCount={pilotCount}
         />
+        <ReportLeaderStrip rows={classification.rows} />
 
         <nav className="report-subnav" aria-label="Atalhos da classificação">
           <Link href="/campeonatos">Campeonato</Link>
@@ -52,11 +56,11 @@ export default async function LegendsPontuacaoPage() {
           <div className="report-section-bar">
             <div>
               <h2 id="score-matrix-title">Matriz de pontuação</h2>
-              <p>Cada coluna representa uma bateria publicada, em ordem cronológica. No celular, deslize horizontalmente; posição e piloto permanecem visíveis.</p>
+              <p>Cada coluna representa uma bateria publicada, em ordem cronológica. No celular, use a leitura rápida ou deslize horizontalmente para conferir a matriz.</p>
             </div>
             <div className="report-section-count">
-              <strong>{regularHeatCount} + SF</strong>
-              <span>{pilotCount} pilotos · {resultCount} lançamentos</span>
+              <strong>{regularHeatCount} baterias regulares</strong>
+              <span>{hasPublishedSuperFinal ? "Super Final publicada" : "Super Final não publicada"} · {pilotCount} pilotos · {resultCount} lançamentos</span>
             </div>
           </div>
           {classification.heats.length && classification.rows.length ? (

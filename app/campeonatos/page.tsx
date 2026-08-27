@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ChampionshipRegistrationModal } from "@/components/ChampionshipRegistrationForm";
+import { ClassificationTable } from "@/components/LegendsClassificationTable";
 import {
-  ClassificationTable,
   LegendsReportMasthead,
+  ReportLeaderStrip,
   ReportRankingSummary,
   ReportResultRegister,
   ReportTitleBand,
@@ -27,6 +28,8 @@ export default async function CampeonatosPage() {
   const lastHeatDate = classification.heats.at(-1)?.date ?? publishedResults.at(-1)?.date ?? "Sem publicação";
   const publicationDate = formatReportPublicationDate(publicData.lastPublishedAt, lastHeatDate);
   const regularHeatCount = classification.heats.filter((heat) => !isSuperFinalHeatType(heat.type)).length || resultCount;
+  const superFinalHeat = classification.heats.find((heat) => isSuperFinalHeatType(heat.type));
+  const hasPublishedSuperFinal = Boolean(superFinalHeat && publishedResults.some((result) => result.heat === superFinalHeat.title && result.complete));
 
   return (
     <>
@@ -43,6 +46,7 @@ export default async function CampeonatosPage() {
             resultNote={`${completeResultCount} completas`}
             pilotCount={pilotCount}
           />
+          <ReportLeaderStrip rows={classification.rows} />
 
           <div className="report-action-row report-action-row-top" aria-label="Ações oficiais">
             <Link className="report-button report-button-primary" href="/campeonatos/pontuacao">Abrir classificação completa</Link>
@@ -66,7 +70,7 @@ export default async function CampeonatosPage() {
               </div>
               <div className="report-section-count">
                 <strong>{publicationDate}</strong>
-                <span>{regularHeatCount} baterias regulares · {pilotCount} pilotos</span>
+                <span>{regularHeatCount} baterias regulares · {pilotCount} pilotos · {hasPublishedSuperFinal ? "Super Final publicada" : "Super Final não publicada"}</span>
               </div>
             </div>
             {classification.heats.length && classification.rows.length ? (
