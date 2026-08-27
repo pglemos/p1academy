@@ -45,6 +45,7 @@ export async function GET(request: Request) {
       .select("id, title, heat_date, type, source, is_published, track_layout, category, created_at")
       .eq("championship_id", championship.id)
       .order("heat_date", { ascending: false })
+      .order("title", { ascending: false })
       .limit(50),
     supabase
       .from("p1_public_standings")

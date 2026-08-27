@@ -127,6 +127,7 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
         .eq("championship_id", championship.id)
         .eq("is_published", true)
         .order("heat_date", { ascending: false })
+        .order("title", { ascending: false })
         .order("created_at", { ascending: false })
         .returns<HeatRow[]>(),
       supabase
