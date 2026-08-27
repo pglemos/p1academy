@@ -10,7 +10,7 @@
 
 import { existsSync, readFileSync } from "fs";
 import path from "path";
-import { compareLegendsHeatOrder, formatScore, getLegendsHeatNumber } from "./legendsScoring";
+import { compareLegendsHeatOrder, formatLegendsHeatTitle, formatScore, getLegendsHeatNumber } from "./legendsScoring";
 
 const pageWidth = 1491;
 const pageHeight = 1055;
@@ -663,7 +663,7 @@ function buildScoreColumns(heats: LegendsOverallHeat[]): ScoreColumn[] {
       label: `P${String(index + 1).padStart(2, "0")}`,
       heatId: heat.id,
       date: formatDateShort(heat.date),
-      title: formatRegularHeatTitle(index + 1),
+      title: formatLegendsHeatTitle(index + 1),
       type: "regular" as const,
     }));
   const superFinalColumns = orderedHeats
@@ -678,28 +678,8 @@ function buildScoreColumns(heats: LegendsOverallHeat[]): ScoreColumn[] {
   return [...regularColumns, ...superFinalColumns];
 }
 
-function formatRegularHeatTitle(number: number) {
-  const roman = toRoman(number);
-  return `Bateria ${String(number).padStart(2, "0")} - Legends ${roman}`;
-}
-
 function getLegendsRomanNumeral(title: string) {
   return title.match(/Legends\s+([IVXLCDM]+)/i)?.[1]?.toUpperCase() ?? null;
-}
-
-function toRoman(value: number) {
-  const numerals: Array<[number, string]> = [[10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]];
-  let remainder = value;
-  let result = "";
-
-  numerals.forEach(([arabic, roman]) => {
-    while (remainder >= arabic) {
-      result += roman;
-      remainder -= arabic;
-    }
-  });
-
-  return result;
 }
 
 function formatDateShort(value: string): string {

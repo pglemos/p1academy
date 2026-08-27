@@ -5,7 +5,7 @@ import {
   legendsRankingPreview,
   legendsResultsPreview,
 } from "@/data/legends";
-import { compareLegendsHeatOrder, formatScore, formatTimingValue, slugifyDriverKey } from "@/lib/legendsScoring";
+import { compareLegendsHeatOrder, formatLegendsHeatTitle, formatScore, formatTimingValue, slugifyDriverKey } from "@/lib/legendsScoring";
 import { getPublicSupabaseClient, hasPublicSupabaseEnv } from "@/lib/p1Supabase";
 import type {
   P1CalendarMonth,
@@ -150,7 +150,7 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
         .map((row) => [slugifyDriverKey(row.display_name), row.current_level?.trim() || "A definir"] as const),
     );
 
-    const orderedHeats = [...(heats ?? [])].sort((a, b) => compareLegendsHeatOrder({
+    const orderedHeats = normalizePublishedHeatTitles([...heats].sort((a, b) => compareLegendsHeatOrder({
       id: a.id,
       title: a.title,
       date: a.heat_date,
@@ -160,7 +160,7 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
       title: b.title,
       date: b.heat_date,
       createdAt: b.created_at,
-    }));
+    })));
     const detailResults = await loadPublishedResults(orderedHeats);
     const results = buildResultRows(orderedHeats, detailResults);
     const lastPublishedAt = [...heats.map((heat) => heat.updated_at), ...detailResults.map((result) => result.created_at)]
@@ -219,6 +219,22 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
   } catch {
     return getStaticLegendsData();
   }
+}
+
+function normalizePublishedHeatTitles(heats: HeatRow[]): HeatRow[] {
+  let regularNumber = 0;
+
+  return heats.map((heat) => {
+    if (isSuperFinalHeatType(heat.type)) {
+      return heat;
+    }
+
+    regularNumber += 1;
+    return {
+      ...heat,
+      title: formatLegendsHeatTitle(regularNumber),
+    };
+  });
 }
 
 function getStaticLegendsData(): P1PublicData {

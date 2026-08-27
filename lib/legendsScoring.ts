@@ -126,6 +126,39 @@ export function getLegendsHeatNumber(title: string): number | null {
   return match ? Number(match[1]) : null;
 }
 
+export function formatLegendsHeatTitle(number: number): string {
+  return `Bateria ${String(number).padStart(2, "0")} - Legends ${toRoman(number)}`;
+}
+
+function toRoman(value: number): string {
+  const numerals: Array<[number, string]> = [
+    [1000, "M"],
+    [900, "CM"],
+    [500, "D"],
+    [400, "CD"],
+    [100, "C"],
+    [90, "XC"],
+    [50, "L"],
+    [40, "XL"],
+    [10, "X"],
+    [9, "IX"],
+    [5, "V"],
+    [4, "IV"],
+    [1, "I"],
+  ];
+  let remainder = value;
+  let result = "";
+
+  numerals.forEach(([arabic, roman]) => {
+    while (remainder >= arabic) {
+      result += roman;
+      remainder -= arabic;
+    }
+  });
+
+  return result;
+}
+
 export function compareLegendsHeatOrder(a: LegendsHeatOrderValue, b: LegendsHeatOrderValue) {
   return a.date.slice(0, 10).localeCompare(b.date.slice(0, 10))
     || compareNullableNumbers(getLegendsHeatNumber(a.title), getLegendsHeatNumber(b.title))
