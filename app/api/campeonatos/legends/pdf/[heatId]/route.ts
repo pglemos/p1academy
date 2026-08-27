@@ -42,7 +42,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
   const pdf = buildLegendsResultPdf({
     ...heat.raw_payload,
-    title: heat.raw_payload.title || heat.title,
+    title: heat.title || heat.raw_payload.title,
   });
 
   return new Response(Buffer.from(pdf), {

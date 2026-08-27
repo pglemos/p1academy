@@ -254,7 +254,7 @@ function getHeatShortLabel(title: string) {
 }
 
 function getHeatColumnMeta(heat: P1ClassificationHeat) {
-  const category = heat.title.match(/Legends\s+(I{1,3}V?|IV)/i)?.[0] ?? "Legends";
+  const category = heat.title.match(/Legends\s+[IVXLCDM]+/i)?.[0] ?? "Legends";
   return `${category} · ${heat.date.slice(0, 5)}`;
 }
 

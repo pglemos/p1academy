@@ -267,14 +267,14 @@ export const legendsResultsPreview = [
   { heat: "Bateria 08 - Legends II", date: "18/07/2026", winner: "Flavio Victor Câmara", bestLap: "1:04.684", points: "10,000" },
   { heat: "Bateria 09 - Legends I", date: "29/07/2026", winner: "Rodrigo Salvador", bestLap: "1:04.617", points: "10,000" },
   { heat: "Bateria 10 - Legends II", date: "29/07/2026", winner: "Arthur Ferreira Duarte Camilo Santos", bestLap: "1:04.475", points: "10,000" },
-  { heat: "Bateria 01 - Legends I", date: "01/08/2026", winner: "Enzo Neves Câmara", bestLap: "1:05.962", points: "10,000" },
-  { heat: "Bateria 02 - Legends II", date: "01/08/2026", winner: "Lucca Prado Garcia", bestLap: "1:05.820", points: "10,000" },
-  { heat: "Bateria 03 - Legends I", date: "13/08/2026", winner: "Gegela", bestLap: "1:05.392", points: "10,000" },
-  { heat: "Bateria 04 - Legends II", date: "13/08/2026", winner: "Matteo Rinoldi", bestLap: "1:05.651", points: "10,000" },
-  { heat: "Bateria 01 - Legends I", date: "20/08/2026", winner: "Bernardo Ferreira Duarte", bestLap: "1:05.595", points: "10,000" },
-  { heat: "Bateria 02 - Legends II", date: "20/08/2026", winner: "Julio Borges", bestLap: "1:05.397", points: "10,000" },
-  { heat: "Bateria 03 - Legends III", date: "20/08/2026", winner: "Gabriel Augusto Ribeiro Lima", bestLap: "1:05.037", points: "10,000" },
-  { heat: "Bateria 04 - Legends IV", date: "20/08/2026", winner: "Gabriel Augusto Ribeiro Lima", bestLap: "1:05.564", points: "10,000" },
+  { heat: "Bateria 11 - Legends XI", date: "01/08/2026", winner: "Enzo Neves Câmara", bestLap: "1:05.962", points: "10,000" },
+  { heat: "Bateria 12 - Legends XII", date: "01/08/2026", winner: "Lucca Prado Garcia", bestLap: "1:05.820", points: "10,000" },
+  { heat: "Bateria 13 - Legends XIII", date: "13/08/2026", winner: "Gegela", bestLap: "1:05.392", points: "10,000" },
+  { heat: "Bateria 14 - Legends XIV", date: "13/08/2026", winner: "Matteo Rinoldi", bestLap: "1:05.651", points: "10,000" },
+  { heat: "Bateria 15 - Legends XV", date: "20/08/2026", winner: "Bernardo Ferreira Duarte", bestLap: "1:05.595", points: "10,000" },
+  { heat: "Bateria 16 - Legends XVI", date: "20/08/2026", winner: "Julio Borges", bestLap: "1:05.397", points: "10,000" },
+  { heat: "Bateria 17 - Legends XVII", date: "20/08/2026", winner: "Gabriel Augusto Ribeiro Lima", bestLap: "1:05.037", points: "10,000" },
+  { heat: "Bateria 18 - Legends XVIII", date: "20/08/2026", winner: "Gabriel Augusto Ribeiro Lima", bestLap: "1:05.564", points: "10,000" },
 ];
 
 export const legendsStageInfo = [
