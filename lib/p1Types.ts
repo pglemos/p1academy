@@ -54,11 +54,47 @@ export type P1ResultRow = {
   winner: string;
   bestLap: string;
   points: string;
+  complete: boolean;
   pdfHref?: string;
+};
+
+export type P1ClassificationHeat = {
+  id: string;
+  label: string;
+  title: string;
+  date: string;
+  type: string;
+};
+
+export type P1ClassificationCell = {
+  score: number | null;
+  position: number | null;
+  officialMs: number | null;
+  status: "ok" | "missing" | "discarded" | "dsq" | "no-time";
+};
+
+export type P1ClassificationRow = {
+  position: string;
+  driver: string;
+  level: string;
+  points: string;
+  regularPoints: string;
+  superFinalPoints: string;
+  valid: string;
+  participationCount: number;
+  discarded: number;
+  wins: number;
+  cells: Record<string, P1ClassificationCell>;
+};
+
+export type P1Classification = {
+  heats: P1ClassificationHeat[];
+  rows: P1ClassificationRow[];
 };
 
 export type P1PublicData = {
   source: "supabase" | "static";
+  lastPublishedAt: string | null;
   championship: P1Championship;
   calendarSummary: {
     totalRaces: number;
@@ -71,4 +107,9 @@ export type P1PublicData = {
   calendarMonths: P1CalendarMonth[];
   ranking: P1RankingRow[];
   results: P1ResultRow[];
+  classification: P1Classification;
 };
+
+export function isSuperFinalHeatType(type?: string) {
+  return type === "super-final" || type === "super_final";
+}

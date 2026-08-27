@@ -40,7 +40,7 @@ O nome Legends Kart Series, a temporada 2026, o logotipo em `public/brand/legend
 
 - `public/brand/legends-kart-series-logo.jpg`
 - `public/regulamentos/regulamento-legends-kart-series-2026.pdf`
-- Resultados publicados no Supabase para 14 baterias regulares e 61 pilotos no momento deste trabalho.
+- Resultados publicados no Supabase: a revisão da superfície em 20/08/2026 encontrou 18 baterias e 91 pilotos no ranking.
 - PDF recebido para revisão: `resultado-geral-legends-kart-series (6).pdf`.
 - O produto não possui ainda uma Super Final publicada nesta atualização.
 

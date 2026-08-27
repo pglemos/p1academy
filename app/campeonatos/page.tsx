@@ -1,21 +1,41 @@
+/*
+ * Impeccable v4 direction contract - seed a63cbc40.
+ * THESIS: the championship hub is the cover and index of an official report, so facts lead and promotion follows.
+ * OWN-WORLD: pale report paper, black bands, squared frames, fine rules, gold marks and restrained green totals.
+ * STORY: a visitor understands the edition, finds the live classification, then follows calendar, rules and race records.
+ * FIRST VIEWPORT: report masthead, edition band, status, quick facts, actions and the first classification excerpt.
+ * FORM: Read mode, user-pinned official-report adaptation; assigned grounded direction is the cutting-bench report sheet.
+ * FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+ */
+
 import Image from "next/image";
 import Link from "next/link";
-import { Award, Calculator, CalendarDays, Download, Flag, Gauge, MapPin, ShieldCheck, Trophy } from "lucide-react";
 import { ChampionshipRegistrationModal } from "@/components/ChampionshipRegistrationForm";
-import { PageHero } from "@/components/PageHero";
+import {
+  ClassificationTable,
+  LegendsReportMasthead,
+  ReportFormula,
+  ReportMetricStrip,
+  ReportPodium,
+  ReportRankingSummary,
+  ReportResultRegister,
+  ReportTitleBand,
+  formatReportPublicationDate,
+} from "@/components/LegendsReport";
 import { Reveal } from "@/components/Motion";
 import {
   legendsAchievements,
+  legendsCompetition,
   legendsLevels,
   legendsPhotoSets,
   legendsSections,
   legendsSponsors,
   legendsStageInfo,
-  legendsStats,
   legendsStory,
   legendsSummary,
 } from "@/data/legends";
 import { getLegendsPublicData } from "@/lib/p1Data";
+import { isSuperFinalHeatType } from "@/lib/p1Types";
 
 export const metadata = {
   title: "Legends Kart Series | P1 Academy",
@@ -25,372 +45,248 @@ export const dynamic = "force-dynamic";
 
 export default async function CampeonatosPage() {
   const publicData = await getLegendsPublicData();
-  const { championship, calendarSummary, calendarMonths, ranking, results } = publicData;
-  const weekdayDisplay = calendarSummary.weekdayWindows.replace(/^Quartas\s+/i, "").replace(" e ", " / ");
-  const saturdayDisplay = calendarSummary.saturdayWindow.replace(/^Sábados\s+/i, "").replace(" e ", " / ");
-  const currentEdition = [
-    ["Edição atual", championship.edition],
-    ["Temporada", championship.season],
-    ["Sede", championship.venue],
-    ["Organizador geral", championship.organizer],
-    ["WhatsApp", championship.whatsapp],
-    ["Formato", championship.format],
-    ["Lastro-base", championship.ballast],
-    ["Duração da bateria", championship.heatDuration],
-    ["Vagas previstas", championship.seats],
-    ["Calendário", championship.expectedStages],
+  const { championship, calendarSummary, calendarMonths, ranking, results, classification } = publicData;
+  const publishedResults = results.filter((result) => result.winner !== "A definir");
+  const completeResultCount = publishedResults.filter((result) => result.complete).length;
+  const pilotCount = classification.rows.length || ranking.filter((row) => row.points !== "-").length;
+  const resultCount = classification.heats.length || publishedResults.length;
+  const lastHeatDate = classification.heats.at(-1)?.date ?? publishedResults.at(-1)?.date ?? "Sem publicação";
+  const publicationDate = formatReportPublicationDate(publicData.lastPublishedAt, lastHeatDate);
+  const publicationLabel = publicData.lastPublishedAt ? `Dados publicados em ${publicationDate}` : `Última bateria ${lastHeatDate}`;
+  const regularHeatCount = classification.heats.filter((heat) => !isSuperFinalHeatType(heat.type)).length || resultCount;
+  const reportMetrics = [
+    { label: "Pilotos", value: String(pilotCount), note: "no ranking atual" },
+    { label: "Publicadas", value: String(resultCount), note: "baterias lançadas" },
+    { label: "Regulares", value: String(regularHeatCount), note: "em ordem cronológica" },
+    { label: "Limite", value: "10 + SF", note: "resultados válidos" },
   ];
 
   return (
     <>
       <ChampionshipRegistrationModal />
-      <PageHero
-        title={championship.name}
-        text="1ª edição oficial do campeonato semestral de rental kart da P1 Academy. Categoria única, tomada de tempo, lastro-base de 100 kg e sede oficial no Kartódromo Internacional de Betim."
-        image="/images/competition-corner.png"
-      />
+      <div className="legends-report-page legends-report-hub">
+        <div className="container report-document">
+          <LegendsReportMasthead publishedAt={publicData.lastPublishedAt} fallbackDate={lastHeatDate} source={publicData.source} />
+          <ReportTitleBand
+            eyebrow="1ª edição oficial / temporada 2026"
+            title={championship.name}
+            description="O caderno público da Legends Kart Series: calendário, regras, resultados publicados e classificação por desempenho real na pista."
+            resultCount={resultCount}
+            resultNote={`${completeResultCount} completos`}
+            pilotCount={pilotCount}
+          />
 
-      <section className="section tight">
-        <div className="container legends-shell">
-          <Reveal className="legends-status">
-            <div>
-              <span className="eyebrow">{championship.status}</span>
-              <h2>{championship.edition}</h2>
-              <p>
-                Campeonato e grupo de treinos em formato semestral, com baterias avulsas ao longo da temporada. O piloto participa das corridas que quiser, conforme disponibilidade de vaga e aceite da organização.
-              </p>
-            </div>
-            <div className="button-row">
-              <button className="btn primary" type="button" data-registration-trigger>
-                Quero participar
-              </button>
-              <Link className="btn secondary" href="/campeonatos/pontuacao">
-                <Calculator size={18} /> Sistema de pontuação
-              </Link>
-              <Link className="btn secondary" href="/tracados">
-                <MapPin size={18} /> Traçados da pista
-              </Link>
-              <Link className="btn secondary" href="#calendario-oficial">
-                <CalendarDays size={18} /> Calendário
-              </Link>
-              <a className="btn secondary" href={championship.rulesPdf} target="_blank" rel="noreferrer">
-                <Download size={18} /> Regulamento
-              </a>
-            </div>
-          </Reveal>
+          <div className="report-cover-actions">
+            <Link className="report-button report-button-primary" href="/campeonatos/pontuacao">Abrir classificação completa</Link>
+            <button className="report-button" type="button" data-registration-trigger>Quero participar</button>
+            <a className="report-button" href={championship.rulesPdf} target="_blank" rel="noreferrer">Baixar regulamento</a>
+          </div>
 
-          <nav className="legends-tabs" aria-label="Abas da Legends Kart Series">
+          <nav className="report-nav" aria-label="Navegação da Legends Kart Series">
             <button type="button" data-registration-trigger>Inscrição</button>
             {legendsSections.map((section) => (
-              <a href={section.href} key={section.href}>
-                {section.label}
-              </a>
+              <a href={section.href} key={section.href}>{section.label}</a>
             ))}
           </nav>
 
-          <div className="legends-metrics">
-            {legendsStats.map((stat) => (
-              <div className="metric-card" key={stat.label}>
-                <strong>{stat.value}</strong>
-                <span>{stat.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section carbon-section">
-        <div className="container grid-2 align-start">
-          <Reveal className="section-head">
-            <h2>Sobre a Legends</h2>
-            <div className="accent-line" />
-            <p>{legendsStory[0]}</p>
-            <p>{legendsStory[1]}</p>
-          </Reveal>
-          <div className="grid-1">
-            {legendsSummary.map((item) => (
-              <Reveal className="card" key={item.title}>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section tight">
-        <div className="container grid-2 align-start">
-          <Reveal className="section-head">
-            <h2>História</h2>
-            <div className="accent-line" />
-            {legendsStory.slice(2).map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-          </Reveal>
-          <Reveal className="legends-panel">
-            <MapPin size={28} color="var(--acid)" />
-            <h3>Sede oficial</h3>
-            <p>{championship.venue}</p>
-            <p>{championship.address}</p>
-            <p>
-              Organização geral: {championship.organizer} - WhatsApp {championship.whatsapp}
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="section tight">
-        <div className="container">
-          <Reveal className="section-head center">
-            <h2>Edição atual</h2>
-            <div className="accent-line" />
-          </Reveal>
-          <div className="details-grid">
-            {currentEdition.map(([label, value]) => (
-              <div className="detail-row" key={label}>
-                <span>{label}</span>
-                <strong>{value}</strong>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section carbon-section" id="calendario-oficial">
-        <div className="container">
-          <Reveal className="section-head center">
-            <CalendarDays size={30} color="var(--acid)" />
-            <h2>Calendário oficial 2026</h2>
-            <div className="accent-line" />
-            <p>
-              A Legends Kart Series tem {calendarSummary.totalRaces} corridas oficiais entre {calendarSummary.firstRace} e {calendarSummary.finalRace}, com janelas às quartas-feiras e sábados pela manhã.
-            </p>
-            <a className="btn primary" href={championship.calendarPdf} target="_blank" rel="noreferrer">
-              <Download size={18} /> Baixar calendário oficial
-            </a>
-          </Reveal>
-
-          <div className="calendar-summary-grid">
-            <Reveal className="metric-card">
-              <strong>{calendarSummary.totalRaces}</strong>
-              <span>corridas oficiais</span>
-            </Reveal>
-            <Reveal className="metric-card">
-              <strong>{calendarSummary.months}</strong>
-              <span>período do campeonato</span>
-            </Reveal>
-            <Reveal className="metric-card">
-              <strong>{weekdayDisplay}</strong>
-              <span>janelas de quarta</span>
-            </Reveal>
-            <Reveal className="metric-card">
-              <strong>{saturdayDisplay}</strong>
-              <span>janelas de sábado</span>
-            </Reveal>
-          </div>
-
-          <div className="calendar-month-grid">
-            {calendarMonths.map((month) => (
-              <Reveal className="calendar-month-card" key={month.month}>
-                <h3>{month.month}</h3>
-                <div className="calendar-table" role="table" aria-label={`Calendário Legends ${month.month}`}>
-                  <div className="calendar-row calendar-row-head" role="row">
-                    <span>Corrida</span>
-                    <span>Data</span>
-                    <span>Dia</span>
-                    <span>Hora</span>
-                  </div>
-                  {month.races.map((race) => (
-                    <div className="calendar-row" role="row" key={`${month.month}-${race.race}-${race.date}-${race.time}`}>
-                      <strong>{race.race}</strong>
-                      <span>{race.date.slice(0, 5)}</span>
-                      <span>{race.day}</span>
-                      <span>{race.time}</span>
-                    </div>
-                  ))}
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section carbon-section" id="classificacao">
-        <div className="container split">
-          <Reveal className="section-head">
-            <Trophy size={30} color="var(--acid)" />
-            <h2>Classificação geral</h2>
-            <div className="accent-line" />
-            <p>Ranking dos pilotos com base nas melhores pontuações válidas ao longo da temporada. Cada piloto terá considerados seus melhores resultados, com limite de 10 corridas válidas para pontuação regular.</p>
-          </Reveal>
-          <div className="table-like">
-            {ranking.map((item) => (
-              <Reveal className="row" key={`${item.position}-${item.driver}`}>
-                <strong>{item.position} {item.driver}</strong>
-                <span>{item.level}</span>
-                <span>{item.points} pontos</span>
-                <span>{item.valid}</span>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section tight" id="resultados">
-        <div className="container split">
-          <Reveal className="section-head">
-            <Gauge size={30} color="var(--acid)" />
-            <h2>Resultados das etapas</h2>
-            <div className="accent-line" />
-            <p>Registro dos tempos, pontuações e desempenho de cada bateria realizada. O vencedor soma 10,000 pontos, e a diferença de tempo reduz a pontuação dos demais pilotos.</p>
-            <Link className="btn primary" href="/campeonatos/pontuacao">
-              <Calculator size={18} /> Calcular bateria
-            </Link>
-          </Reveal>
-          <div className="table-like">
-            {results.map((item) => (
-              <Reveal className="row" key={item.heat}>
-                <strong>{item.heat}</strong>
-                <span>{item.date}</span>
-                <span>{item.winner}</span>
-                <span>{item.bestLap}</span>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section tight" id="etapas">
-        <div className="container grid-2 align-start">
-          <Reveal className="section-head">
-            <CalendarDays size={30} color="var(--acid)" />
-            <h2>Informações das etapas</h2>
-            <div className="accent-line" />
-            <p>
-              Calendário oficial publicado com {calendarSummary.totalRaces} corridas entre {calendarSummary.firstRace} e {calendarSummary.finalRace}. As janelas oficiais são {calendarSummary.weekdayWindows.toLowerCase()} e {calendarSummary.saturdayWindow.toLowerCase()}.
-            </p>
-            <div className="button-row">
-              <Link className="btn primary" href="#calendario-oficial">
-                <CalendarDays size={18} /> Ver calendário
-              </Link>
-              <a className="btn secondary" href={championship.calendarPdf} target="_blank" rel="noreferrer">
-                <Download size={18} /> PDF oficial
-              </a>
+          <section className="report-section report-classification-section report-classification-preview-section" id="classificacao">
+            <div className="report-section-heading">
+              <h2 id="hub-classification-preview-title">Quem está na frente</h2>
+              <span>Classificação geral / {publicationLabel}</span>
+              <p>Os líderes e as métricas abaixo vêm do mesmo conjunto publicado que alimenta a matriz completa.</p>
             </div>
-          </Reveal>
-          <div className="grid-1">
-            {legendsStageInfo.map((item) => (
-              <Reveal className="card" key={item.label}>
-                <h3>{item.label}</h3>
-                <p>{item.value}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+            <ReportMetricStrip items={reportMetrics} />
+            {classification.heats.length && classification.rows.length ? (
+              <ClassificationTable heats={classification.heats} rows={classification.rows} limit={5} completedCount={completeResultCount} labelledBy="hub-classification-preview-title" />
+            ) : (
+              <ReportRankingSummary rows={ranking.slice(0, 5)} labelledBy="hub-classification-preview-title" />
+            )}
+            <div className="report-action-row report-action-row-end">
+              <Link className="report-button report-button-primary" href="#classificacao-completa">Abrir matriz completa</Link>
+              <Link className="report-button" href="/campeonatos/pontuacao">Ver sistema de pontuação</Link>
+            </div>
+          </section>
 
-      <section className="section carbon-section" id="regulamento">
-        <div className="container split">
-          <Reveal className="section-head">
-            <ShieldCheck size={30} color="var(--acid)" />
-            <h2>Regulamento oficial</h2>
-            <div className="accent-line" />
-            <p>{championship.version}, publicado em {championship.versionDate}. Documento oficial com regras esportivas, critérios de pontuação, conduta, penalidades, premiação e controle de versões.</p>
-            <a className="btn primary" href={championship.rulesPdf} target="_blank" rel="noreferrer">
-              <Download size={18} /> Baixar PDF oficial
-            </a>
-          </Reveal>
-          <Reveal className="legends-panel">
-            <h3>Regras-chave</h3>
-            <p>Karts de locação da frota Super Karts, fornecidos pelo kartódromo e definidos por sorteio.</p>
-            <p>Troca de kart permitida a critério do piloto, limitada a uma troca por corrida, com voltas anteriores desconsideradas salvo problema mecânico comprovado.</p>
-            <p>Premiação com troféus para os 10 melhores pilotos do campeonato e troféu especial para o vencedor da Super Final.</p>
-          </Reveal>
-        </div>
-      </section>
+          <section className="report-section report-cover-section">
+            <div className="report-cover-grid">
+              <div className="report-cover-copy">
+                <h2>Uma temporada para medir no detalhe.</h2>
+                <span className="report-section-kicker">Calendário oficial publicado</span>
+                <p>{legendsStory[0]}</p>
+                <p>{legendsStory[1]}</p>
+                <div className="report-action-row">
+                  <Link className="report-button report-button-primary" href="#classificacao">Ver classificação</Link>
+                  <Link className="report-button" href="#calendario-oficial">Ver calendário</Link>
+                </div>
+              </div>
+              <aside className="report-venue-block">
+                <span>Sede oficial</span>
+                <strong>{championship.venue}</strong>
+                <p>{championship.address}</p>
+                <p>Organização: {championship.organizer}</p>
+                <p>{championship.format} / {championship.ballast}</p>
+              </aside>
+            </div>
+          </section>
 
-      <section className="section tight" id="niveis">
-        <div className="container">
-          <Reveal className="section-head center">
-            <Flag size={30} color="var(--acid)" />
-            <h2>Divisão de níveis dos pilotos</h2>
-            <div className="accent-line" />
-            <p>Classificação por histórico de desempenho, vitórias, pódios e diferença de tempo para o vencedor. A divisão orienta corridas para perfis específicos, mas a disputa geral é em categoria única.</p>
-          </Reveal>
-          <div className="levels-grid">
-            {legendsLevels.map((item) => (
-              <Reveal className="level-card" key={item.level}>
-                <strong>{item.level}</strong>
-                <span>{item.criteria}</span>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+          <section className="report-section report-story-section">
+            <div className="report-section-heading">
+              <h2>Contra o relógio, com método</h2>
+              <span>Sobre a competição</span>
+              <p>{legendsStory[2]}</p>
+              <p>{legendsStory[3]}</p>
+            </div>
+            <div className="report-plain-grid">
+              {legendsSummary.map((item) => (
+                <article className="report-plain-block" key={item.title}>
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </article>
+              ))}
+            </div>
+          </section>
 
-      <section className="section carbon-section" id="conquistas">
-        <div className="container">
-          <Reveal className="section-head center">
-            <Award size={30} color="var(--acid)" />
-            <h2>Conquistas</h2>
-            <div className="accent-line" />
-            <p>Feitos especiais para reconhecer evolução, consistência, superação e momentos marcantes além da classificação geral.</p>
-          </Reveal>
-          <div className="grid-3">
-            {legendsAchievements.map((item) => (
-              <Reveal className="card" key={item.title}>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+          <section className="report-section report-calendar-section" id="calendario-oficial">
+            <div className="report-section-heading">
+              <h2>Calendário 2026</h2>
+              <span>Agenda oficial</span>
+              <p>{calendarSummary.totalRaces} corridas oficiais entre {calendarSummary.firstRace} e {calendarSummary.finalRace}. Quartas: {calendarSummary.weekdayWindows.replace(/^Quartas\s+/i, "")}; sábados: {calendarSummary.saturdayWindow.replace(/^Sábados\s+/i, "")}.</p>
+            </div>
+            <div className="report-data-grid report-calendar-facts">
+              <div><span>Período</span><strong>{calendarSummary.months}</strong></div>
+              <div><span>Quarta</span><strong>{calendarSummary.weekdayWindows}</strong></div>
+              <div><span>Sábado</span><strong>{calendarSummary.saturdayWindow}</strong></div>
+              <a className="report-button report-button-primary" href={championship.calendarPdf} target="_blank" rel="noreferrer">Baixar calendário PDF</a>
+            </div>
+            <div className="report-calendar-grid">
+              {calendarMonths.map((month) => (
+                <article className="report-calendar-block" key={month.month}>
+                  <h3>{month.month}</h3>
+                  <table>
+                    <thead><tr><th scope="col">Corrida</th><th scope="col">Data</th><th scope="col">Dia</th><th scope="col">Hora</th></tr></thead>
+                    <tbody>
+                      {month.races.map((race) => (
+                        <tr key={`${month.month}-${race.race}-${race.date}-${race.time}`}>
+                          <th scope="row">{race.race}</th><td>{race.date.slice(0, 5)}</td><td>{race.day}</td><td>{race.time}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </article>
+              ))}
+            </div>
+          </section>
 
-      <section className="section tight" id="fotos">
-        <div className="container">
-          <Reveal className="section-head center">
-            <h2>Fotos</h2>
-            <div className="accent-line" />
-            <p>Galeria oficial para etapas, pilotos, bastidores, pódios e confraternização de encerramento.</p>
-          </Reveal>
-          <div className="grid-3">
-            {legendsPhotoSets.map((item) => (
-              <Reveal className="photo-card" key={item.title}>
-                <Image src={item.image} alt={item.title} fill sizes="(max-width: 900px) 100vw, 33vw" />
-                <span>{item.title}</span>
-                <strong>{item.text}</strong>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+          <section className="report-section report-classification-section" id="classificacao-completa">
+            <div className="report-section-heading">
+              <h2 id="hub-classification-title">Prévia da classificação</h2>
+              <span>Top 10 / {publicationLabel}</span>
+              <p>Os 10 primeiros aparecem abaixo como índice do relatório. A matriz completa, com cada piloto e bateria, está disponível na página de pontuação.</p>
+            </div>
+            <ReportPodium rows={classification.rows} />
+            {classification.heats.length && classification.rows.length ? (
+              <ClassificationTable heats={classification.heats} rows={classification.rows} limit={10} completedCount={completeResultCount} labelledBy="hub-classification-title" />
+            ) : (
+              <ReportRankingSummary rows={ranking.slice(0, 10)} labelledBy="hub-classification-title" />
+            )}
+            <div className="report-action-row report-action-row-end">
+              <Link className="report-button report-button-primary" href="/campeonatos/pontuacao">Abrir matriz completa</Link>
+              <a className="report-button" href="/api/campeonatos/legends/pdf/geral" target="_blank" rel="noreferrer">Baixar resultado geral</a>
+            </div>
+          </section>
 
-      <section className="section tight" id="patrocinadores">
-        <div className="container">
-          <Reveal className="section-head center">
-            <h2>Patrocinadores</h2>
-            <div className="accent-line" />
-            <p>Marcas parceiras, apoiadores e empresas patrocinadoras da Legends Kart Series.</p>
-          </Reveal>
-          <div className="sponsors-grid">
-            {legendsSponsors.map((sponsor) => (
-              <Reveal className="sponsor-card" key={sponsor.instagram}>
-                <a href={sponsor.instagram} target="_blank" rel="noreferrer" aria-label={`Abrir Instagram ${sponsor.name}`}>
-                  <span className="sponsor-logo">
-                    <Image src={sponsor.logo} alt={`Logo ${sponsor.name}`} fill sizes="(max-width: 760px) 100vw, 25vw" />
-                  </span>
-                  <span className="sponsor-meta">
-                    <span>{sponsor.segment}</span>
-                    <strong>{sponsor.name}</strong>
-                    <span className="sponsor-handle">{sponsor.handle}</span>
-                  </span>
+          <section className="report-section report-results-section" id="resultados">
+            <div className="report-section-heading">
+              <h2>Resultados das baterias</h2>
+              <span>Registro oficial</span>
+              <p>Os lançamentos ficam disponíveis em PDF para conferência de tempos e pontuação.</p>
+            </div>
+            <ReportResultRegister results={publishedResults} />
+          </section>
+
+          <section className="report-section report-info-section" id="etapas">
+            <div className="report-section-heading">
+              <h2>Informações das etapas</h2>
+              <span>Operação de pista</span>
+              <p>O mesmo padrão de briefing e organização acompanha todas as baterias publicadas.</p>
+            </div>
+            <div className="report-plain-grid report-plain-grid-wide">
+              {legendsStageInfo.map((item) => <article className="report-plain-block" key={item.label}><h3>{item.label}</h3><p>{item.value}</p></article>)}
+            </div>
+          </section>
+
+          <section className="report-section report-rules-section" id="regulamento">
+            <div className="report-section-heading">
+              <h2>Regulamento e critérios</h2>
+              <span>Documento oficial</span>
+              <p>{championship.version}, publicado em {championship.versionDate}. A regra completa prevalece sobre qualquer resumo desta página.</p>
+            </div>
+            <div className="report-rules-grid">
+              <ReportFormula validResults={championship.validResults} rulesPdf={championship.rulesPdf} />
+              <div className="report-rule-copy">
+                <h3>Regras-chave</h3>
+                <p>{legendsCompetition.kartFleet}</p>
+                <p>Troca de kart permitida a critério do piloto, limitada a uma troca por corrida, conforme as condições do regulamento.</p>
+                <p>Premiação com troféus para os 10 melhores pilotos do campeonato e troféu especial para o vencedor da Super Final.</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="report-section report-levels-section" id="niveis">
+            <div className="report-section-heading">
+              <h2>Níveis dos pilotos</h2>
+              <span>Leitura de desempenho</span>
+              <p>A divisão orienta corridas para perfis específicos; a disputa geral permanece em categoria única.</p>
+            </div>
+            <div className="report-level-grid">
+              {legendsLevels.map((item) => <div key={item.level}><strong>{item.level}</strong><span>{item.criteria}</span></div>)}
+            </div>
+          </section>
+
+          <section className="report-section report-achievements-section" id="conquistas">
+            <div className="report-section-heading">
+              <h2>Conquistas</h2>
+              <span>Além da tabela</span>
+              <p>Reconhecimentos para evolução, consistência, superação e momentos marcantes.</p>
+            </div>
+            <ul className="report-achievement-list">
+              {legendsAchievements.map((item) => <li key={item.title}><strong>{item.title}</strong><span>{item.text}</span></li>)}
+            </ul>
+          </section>
+
+          <section className="report-section report-gallery-section" id="fotos">
+            <div className="report-section-heading">
+              <h2>Fotos</h2>
+              <span>Arquivo visual</span>
+              <p>Etapas, bastidores, preparação e pódios da temporada.</p>
+            </div>
+            <div className="report-photo-grid">
+              {legendsPhotoSets.map((item) => (
+                <Reveal className="report-photo-card" key={item.title}>
+                  <div className="report-photo-media"><Image src={item.image} alt={item.title} fill sizes="(max-width: 800px) 100vw, 33vw" /></div>
+                  <span>{item.title}</span><strong>{item.text}</strong>
+                </Reveal>
+              ))}
+            </div>
+          </section>
+
+          <section className="report-section report-sponsors-section" id="patrocinadores">
+            <div className="report-section-heading">
+              <h2>Patrocinadores</h2>
+              <span>Parceiros da edição</span>
+              <p>Marcas parceiras, apoiadores e empresas que acompanham a Legends Kart Series.</p>
+            </div>
+            <div className="report-sponsor-grid">
+              {legendsSponsors.map((sponsor) => (
+                <a href={sponsor.instagram} target="_blank" rel="noreferrer" key={sponsor.instagram}>
+                  <span className="report-sponsor-logo"><Image src={sponsor.logo} alt={`Logo ${sponsor.name}`} fill sizes="(max-width: 760px) 100vw, 25vw" /></span>
+                  <span><small>{sponsor.segment}</small><strong>{sponsor.name}</strong><small>{sponsor.handle}</small></span>
                 </a>
-              </Reveal>
-            ))}
-          </div>
+              ))}
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
     </>
   );
 }
