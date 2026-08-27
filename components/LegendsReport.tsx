@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { isSuperFinalHeatType, type P1ClassificationCell, type P1ClassificationHeat, type P1ClassificationRow, type P1ResultRow } from "@/lib/p1Types";
-import type { P1RankingRow } from "@/lib/p1Types";
+import { isSuperFinalHeatType, type P1ClassificationCell, type P1ClassificationHeat, type P1ClassificationRow, type P1RankingRow, type P1ResultRow } from "@/lib/p1Types";
 import { formatScore, formatTimingValue } from "@/lib/legendsScoring";
 
 type ReportMastheadProps = {
@@ -17,21 +16,21 @@ export function LegendsReportMasthead({ publishedAt, fallbackDate, source }: Rep
     <header className="report-masthead">
       <Link className="report-brand-lockup" href="/" aria-label="P1 Academy, página inicial">
         <span className="report-brand-mark">
-          <Image src="/brand/legends-kart-series-logo.jpg" alt="" width={68} height={68} priority />
+          <Image src="/brand/legends-kart-series-logo.jpg" alt="" width={56} height={56} priority />
         </span>
         <span>
           <strong>Legends Kart Series</strong>
-          <small>P1 Academy / temporada 2026</small>
+          <small>P1 Academy · temporada 2026</small>
         </span>
       </Link>
-      <div className="report-masthead-note">
-        <span>{isPublished ? "Documento público" : "Dados indisponíveis"}</span>
+      <div className="report-masthead-context">
+        <span>Documento público</span>
         <strong>{isPublished ? "Classificação oficial" : "Prévia local"}</strong>
       </div>
       <div className="report-masthead-meta">
-        <span>{publishedAt ? "Dados publicados em" : "Última bateria"}</span>
+        <span>{publishedAt ? "Atualizado em" : "Última bateria"}</span>
         <strong>{formatReportPublicationDate(publishedAt, fallbackDate)}</strong>
-        <small>{isPublished ? "Fonte publicada" : "Não usar para conferência"}</small>
+        <small>{isPublished ? "Dados publicados" : "Fonte indisponível"}</small>
       </div>
     </header>
   );
@@ -53,78 +52,30 @@ export function ReportTitleBand({
   pilotCount?: number;
 }) {
   return (
-    <div className="report-title-band">
-      <div>
-        <h1>{title}</h1>
-        <span>{eyebrow}</span>
-        <p>{description}</p>
+    <section className="report-title-band" aria-labelledby="report-title">
+      <div className="report-title-copy">
+        <h1 id="report-title">{title}</h1>
+        <p className="report-title-meta">{eyebrow}</p>
+        <p className="report-title-description">{description}</p>
       </div>
       {(resultCount !== undefined || pilotCount !== undefined) && (
         <dl className="report-title-facts">
           {resultCount !== undefined && (
             <div>
-              <dt>Resultados lançados</dt>
+              <dt>Baterias lançadas</dt>
               <dd>{resultCount}</dd>
               {resultNote ? <small>{resultNote}</small> : null}
             </div>
           )}
           {pilotCount !== undefined && (
             <div>
-              <dt>Pilotos no ranking</dt>
+              <dt>Pilotos classificados</dt>
               <dd>{pilotCount}</dd>
             </div>
           )}
         </dl>
       )}
-    </div>
-  );
-}
-
-export function ReportMetricStrip({
-  items,
-}: {
-  items: Array<{ label: string; value: string; note: string }>;
-}) {
-  return (
-    <dl className="report-metric-strip">
-      {items.map((item) => (
-        <div key={item.label}>
-          <dt>{item.label}</dt>
-          <dd>{item.value}</dd>
-          <small>{item.note}</small>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
-export function ReportPodium({ rows }: { rows: P1ClassificationRow[] }) {
-  const podium = [
-    { label: "Líder geral", rank: "01", className: "is-gold" },
-    { label: "Segundo", rank: "02", className: "is-silver" },
-    { label: "Terceiro", rank: "03", className: "is-orange" },
-  ];
-
-  return (
-    <div className="report-podium-grid">
-      {podium.map((place, index) => {
-        const row = rows[index];
-        return (
-          <article className={`report-podium-card ${place.className}`} key={place.rank}>
-            <div className="report-podium-rank">
-              <span>{place.label}</span>
-              <strong>{place.rank}</strong>
-            </div>
-            <h3>{row?.driver ?? "Aguardando classificação"}</h3>
-            <div className="report-podium-total">
-              <strong>{row?.points ?? "-"}</strong>
-              <span>pontos totais</span>
-            </div>
-            <small>{row ? `${row.wins} vitórias / ${row.valid} válidas` : "Sem resultado publicado"}</small>
-          </article>
-        );
-      })}
-    </div>
+    </section>
   );
 }
 
@@ -145,7 +96,6 @@ export function ClassificationTable({
   const superFinal = heats.find((heat) => isSuperFinalHeatType(heat.type));
   const visibleRows = limit ? rows.slice(0, limit) : rows;
   const hintId = labelledBy ? `${labelledBy}-scroll-hint` : "classification-table-scroll-hint";
-  const regularHeatColumnSpan = Math.max(regularHeats.length, 1);
 
   if (!heats.length || !rows.length) {
     return <p className="report-empty-state">Nenhuma classificação publicada no momento.</p>;
@@ -154,71 +104,74 @@ export function ClassificationTable({
   return (
     <div className="report-table-frame">
       <div className="report-table-heading">
-        <span>Participações</span>
-        <strong>{heats.length} lançadas{completedCount !== undefined ? ` · ${completedCount} completas` : ""}</strong>
+        <span>Resultados lançados: {regularHeats.length}</span>
+        <strong>10 posições de pontuação · {visibleRows.length} pilotos exibidos</strong>
       </div>
-      <p className="report-table-hint" id={hintId}>Deslize horizontalmente para ver todas as baterias; posição, piloto e total ficam fixos.</p>
       <ReportMatrixKey />
+      <p className="report-table-hint" id={hintId}>A matriz mostra os 10 melhores resultados regulares de cada piloto. O registro abaixo preserva todas as baterias publicadas.</p>
       <div className="report-table-scroll" role="region" aria-label="Matriz de pontuação" aria-describedby={hintId} tabIndex={0}>
         <table className="report-classification-table" aria-labelledby={labelledBy}>
           <caption className="report-visually-hidden">Classificação geral da Legends Kart Series por bateria publicada.</caption>
           <thead>
             <tr className="report-table-band">
-              <th className="report-sticky-rank" rowSpan={2} scope="col">Posição</th>
+              <th className="report-sticky-rank" rowSpan={2} scope="col">Pos.</th>
               <th className="report-sticky-driver" rowSpan={2} scope="col">Piloto</th>
               <th className="report-level-head" rowSpan={2} scope="col">Nível</th>
               <th className="report-meta-head" rowSpan={2} scope="col">Part.</th>
-              <th className="report-meta-head" rowSpan={2} scope="col">Válidas</th>
               <th className="report-meta-head" rowSpan={2} scope="col">Ret.</th>
-              <th colSpan={regularHeatColumnSpan} scope="colgroup">Pontuações por bateria</th>
-              <th rowSpan={2} scope="col">SF</th>
+              <th colSpan={10} scope="colgroup">Pontuações válidas · melhores 10</th>
+              <th className="report-super-final-head" rowSpan={2} scope="col">SF</th>
               <th className="report-total-head" rowSpan={2} scope="col">Total</th>
+              <th className="report-last-position" rowSpan={2} scope="col">Pos.</th>
             </tr>
             <tr className="report-table-columns">
-              {regularHeats.length ? regularHeats.map((heat) => (
-                  <th key={heat.id} scope="col" aria-label={`${heat.title}, ${heat.date}`} title={`${heat.title} / ${heat.date}`}>
-                    <span>{getHeatShortLabel(heat.title)}</span>
-                    <small>{heat.label} · {heat.date.slice(0, 5)}</small>
+              {Array.from({ length: 10 }, (_, index) => (
+                <th key={`score-slot-${index + 1}`} scope="col">
+                  <span>Pontuação {index + 1}</span>
+                  <small>regular</small>
                 </th>
-              )) : <th scope="col"><span>Regulares</span><small>—</small></th>}
+              ))}
             </tr>
           </thead>
           <tbody>
-            {visibleRows.map((row) => (
-              <tr className={row.position === "01" ? "is-leader" : undefined} key={`${row.position}-${row.driver}`}>
-                <td className="report-sticky-rank report-rank-value">
-                  <strong>{row.position}</strong>
-                </td>
-                <td className="report-sticky-driver report-driver-value">
-                  <strong>{row.driver}</strong>
-                  <small>{row.discarded ? `${row.discarded} retida${row.discarded > 1 ? "s" : ""}` : "Sem descarte"}</small>
-                </td>
-                <td className="report-level-cell">{row.level}</td>
-                <td className="report-number-cell">{row.participationCount || "-"}</td>
-                <td className="report-number-cell">{row.valid}</td>
-                <td className="report-number-cell">{row.discarded || "-"}</td>
-                {regularHeats.length ? regularHeats.map((heat) => (
-                    <ClassificationScoreCell cell={row.cells[heat.id]} heat={heat} key={heat.id} />
-                  )) : <ClassificationScoreCell />}
-                <ClassificationScoreCell cell={superFinal ? row.cells[superFinal.id] : undefined} heat={superFinal} isSuperFinal />
-                <td className="report-total-cell" title={`Total ${row.points}: ${row.regularPoints} regulares + ${row.superFinalPoints} Super Final`}>
-                  <strong>{row.points}</strong>
-                  <small>{row.wins} vit. · {row.valid} vál.</small>
-                  <small>{row.regularPoints} reg. · {row.superFinalPoints} SF</small>
-                </td>
-              </tr>
-            ))}
+            {visibleRows.map((row) => {
+              const scoreSlots = getScoreSlots(row, regularHeats);
+
+              return (
+                <tr key={`${row.position}-${row.driver}`}>
+                  <td className="report-sticky-rank report-rank-value">
+                    <strong>{row.position}</strong>
+                  </td>
+                  <td className="report-sticky-driver report-driver-value">
+                    <strong>{row.driver}</strong>
+                  </td>
+                  <td className="report-level-cell">{row.level}</td>
+                  <td className="report-number-cell">{row.participationCount || "-"}</td>
+                  <td className="report-number-cell">{row.discarded || "-"}</td>
+                  {scoreSlots.map((slot, index) => (
+                    <ClassificationScoreCell cell={slot.cell} heat={slot.heat} key={`${row.position}-score-${index + 1}`} />
+                  ))}
+                  <ClassificationScoreCell cell={superFinal ? row.cells[superFinal.id] : undefined} heat={superFinal} isSuperFinal />
+                  <td className="report-total-cell" title={`Total ${row.points}: ${row.regularPoints} regulares + ${row.superFinalPoints} Super Final`}>
+                    <strong>{row.points}</strong>
+                    <small>{row.wins} vit. · {row.valid} vál.</small>
+                  </td>
+                  <td className="report-last-position report-rank-value"><strong>{row.position}</strong></td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
       {limit && rows.length > limit ? <p className="report-table-footnote">Mostrando os {limit} primeiros pilotos. A matriz completa está na página de pontuação.</p> : null}
+      {completedCount !== undefined ? <p className="report-table-source">Fonte publicada: {completedCount} de {heats.length} baterias completas. Passe o cursor sobre uma pontuação para ver sua bateria de origem.</p> : null}
     </div>
   );
 }
 
 export function ReportMatrixKey() {
   return (
-    <div className="report-matrix-key" aria-label="Legenda rápida da matriz">
+    <div className="report-matrix-key" aria-label="Legenda da matriz">
       {[
         ["V", "vitória"],
         ["D", "retida / não soma"],
@@ -226,8 +179,6 @@ export function ReportMatrixKey() {
         ["DSQ", "desclassificado"],
         ["S/T", "sem tempo válido"],
         ["SF", "Super Final"],
-        ["PART.", "participações"],
-        ["RET.", "retidas"],
       ].map(([mark, label]) => (
         <span key={mark}><strong>{mark}</strong><small>{label}</small></span>
       ))}
@@ -251,7 +202,7 @@ export function ReportRankingSummary({ rows, labelledBy }: { rows: P1RankingRow[
           <caption className="report-visually-hidden">Classificação resumida da Legends Kart Series.</caption>
           <thead>
             <tr>
-              <th scope="col">Posição</th>
+              <th scope="col">Pos.</th>
               <th scope="col">Piloto</th>
               <th scope="col">Nível</th>
               <th scope="col">Total</th>
@@ -285,7 +236,7 @@ function ClassificationScoreCell({
   isSuperFinal?: boolean;
 }) {
   const status = cell?.status ?? "missing";
-  const label = getScoreLabel(cell, status, heat);
+  const label = getScoreLabel(cell, status);
   const ariaLabel = getScoreAriaLabel(cell, status, heat);
 
   return (
@@ -297,7 +248,19 @@ function ClassificationScoreCell({
   );
 }
 
-function getScoreLabel(cell: P1ClassificationCell | undefined, status: P1ClassificationCell["status"], heat?: P1ClassificationHeat) {
+function getScoreSlots(row: P1ClassificationRow, regularHeats: P1ClassificationHeat[]) {
+  const scoredCells = regularHeats
+    .map((heat) => ({ heat, cell: row.cells[heat.id] }))
+    .filter(({ cell }) => cell?.score !== null && cell?.score !== undefined && (cell.status === "ok" || cell.status === "discarded"))
+    .sort((a, b) => (
+      Number(b.cell?.score ?? 0) - Number(a.cell?.score ?? 0)
+      || (a.cell?.officialMs ?? Number.MAX_SAFE_INTEGER) - (b.cell?.officialMs ?? Number.MAX_SAFE_INTEGER)
+    ));
+
+  return Array.from({ length: 10 }, (_, index) => scoredCells[index] ?? {});
+}
+
+function getScoreLabel(cell: P1ClassificationCell | undefined, status: P1ClassificationCell["status"]) {
   if (status === "missing") {
     return "-";
   }
@@ -307,10 +270,7 @@ function getScoreLabel(cell: P1ClassificationCell | undefined, status: P1Classif
   if (status === "no-time") {
     return "S/T";
   }
-  if (!cell || cell.score === null) {
-    return isSuperFinalHeatType(heat?.type) ? "-" : "-";
-  }
-  return formatScore(cell.score);
+  return cell?.score === null || cell?.score === undefined ? "-" : formatScore(cell.score);
 }
 
 function getScoreAriaLabel(cell: P1ClassificationCell | undefined, status: P1ClassificationCell["status"], heat?: P1ClassificationHeat) {
@@ -333,7 +293,7 @@ export function ReportResultRegister({ results }: { results: P1ResultRow[] }) {
   return (
     <div className="report-register-frame">
       <div className="report-table-heading">
-        <span>Resultados publicados</span>
+        <span>Registro oficial</span>
         <strong>{results.length} baterias</strong>
       </div>
       <div className="report-register-scroll" role="region" aria-label="Resultados publicados por bateria" tabIndex={0}>
@@ -370,14 +330,13 @@ export function ReportResultRegister({ results }: { results: P1ResultRow[] }) {
 export function ReportFormula({ validResults, rulesPdf }: { validResults: string; rulesPdf: string }) {
   return (
     <aside className="report-formula" aria-labelledby="report-formula-title">
-      <div>
-        <h2 id="report-formula-title">Pontuação por diferença de tempo</h2>
-        <span>Como ler</span>
+      <div className="report-formula-copy">
+        <span className="report-formula-label">Método oficial</span>
+        <h3 id="report-formula-title">Pontuação por diferença de tempo</h3>
+        <p>O piloto mais rápido recebe 10,000 pontos. Os demais partem da mesma base e perdem um ponto por segundo de diferença para a melhor volta da bateria. Diferenças superiores a 9 segundos recebem 1,000 ponto.</p>
+        <p><strong>Descarte:</strong> contam até 10 resultados regulares; piores resultados, ausências e DSQ podem ficar retidos. A Super Final soma à parte quando existir.</p>
       </div>
-      <p>O piloto mais rápido recebe 10,000 pontos. Os demais partem da mesma base e perdem um ponto por segundo de diferença para a melhor volta da bateria. Diferenças superiores a 9 segundos recebem 1,000 ponto.</p>
-      <p className="report-formula-note"><strong>Descarte:</strong> contam até 10 resultados regulares; piores resultados, ausências e DSQ podem ficar retidos. A Super Final soma à parte quando existir.</p>
-      <p className="report-formula-note"><strong>Desempate:</strong> vitórias; depois a melhor pontuação abaixo das vitórias, a segunda melhor e assim sucessivamente; sorteio por último.</p>
-      <dl>
+      <dl className="report-formula-facts">
         <div><dt>Base regular</dt><dd>10,000</dd></div>
         <div><dt>Base Super Final</dt><dd>5,000</dd></div>
         <div><dt>Resultado mínimo</dt><dd>1,000</dd></div>
@@ -419,13 +378,4 @@ export function formatReportPublicationDate(timestamp: string | null, fallback: 
 
 export function formatReportTime(milliseconds: number | null) {
   return formatTimingValue(milliseconds);
-}
-
-function getHeatShortLabel(title: string) {
-  const match = title.match(/Bateria\s+(\d+)\s*-\s*Legends\s+(.+)/i);
-  if (!match) {
-    return title;
-  }
-
-  return `B${match[1].padStart(2, "0")} / ${match[2].trim()}`;
 }
