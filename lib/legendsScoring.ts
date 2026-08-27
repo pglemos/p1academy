@@ -114,6 +114,42 @@ export function formatScore(score: number): string {
   });
 }
 
+export type LegendsHeatOrderValue = {
+  id?: string;
+  title: string;
+  date: string;
+  createdAt?: string;
+};
+
+export function getLegendsHeatNumber(title: string): number | null {
+  const match = title.match(/\bbateria\s*(\d+)/i);
+  return match ? Number(match[1]) : null;
+}
+
+export function compareLegendsHeatOrder(a: LegendsHeatOrderValue, b: LegendsHeatOrderValue) {
+  return a.date.slice(0, 10).localeCompare(b.date.slice(0, 10))
+    || compareNullableNumbers(getLegendsHeatNumber(a.title), getLegendsHeatNumber(b.title))
+    || a.title.localeCompare(b.title, "pt-BR")
+    || (a.createdAt ?? "").localeCompare(b.createdAt ?? "")
+    || (a.id ?? "").localeCompare(b.id ?? "");
+}
+
+function compareNullableNumbers(a: number | null, b: number | null) {
+  if (a === null && b === null) {
+    return 0;
+  }
+
+  if (a === null) {
+    return 1;
+  }
+
+  if (b === null) {
+    return -1;
+  }
+
+  return a - b;
+}
+
 export function calculateHeatResults(heat: HeatInput): HeatResult[] {
   const baseScore = heat.type === "super-final" ? SUPER_FINAL_BASE_SCORE : REGULAR_BASE_SCORE;
 

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { isSuperFinalHeatType, type P1ClassificationCell, type P1ClassificationHeat, type P1ClassificationRow, type P1RankingRow, type P1ResultRow } from "@/lib/p1Types";
-import { formatScore, formatTimingValue } from "@/lib/legendsScoring";
+import { formatScore, formatTimingValue, getLegendsHeatNumber } from "@/lib/legendsScoring";
 
 type ReportMastheadProps = {
   publishedAt: string | null;
@@ -101,14 +101,16 @@ export function ClassificationTable({
     return <p className="report-empty-state">Nenhuma classificação publicada no momento.</p>;
   }
 
+  const regularColumnCount = Math.max(regularHeats.length, 1);
+
   return (
     <div className="report-table-frame">
       <div className="report-table-heading">
-        <span>Resultados lançados: {regularHeats.length}</span>
-        <strong>10 posições de pontuação · {visibleRows.length} pilotos exibidos</strong>
+        <span>Resultados por bateria: {regularHeats.length}</span>
+        <strong>Ordem cronológica · {visibleRows.length} pilotos exibidos</strong>
       </div>
       <ReportMatrixKey />
-      <p className="report-table-hint" id={hintId}>A matriz mostra os 10 melhores resultados regulares de cada piloto. O registro abaixo preserva todas as baterias publicadas.</p>
+      <p className="report-table-hint" id={hintId}>Cada coluna representa uma bateria publicada. A numeração segue a relação oficial e os resultados retidos continuam visíveis para conferência.</p>
       <div className="report-table-scroll" role="region" aria-label="Matriz de pontuação" aria-describedby={hintId} tabIndex={0}>
         <table className="report-classification-table" aria-labelledby={labelledBy}>
           <caption className="report-visually-hidden">Classificação geral da Legends Kart Series por bateria publicada.</caption>
@@ -119,24 +121,22 @@ export function ClassificationTable({
               <th className="report-level-head" rowSpan={2} scope="col">Nível</th>
               <th className="report-meta-head" rowSpan={2} scope="col">Part.</th>
               <th className="report-meta-head" rowSpan={2} scope="col">Ret.</th>
-              <th colSpan={10} scope="colgroup">Pontuações válidas · melhores 10</th>
-              <th className="report-super-final-head" rowSpan={2} scope="col">SF</th>
+              <th colSpan={regularColumnCount} scope="colgroup">Pontuações por bateria · ordem cronológica</th>
+              {superFinal ? <th className="report-super-final-head" rowSpan={2} scope="col">SF</th> : null}
               <th className="report-total-head" rowSpan={2} scope="col">Total</th>
               <th className="report-last-position" rowSpan={2} scope="col">Pos.</th>
             </tr>
             <tr className="report-table-columns">
-              {Array.from({ length: 10 }, (_, index) => (
-                <th key={`score-slot-${index + 1}`} scope="col">
-                  <span>Pontuação {index + 1}</span>
-                  <small>regular</small>
+              {regularHeats.length ? regularHeats.map((heat) => (
+                <th key={heat.id} scope="col" aria-label={`${heat.title}, ${heat.date}`} title={`${heat.title} / ${heat.date}`}>
+                  <span>{getHeatShortLabel(heat.title)}</span>
+                  <small>{getHeatColumnMeta(heat)}</small>
                 </th>
-              ))}
+              )) : <th scope="col"><span>Regulares</span><small>sem lançamento</small></th>}
             </tr>
           </thead>
           <tbody>
             {visibleRows.map((row) => {
-              const scoreSlots = getScoreSlots(row, regularHeats);
-
               return (
                 <tr key={`${row.position}-${row.driver}`}>
                   <td className="report-sticky-rank report-rank-value">
@@ -148,10 +148,10 @@ export function ClassificationTable({
                   <td className="report-level-cell">{row.level}</td>
                   <td className="report-number-cell">{row.participationCount || "-"}</td>
                   <td className="report-number-cell">{row.discarded || "-"}</td>
-                  {scoreSlots.map((slot, index) => (
-                    <ClassificationScoreCell cell={slot.cell} heat={slot.heat} key={`${row.position}-score-${index + 1}`} />
-                  ))}
-                  <ClassificationScoreCell cell={superFinal ? row.cells[superFinal.id] : undefined} heat={superFinal} isSuperFinal />
+                  {regularHeats.length ? regularHeats.map((heat) => (
+                    <ClassificationScoreCell cell={row.cells[heat.id]} heat={heat} key={`${row.position}-${heat.id}`} />
+                  )) : <ClassificationScoreCell />}
+                  {superFinal ? <ClassificationScoreCell cell={row.cells[superFinal.id]} heat={superFinal} isSuperFinal /> : null}
                   <td className="report-total-cell" title={`Total ${row.points}: ${row.regularPoints} regulares + ${row.superFinalPoints} Super Final`}>
                     <strong>{row.points}</strong>
                     <small>{row.wins} vit. · {row.valid} vál.</small>
@@ -248,16 +248,14 @@ function ClassificationScoreCell({
   );
 }
 
-function getScoreSlots(row: P1ClassificationRow, regularHeats: P1ClassificationHeat[]) {
-  const scoredCells = regularHeats
-    .map((heat) => ({ heat, cell: row.cells[heat.id] }))
-    .filter(({ cell }) => cell?.score !== null && cell?.score !== undefined && (cell.status === "ok" || cell.status === "discarded"))
-    .sort((a, b) => (
-      Number(b.cell?.score ?? 0) - Number(a.cell?.score ?? 0)
-      || (a.cell?.officialMs ?? Number.MAX_SAFE_INTEGER) - (b.cell?.officialMs ?? Number.MAX_SAFE_INTEGER)
-    ));
+function getHeatShortLabel(title: string) {
+  const number = getLegendsHeatNumber(title);
+  return number === null ? title : `Bateria ${String(number).padStart(2, "0")}`;
+}
 
-  return Array.from({ length: 10 }, (_, index) => scoredCells[index] ?? {});
+function getHeatColumnMeta(heat: P1ClassificationHeat) {
+  const category = heat.title.match(/Legends\s+(I{1,3}V?|IV)/i)?.[0] ?? "Legends";
+  return `${category} · ${heat.date.slice(0, 5)}`;
 }
 
 function getScoreLabel(cell: P1ClassificationCell | undefined, status: P1ClassificationCell["status"]) {

@@ -52,7 +52,7 @@ export default async function LegendsPontuacaoPage() {
           <div className="report-section-bar">
             <div>
               <h2 id="score-matrix-title">Matriz de pontuação</h2>
-              <p>A matriz organiza os 10 melhores resultados regulares de cada piloto. No celular, deslize horizontalmente; posição e piloto permanecem visíveis.</p>
+              <p>Cada coluna representa uma bateria publicada, em ordem cronológica. No celular, deslize horizontalmente; posição e piloto permanecem visíveis.</p>
             </div>
             <div className="report-section-count">
               <strong>{regularHeatCount} + SF</strong>

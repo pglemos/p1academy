@@ -10,7 +10,7 @@
 
 import { existsSync, readFileSync } from "fs";
 import path from "path";
-import { formatScore } from "./legendsScoring";
+import { compareLegendsHeatOrder, formatScore, getLegendsHeatNumber } from "./legendsScoring";
 
 const pageWidth = 1491;
 const pageHeight = 1055;
@@ -469,8 +469,11 @@ function drawTableHeaders(commands: string[], columns: ReturnType<typeof tableCo
   centeredText(commands, "VIT.", columns.wins.x + columns.wins.w / 2, y + 38, 7.4, "F1", colors.ink);
   scoreColumns.forEach((column, index) => {
     const scoreColumn = columns.scores[index];
-    centeredText(commands, column.label, scoreColumn.x + scoreColumn.w / 2, y + 28, 7.2, "F1", colors.ink);
-    centeredText(commands, column.date, scoreColumn.x + scoreColumn.w / 2, y + 44, 7, "F2", column.type === "super_final" ? colors.gold : colors.muted);
+    const batteryNumber = getLegendsHeatNumber(column.title);
+    const batteryLabel = batteryNumber === null ? column.label : `B${String(batteryNumber).padStart(2, "0")}`;
+    centeredText(commands, batteryLabel, scoreColumn.x + scoreColumn.w / 2, y + 20, 7, "F1", colors.ink);
+    centeredText(commands, column.label, scoreColumn.x + scoreColumn.w / 2, y + 33, 6.5, "F2", colors.muted);
+    centeredText(commands, column.date, scoreColumn.x + scoreColumn.w / 2, y + 47, 7, "F2", column.type === "super_final" ? colors.gold : colors.muted);
   });
   centeredText(commands, "TOTAL", columns.total.x + columns.total.w / 2, y + 38, 8, "F1", colors.gold);
 }
@@ -650,7 +653,7 @@ function normalizeHeatType(value: string): "regular" | "super_final" {
 }
 
 function buildScoreColumns(heats: LegendsOverallHeat[]): ScoreColumn[] {
-  const orderedHeats = [...heats].sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title, "pt-BR"));
+  const orderedHeats = [...heats].sort(compareLegendsHeatOrder);
   const regularColumns = orderedHeats
     .filter((heat) => normalizeHeatType(heat.type) === "regular")
     .map((heat, index) => ({

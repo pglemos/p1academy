@@ -5,7 +5,7 @@ import {
   legendsRankingPreview,
   legendsResultsPreview,
 } from "@/data/legends";
-import { formatScore, formatTimingValue, slugifyDriverKey } from "@/lib/legendsScoring";
+import { compareLegendsHeatOrder, formatScore, formatTimingValue, slugifyDriverKey } from "@/lib/legendsScoring";
 import { getPublicSupabaseClient, hasPublicSupabaseEnv } from "@/lib/p1Supabase";
 import type {
   P1CalendarMonth,
@@ -77,6 +77,7 @@ type HeatRow = {
   title: string;
   heat_date: string;
   type: string;
+  created_at: string;
   updated_at: string;
 };
 
@@ -122,7 +123,7 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
           .returns<StandingRow[]>(),
       supabase
         .from("p1_heats")
-        .select("id, title, heat_date, type, updated_at")
+        .select("id, title, heat_date, type, created_at, updated_at")
         .eq("championship_id", championship.id)
         .eq("is_published", true)
         .order("heat_date", { ascending: false })
@@ -148,14 +149,17 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
         .map((row) => [slugifyDriverKey(row.display_name), row.current_level?.trim() || "A definir"] as const),
     );
 
-    const orderedHeats = [...(heats ?? [])].sort((a, b) => {
-      const byDate = a.heat_date.localeCompare(b.heat_date);
-      if (byDate !== 0) {
-        return byDate;
-      }
-
-      return a.title.localeCompare(b.title, "pt-BR");
-    });
+    const orderedHeats = [...(heats ?? [])].sort((a, b) => compareLegendsHeatOrder({
+      id: a.id,
+      title: a.title,
+      date: a.heat_date,
+      createdAt: a.created_at,
+    }, {
+      id: b.id,
+      title: b.title,
+      date: b.heat_date,
+      createdAt: b.created_at,
+    }));
     const detailResults = await loadPublishedResults(orderedHeats);
     const results = buildResultRows(orderedHeats, detailResults);
     const lastPublishedAt = [...heats.map((heat) => heat.updated_at), ...detailResults.map((result) => result.created_at)]
