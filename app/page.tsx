@@ -26,14 +26,14 @@ export default function Home() {
               <span>Perfection</span>
             </div>
             <div className="button-row">
-              <Link className="btn primary" href="/contato">
-                <CalendarCheck size={18} /> Agendar aula
+              <Link className="btn primary" href="/aulas">
+                <CalendarCheck size={18} /> Agendar Treino Técnico
               </Link>
               <Link className="btn secondary" href="/campeonatos">
-                <Trophy size={18} /> Entrar em campeonato
+                <Trophy size={18} /> Legends Kart Series
               </Link>
               <Link className="btn ghost" href="/andre-felisberto">
-                <Flag size={18} /> Conhecer André
+                <Flag size={18} /> Conhecer André Felisberto
               </Link>
             </div>
           </Reveal>

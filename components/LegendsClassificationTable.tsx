@@ -20,16 +20,29 @@ type SelectedScore = {
   isSuperFinal: boolean;
 };
 
+type FilterMode = "all" | "top10" | "winners" | "discards";
+
 export function ClassificationTable({ heats, rows, limit, labelledBy, completedCount }: ClassificationTableProps) {
   const [query, setQuery] = useState("");
+  const [filterMode, setFilterMode] = useState<FilterMode>("all");
   const [selectedScore, setSelectedScore] = useState<SelectedScore | null>(null);
   const regularHeats = heats.filter((heat) => !isSuperFinalHeatType(heat.type));
   const superFinal = heats.find((heat) => isSuperFinalHeatType(heat.type));
   const normalizedQuery = query.trim().toLocaleLowerCase("pt-BR");
+
+  let filteredRows = rows;
+  if (filterMode === "top10") {
+    filteredRows = rows.slice(0, 10);
+  } else if (filterMode === "winners") {
+    filteredRows = rows.filter((r) => r.wins > 0);
+  } else if (filterMode === "discards") {
+    filteredRows = rows.filter((r) => (r.discarded || 0) > 0);
+  }
+
   const matchingRows = normalizedQuery
-    ? rows.filter((row) => row.driver.toLocaleLowerCase("pt-BR").includes(normalizedQuery))
-    : rows;
-  const visibleRows = normalizedQuery || !limit ? matchingRows : matchingRows.slice(0, limit);
+    ? filteredRows.filter((row) => row.driver.toLocaleLowerCase("pt-BR").includes(normalizedQuery))
+    : filteredRows;
+  const visibleRows = normalizedQuery || filterMode !== "all" || !limit ? matchingRows : matchingRows.slice(0, limit);
   const hintId = labelledBy ? `${labelledBy}-scroll-hint` : "classification-table-scroll-hint";
   const searchId = `classification-search-${labelledBy ?? "default"}`;
   const regularColumnCount = Math.max(regularHeats.length, 1);
@@ -38,12 +51,17 @@ export function ClassificationTable({ heats, rows, limit, labelledBy, completedC
     return <p className="report-empty-state">Nenhuma classificação publicada no momento.</p>;
   }
 
+  const winnersCount = rows.filter((r) => r.wins > 0).length;
+  const withDiscardsCount = rows.filter((r) => (r.discarded || 0) > 0).length;
+
   const searchSummary = normalizedQuery
     ? `${matchingRows.length} ${matchingRows.length === 1 ? "piloto encontrado" : "pilotos encontrados"}`
-    : limit && rows.length > limit
-      ? `${visibleRows.length} primeiros de ${rows.length} pilotos`
-      : `${visibleRows.length} pilotos exibidos`;
-  const mobileRows = normalizedQuery ? matchingRows : visibleRows.slice(0, 10);
+    : filterMode !== "all"
+      ? `${visibleRows.length} pilotos filtrados`
+      : limit && rows.length > limit
+        ? `${visibleRows.length} primeiros de ${rows.length} pilotos`
+        : `${visibleRows.length} pilotos exibidos`;
+  const mobileRows = normalizedQuery || filterMode !== "all" ? matchingRows : visibleRows.slice(0, 10);
 
   return (
     <div className="report-table-frame">
@@ -59,18 +77,50 @@ export function ClassificationTable({ heats, rows, limit, labelledBy, completedC
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Nome do piloto"
+            placeholder="Buscar por nome do piloto..."
             autoComplete="off"
           />
-          {query ? <button type="button" onClick={() => setQuery("")} aria-label="Limpar busca">Limpar</button> : null}
+          {query ? <button type="button" onClick={() => setQuery("")} aria-label="Limpar busca">✕</button> : null}
         </div>
-        <span className="report-search-status" aria-live="polite">{normalizedQuery ? `Busca em ${rows.length} pilotos` : "Consulta rápida por nome"}</span>
+        <div className="report-filter-chips" role="group" aria-label="Filtros rápidos de classificação">
+          <button
+            type="button"
+            className={`report-chip ${filterMode === "all" ? "is-active" : ""}`}
+            onClick={() => setFilterMode("all")}
+          >
+            Todos ({rows.length})
+          </button>
+          <button
+            type="button"
+            className={`report-chip ${filterMode === "top10" ? "is-active" : ""}`}
+            onClick={() => setFilterMode("top10")}
+          >
+            Top 10
+          </button>
+          <button
+            type="button"
+            className={`report-chip ${filterMode === "winners" ? "is-active" : ""}`}
+            onClick={() => setFilterMode("winners")}
+          >
+            Vencedores ({winnersCount})
+          </button>
+          <button
+            type="button"
+            className={`report-chip ${filterMode === "discards" ? "is-active" : ""}`}
+            onClick={() => setFilterMode("discards")}
+          >
+            Com Descartes ({withDiscardsCount})
+          </button>
+        </div>
+        <span className="report-search-status" aria-live="polite">
+          {normalizedQuery ? `Busca em ${filteredRows.length} pilotos` : "Consulta rápida por nome ou filtro"}
+        </span>
       </div>
       <ReportMatrixKey />
       <div className="report-mobile-ranking" aria-labelledby={`${searchId}-mobile-title`}>
         <div className="report-mobile-ranking-heading">
           <h3 id={`${searchId}-mobile-title`}>Leitura rápida</h3>
-          <span>{normalizedQuery ? "Resultado da busca" : `${mobileRows.length} primeiros · busque pelo nome`}</span>
+          <span>{normalizedQuery || filterMode !== "all" ? "Resultado filtrado" : `${mobileRows.length} primeiros · busque pelo nome`}</span>
         </div>
         <ol>
           {mobileRows.map((row) => (
@@ -84,12 +134,14 @@ export function ClassificationTable({ heats, rows, limit, labelledBy, completedC
             </li>
           ))}
         </ol>
-        {!mobileRows.length ? <p className="report-empty-state">Nenhum piloto corresponde à busca.</p> : null}
+        {!mobileRows.length ? <p className="report-empty-state">Nenhum piloto corresponde aos critérios.</p> : null}
       </div>
-      <ReportScoreDetail selectedScore={selectedScore} />
+      <ReportScoreDetail selectedScore={selectedScore} onClose={() => setSelectedScore(null)} />
       {visibleRows.length ? (
         <>
-          <p className="report-table-hint" id={hintId}>Cada coluna representa uma bateria publicada, em ordem cronológica. Use a leitura rápida no celular ou deslize horizontalmente para conferir a matriz completa.</p>
+          <p className="report-table-hint" id={hintId}>
+            <span className="report-hint-icon">↔</span> Cada coluna representa uma bateria em ordem cronológica. Toque ou clique em qualquer pontuação para auditar o lançamento. Deslize horizontalmente para navegar na grade completa.
+          </p>
           <div className="report-table-scroll" role="region" aria-label="Matriz de pontuação" aria-describedby={hintId} tabIndex={0}>
             <table className="report-classification-table" aria-labelledby={labelledBy}>
               <caption className="report-visually-hidden">Classificação geral da Legends Kart Series por bateria publicada.</caption>
@@ -156,10 +208,10 @@ export function ClassificationTable({ heats, rows, limit, labelledBy, completedC
               </tbody>
             </table>
           </div>
-          {limit && rows.length > limit && !normalizedQuery ? <p className="report-table-footnote">Mostrando os {limit} primeiros pilotos. Use a busca para localizar qualquer piloto; a matriz completa está na página de pontuação.</p> : null}
+          {limit && rows.length > limit && !normalizedQuery && filterMode === "all" ? <p className="report-table-footnote">Mostrando os {limit} primeiros pilotos. Use a busca ou filtros para localizar qualquer piloto; a matriz completa está na página de pontuação.</p> : null}
           {completedCount !== undefined ? <p className="report-table-source">Fonte publicada: {completedCount} de {heats.length} baterias completas. Selecione uma pontuação para ver bateria, data, estado, tempo e documento de origem.</p> : null}
         </>
-      ) : <p className="report-table-no-results">Nenhum piloto corresponde à busca. Limpe o campo para restaurar a classificação.</p>}
+      ) : <p className="report-table-no-results">Nenhum piloto corresponde aos filtros aplicados. Limpe a busca para restaurar a classificação.</p>}
     </div>
   );
 }
@@ -203,7 +255,13 @@ function ClassificationScoreCell({
   );
 }
 
-function ReportScoreDetail({ selectedScore }: { selectedScore: SelectedScore | null }) {
+function ReportScoreDetail({
+  selectedScore,
+  onClose,
+}: {
+  selectedScore: SelectedScore | null;
+  onClose: () => void;
+}) {
   if (!selectedScore) {
     return <p className="report-audit-detail" aria-live="polite">Selecione uma pontuação para conferir a bateria, a data, o estado e o documento de origem.</p>;
   }
@@ -213,7 +271,7 @@ function ReportScoreDetail({ selectedScore }: { selectedScore: SelectedScore | n
   const timing = cell?.officialMs === null || cell?.officialMs === undefined ? null : formatTimingValue(cell.officialMs);
 
   return (
-    <div className="report-audit-detail" aria-live="polite">
+    <div className="report-audit-detail is-active" aria-live="polite">
       <div>
         <span className="report-audit-label">Piloto</span>
         <strong>{row.driver}</strong>
@@ -228,7 +286,10 @@ function ReportScoreDetail({ selectedScore }: { selectedScore: SelectedScore | n
         <strong>{getScoreAriaLabel(cell, status, heat)}</strong>
         {timing ? <small>Tempo oficial: {timing}</small> : null}
       </div>
-      {!isSuperFinal ? <a className="report-text-link" href={`/api/campeonatos/legends/pdf/${heat.id}`} target="_blank" rel="noreferrer">Abrir PDF desta bateria</a> : null}
+      <div className="report-audit-actions">
+        {!isSuperFinal ? <a className="report-text-link" href={`/api/campeonatos/legends/pdf/${heat.id}`} target="_blank" rel="noreferrer">PDF da bateria</a> : null}
+        <button type="button" className="report-audit-close" onClick={onClose} aria-label="Fechar detalhe da pontuação">✕ Fechar</button>
+      </div>
     </div>
   );
 }

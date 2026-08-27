@@ -1,53 +1,72 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-14T05:20:00.000Z",
-  "title": "Design System: Legends Kart Series Official Reports",
+  "generatedAt": "2026-08-27T15:30:00.000Z",
+  "title": "Design System: P1 Academy & Legends Kart Series",
   "extensions": {
     "colorMeta": {
-      "background": { "role": "neutral", "displayName": "True Black", "canonical": "#090B0B", "tonalRamp": ["#090B0B", "#101414", "#151A19", "#1A201E", "#4B5147", "#858A80", "#B7B8AE", "#F2F0E7"] },
-      "legends-gold": { "role": "primary", "displayName": "Legends Gold", "canonical": "#F2B51B", "tonalRamp": ["#3A2B06", "#684C08", "#986F0C", "#C28F12", "#F2B51B", "#F6C64C", "#F9DA82", "#FFF0C3"] },
+      "background": { "role": "neutral", "displayName": "Track Black", "canonical": "#121414", "tonalRamp": ["#0D0E0F", "#121414", "#1B1C1C", "#1F2020", "#292A2A", "#343535", "#484831", "#E3E2E2"] },
+      "p1-gold": { "role": "primary", "displayName": "P1 Gold", "canonical": "#EAEA00", "tonalRamp": ["#3B3B00", "#696900", "#9E9E00", "#C7C700", "#EAEA00", "#F0F033", "#F7F77A", "#FFFFD1"] },
+      "p1-acid": { "role": "primary-accent", "displayName": "P1 Acid Yellow", "canonical": "#FFFF00", "tonalRamp": ["#424200", "#757500", "#A8A800", "#D6D600", "#FFFF00", "#FFFF4D", "#FFFF8F", "#FFFFD9"] },
       "tape-orange": { "role": "secondary", "displayName": "Tape Orange", "canonical": "#ED6430", "tonalRamp": ["#3D160B", "#6D2613", "#9E3C1D", "#C94F27", "#ED6430", "#F48B63", "#F8B69C", "#FDE1D7"] },
-      "discard-brown": { "role": "tertiary", "displayName": "Retained Brown", "canonical": "#442C22", "tonalRamp": ["#160D09", "#241610", "#342119", "#442C22", "#684334", "#8F604D", "#C2917B", "#EAC8B7"] },
-      "ink": { "role": "neutral", "displayName": "Work-Print White", "canonical": "#F2F0E7", "tonalRamp": ["#20211F", "#3E3F3B", "#686963", "#92938A", "#B7B8AE", "#D0CEC4", "#E1DFD6", "#F2F0E7"] }
+      "discard-brown": { "role": "tertiary", "displayName": "Retained Discard Brown", "canonical": "#442C22", "tonalRamp": ["#160D09", "#241610", "#342119", "#442C22", "#684334", "#8F604D", "#C2917B", "#EAC8B7"] },
+      "ink": { "role": "neutral", "displayName": "Telemetry White", "canonical": "#E3E2E2", "tonalRamp": ["#121414", "#292A2A", "#525454", "#858787", "#B5B6B6", "#D1D2D2", "#E3E2E2", "#FFFFFF"] },
+      "muted": { "role": "neutral-variant", "displayName": "Technical Muted", "canonical": "#CAC8AA", "tonalRamp": ["#1F2018", "#3E402F", "#64674B", "#8C9068", "#B0B584", "#CAC8AA", "#DFDDD0", "#F4F3ED"] },
+      "line": { "role": "outline", "displayName": "Precision Line", "canonical": "#333333", "tonalRamp": ["#1A1A1A", "#262626", "#333333", "#4D4D4D", "#666666", "#808080", "#999999", "#CCCCCC"] }
     },
     "typographyMeta": {
-      "display": { "displayName": "Report Display", "purpose": "Large report titles and overview identity." },
-      "body": { "displayName": "Workhorse Sans", "purpose": "Readable formulas, pilot names and score cells with extractable text." },
-      "label": { "displayName": "Tracked Labels", "purpose": "Small uppercase section names and matrix headers." }
+      "display": { "displayName": "Anybody Display Italic", "purpose": "Hero titles, fast speed headlines and principal section branding." },
+      "headline": { "displayName": "Anybody Headline Italic", "purpose": "Impact subheadings and card category titles." },
+      "body": { "displayName": "Geist Sans", "purpose": "Readable descriptions, instructions, regulations and administrative controls." },
+      "mono": { "displayName": "JetBrains Mono Tabular", "purpose": "Lap times, telemetry differences, points matrix and rank positions." },
+      "label": { "displayName": "Tracked Uppercase Label", "purpose": "Category chips, table headers and button labels." }
     },
     "shadows": [],
-    "motion": [],
-    "breakpoints": [],
+    "motion": [
+      { "name": "snappy", "duration": "120ms", "easing": "cubic-bezier(0.2, 0, 0, 1)" },
+      { "name": "smooth", "duration": "240ms", "easing": "cubic-bezier(0.16, 1, 0.3, 1)" }
+    ],
+    "breakpoints": ["390px", "768px", "1024px", "1440px"],
     "components": [
       {
         "name": "Score Cell",
         "kind": "custom",
         "refersTo": "score-cell",
-        "description": "A three-decimal score with explicit winner, retained or unavailable state.",
-        "html": "<div class=\"ds-score-cell\"><span>9,645</span><small>V</small></div>",
-        "css": ".ds-score-cell { background: #151A19; color: #F2F0E7; min-width: 56px; padding: 10px 8px; font: 700 10px Helvetica, Arial, sans-serif; text-align: center; } .ds-score-cell small { color: #ED6430; display: block; font-size: 7px; } .ds-score-cell:hover { background: #1A201E; } .ds-score-cell:focus-visible { outline: 2px solid #F2B51B; outline-offset: 2px; }"
+        "description": "A three-decimal score with explicit victory, retained discard or absent marker.",
+        "html": "<div class=\"p1-score-cell p1-win\"><span>10,000</span><small>V</small></div>",
+        "css": ".p1-score-cell { background: #1F2020; color: #E3E2E2; min-width: 56px; padding: 8px 10px; font: 700 11px 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; text-align: center; border-radius: 0; } .p1-win { background: #EAEA00; color: #0D0E0F; } .p1-win small { color: #0D0E0F; font-weight: 900; }"
       },
       {
-        "name": "Report Frame",
+        "name": "Telemetry Card",
         "kind": "card",
-        "refersTo": "report-frame",
-        "description": "A square-cornered work surface for leaders, rules or chronology.",
-        "html": "<section class=\"ds-report-frame\"><h3>RÉGUA DA TEMPORADA</h3><p>P01 · 01/07</p></section>",
-        "css": ".ds-report-frame { background: #151A19; color: #F2F0E7; border: 1px solid #4B5147; border-top: 5px solid #ED6430; border-radius: 0; padding: 14px 22px; font-family: Helvetica, Arial, sans-serif; } .ds-report-frame h3 { color: #ED6430; font-size: 10px; letter-spacing: 1.6px; margin: 0 0 12px; } .ds-report-frame p { color: #B7B8AE; font-size: 9px; margin: 0; }"
+        "refersTo": "stat-card",
+        "description": "High-contrast technical telemetry container.",
+        "html": "<div class=\"p1-stat-card\"><span class=\"label\">PILOTOS ATIVOS</span><strong>91</strong><p>Temporada Oficial 2026</p></div>",
+        "css": ".p1-stat-card { background: #1F2020; border: 1px solid #333333; border-top: 3px solid #EAEA00; padding: 20px; font-family: 'Geist', sans-serif; } .p1-stat-card .label { font-family: 'Anybody', sans-serif; font-size: 11px; letter-spacing: 0.1em; color: #CAC8AA; text-transform: uppercase; } .p1-stat-card strong { font-family: 'Anybody', sans-serif; font-style: italic; font-size: 32px; color: #E3E2E2; display: block; margin: 6px 0; }"
       }
     ]
   },
   "narrative": {
-    "northStar": "The Work-Print Rail",
-    "overview": "The official report treats the championship as a film cutting bench: each published heat is a frame on a chronological rail, the score is the working print, and a discarded result remains visible as retained material rather than disappearing. The system is flat, high-contrast and audit-first.",
-    "keyCharacteristics": ["Chronological heat rail", "Explicit V/D/- state markers", "Separated totals", "Rules before matrix"],
+    "northStar": "High-G Telemetry & Work-Print Precision",
+    "overview": "P1 Academy unifies high-performance kart training led by Brazilian champion André Felisberto with the immutable, auditable scoring of the Legends Kart Series. The visual system is sharp, flat, high-contrast, and rooted in motorsport precision.",
+    "keyCharacteristics": ["High-contrast dark asphalt palette", "Speed-italic Anybody headlines", "Tabular-numeric JetBrains Mono data", "Explicit multimodal states (V/D/-/DSQ)", "Sticky column mobile audit ergonomics"],
     "rules": [
-      { "name": "The Marking-Tape Rule", "body": "Orange marks state and wayfinding; it never replaces the data itself.", "section": "colors" },
-      { "name": "The Work-Print Rule", "body": "A retained result stays visible and labeled even when it does not enter the total.", "section": "colors" },
-      { "name": "The Data-First Rule", "body": "Display scale belongs to the title, leaders and totals; the matrix never sacrifices a score to create a dramatic headline.", "section": "typography" },
-      { "name": "The Flat-By-Default Rule", "body": "Do not add a shadow or decorative texture where a tonal surface or a 1-point rule already explains the hierarchy.", "section": "elevation" }
+      { "name": "The Telemetry-Contrast Rule", "body": "Maintain WCAG AA compliance on all dark backgrounds for numerical and analytical content.", "section": "colors" },
+      { "name": "The State-Over-Color Rule", "body": "Always use textual markers (V, D, -, DSQ, SF) alongside colors.", "section": "colors" },
+      { "name": "The Tabular-Numeric Rule", "body": "All times, deltas and points must be rendered with tabular mono typography.", "section": "typography" },
+      { "name": "The Asphalt-Layering Rule", "body": "Depth is achieved through solid tonal steps and 1px mechanical lines rather than blurred drop shadows.", "section": "elevation" }
     ],
-    "dos": ["Do keep the regulation summary before the first ranking matrix.", "Do label chronology, victory, retained discard, absence and Super Final.", "Do preserve three decimal places and exact driver spelling.", "Do split long rankings before reducing reading size."],
-    "donts": ["Don't compress all pilots into a single page.", "Don't use an accent without a textual state marker.", "Don't hide discarded results.", "Don't invent a Super Final or lottery outcome."]
+    "dos": [
+      "Do preserve three decimal places for official lap times and heat points.",
+      "Do provide tactile tap/keyboard access to score cell audit details.",
+      "Do maintain sticky pilot headers on mobile matrix scrolls.",
+      "Do explain discard formulas and tie-break criteria directly in context."
+    ],
+    "donts": [
+      "Don't hide discarded results or fold them into unexplained aggregates.",
+      "Don't rely solely on hover interactions for critical telemetry details.",
+      "Don't compress large pilot rosters into unreadable mobile views.",
+      "Don't introduce non-functional decorative glows or multi-color gradients."
+    ]
   }
 }
+

@@ -23,14 +23,16 @@ export const instagramHandle = "@p1__academy";
 export const instagramUrl = "https://www.instagram.com/p1__academy";
 
 export const navItems = [
-  { href: "/sobre", label: "Sobre" },
-  { href: "/andre-felisberto", label: "André" },
+  { href: "/aulas", label: "Aulas" },
   { href: "/campeonatos", label: "Campeonatos" },
+  { href: "/dicas", label: "Dicas" },
   { href: "/tracados", label: "Traçados" },
+  { href: "/andre-felisberto", label: "André" },
   { href: "/regulamentos", label: "Regulamentos" },
   { href: "/patrocinadores", label: "Patrocinadores" },
   { href: "/noticias", label: "Notícias" },
   { href: "/wallpapers", label: "Wallpapers" },
+  { href: "/sobre", label: "Sobre" },
   { href: "/contato", label: "Contato" },
 ];
 
