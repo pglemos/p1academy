@@ -13,7 +13,7 @@ import { getLegendsPublicData } from "@/lib/p1Data";
 import { isSuperFinalHeatType } from "@/lib/p1Types";
 
 export const metadata = {
-  title: "Legends Kart Series | P1 Academy",
+  title: "Legends Kart Series",
 };
 
 export const dynamic = "force-dynamic";
@@ -41,7 +41,7 @@ export default async function CampeonatosPage() {
           <ReportTitleBand
             eyebrow={`${championship.edition} · categoria única · temporada ${championship.season}`}
             title={championship.name}
-            description="Acompanhe a classificação oficial, os resultados publicados e os documentos da Legends Kart Series em uma única folha de consulta."
+            description="Classificação oficial, resultados publicados e documentos da temporada em uma só folha."
             resultCount={resultCount}
             resultNote={`${completeResultCount} completas`}
             pilotCount={pilotCount}
@@ -49,9 +49,9 @@ export default async function CampeonatosPage() {
           <ReportLeaderStrip rows={classification.rows} />
 
           <div className="report-action-row report-action-row-top" aria-label="Ações oficiais">
-            <Link className="report-button report-button-primary" href="/campeonatos/pontuacao">Abrir classificação completa</Link>
-            <button className="report-button" type="button" data-registration-trigger>Quero participar</button>
-            <a className="report-button" href={championship.rulesPdf} target="_blank" rel="noreferrer">Regulamento PDF</a>
+            <Link className="report-button report-button-primary" href="/campeonatos/pontuacao" aria-label="Abrir classificação completa"><span className="report-button-label-wide">Abrir classificação completa</span><span className="report-button-label-compact">Classificação</span></Link>
+            <button className="report-button" type="button" data-registration-trigger aria-label="Quero participar"><span className="report-button-label-wide">Quero participar</span><span className="report-button-label-compact">Inscrição</span></button>
+            <a className="report-button" href={championship.rulesPdf} target="_blank" rel="noreferrer" aria-label="Abrir regulamento PDF"><span className="report-button-label-wide">Regulamento PDF</span><span className="report-button-label-compact">Regulamento</span></a>
           </div>
 
           <nav className="report-subnav" aria-label="Atalhos do campeonato">

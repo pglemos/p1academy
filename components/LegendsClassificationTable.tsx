@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeftRight, X } from "lucide-react";
 import { useState } from "react";
 import { formatScore, formatTimingValue, getLegendsHeatNumber } from "@/lib/legendsScoring";
 import { isSuperFinalHeatType, type P1ClassificationCell, type P1ClassificationHeat, type P1ClassificationRow } from "@/lib/p1Types";
@@ -80,12 +81,13 @@ export function ClassificationTable({ heats, rows, limit, labelledBy, completedC
             placeholder="Buscar por nome do piloto..."
             autoComplete="off"
           />
-          {query ? <button type="button" onClick={() => setQuery("")} aria-label="Limpar busca">✕</button> : null}
+          {query ? <button type="button" onClick={() => setQuery("")} aria-label="Limpar busca"><X size={14} aria-hidden="true" /></button> : null}
         </div>
         <div className="report-filter-chips" role="group" aria-label="Filtros rápidos de classificação">
           <button
             type="button"
             className={`report-chip ${filterMode === "all" ? "is-active" : ""}`}
+            aria-pressed={filterMode === "all"}
             onClick={() => setFilterMode("all")}
           >
             Todos ({rows.length})
@@ -93,6 +95,7 @@ export function ClassificationTable({ heats, rows, limit, labelledBy, completedC
           <button
             type="button"
             className={`report-chip ${filterMode === "top10" ? "is-active" : ""}`}
+            aria-pressed={filterMode === "top10"}
             onClick={() => setFilterMode("top10")}
           >
             Top 10
@@ -100,6 +103,7 @@ export function ClassificationTable({ heats, rows, limit, labelledBy, completedC
           <button
             type="button"
             className={`report-chip ${filterMode === "winners" ? "is-active" : ""}`}
+            aria-pressed={filterMode === "winners"}
             onClick={() => setFilterMode("winners")}
           >
             Vencedores ({winnersCount})
@@ -107,13 +111,14 @@ export function ClassificationTable({ heats, rows, limit, labelledBy, completedC
           <button
             type="button"
             className={`report-chip ${filterMode === "discards" ? "is-active" : ""}`}
+            aria-pressed={filterMode === "discards"}
             onClick={() => setFilterMode("discards")}
           >
             Com Descartes ({withDiscardsCount})
           </button>
         </div>
         <span className="report-search-status" aria-live="polite">
-          {normalizedQuery ? `Busca em ${filteredRows.length} pilotos` : "Consulta rápida por nome ou filtro"}
+          {normalizedQuery ? `Busca: ${matchingRows.length} ${matchingRows.length === 1 ? "piloto encontrado" : "pilotos encontrados"}` : "Consulta rápida por nome ou filtro"}
         </span>
       </div>
       <ReportMatrixKey />
@@ -140,7 +145,7 @@ export function ClassificationTable({ heats, rows, limit, labelledBy, completedC
       {visibleRows.length ? (
         <>
           <p className="report-table-hint" id={hintId}>
-            <span className="report-hint-icon">↔</span> Cada coluna representa uma bateria em ordem cronológica. Toque ou clique em qualquer pontuação para auditar o lançamento. Deslize horizontalmente para navegar na grade completa.
+            <span className="report-hint-icon"><ArrowLeftRight size={15} aria-hidden="true" /></span> Cada coluna representa uma bateria em ordem cronológica. Toque ou clique em qualquer pontuação para auditar o lançamento. Deslize horizontalmente para navegar na grade completa.
           </p>
           <div className="report-table-scroll" role="region" aria-label="Matriz de pontuação" aria-describedby={hintId} tabIndex={0}>
             <table className="report-classification-table" aria-labelledby={labelledBy}>
@@ -288,7 +293,7 @@ function ReportScoreDetail({
       </div>
       <div className="report-audit-actions">
         {!isSuperFinal ? <a className="report-text-link" href={`/api/campeonatos/legends/pdf/${heat.id}`} target="_blank" rel="noreferrer">PDF da bateria</a> : null}
-        <button type="button" className="report-audit-close" onClick={onClose} aria-label="Fechar detalhe da pontuação">✕ Fechar</button>
+        <button type="button" className="report-audit-close" onClick={onClose} aria-label="Fechar detalhe da pontuação"><X size={14} aria-hidden="true" /> Fechar</button>
       </div>
     </div>
   );

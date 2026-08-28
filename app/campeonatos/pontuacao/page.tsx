@@ -12,7 +12,7 @@ import { getLegendsPublicData } from "@/lib/p1Data";
 import { isSuperFinalHeatType } from "@/lib/p1Types";
 
 export const metadata = {
-  title: "Classificação Legends Kart Series | P1 Academy",
+  title: "Classificação geral",
 };
 
 export const dynamic = "force-dynamic";

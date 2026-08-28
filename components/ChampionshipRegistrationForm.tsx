@@ -94,10 +94,14 @@ function parsePositiveNumber(value: string) {
 export function ChampionshipRegistrationModal() {
   const [open, setOpen] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     function openRegistration(event?: Event) {
       event?.preventDefault();
+      const trigger = event?.target instanceof Element ? event.target.closest<HTMLElement>("[data-registration-trigger]") : null;
+      returnFocusRef.current = trigger ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
       setOpen(true);
       if (window.location.hash !== "#inscricao") {
         window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#inscricao`);
@@ -129,22 +133,77 @@ export function ChampionshipRegistrationModal() {
 
   useEffect(() => {
     if (!open) {
+      const returnFocusTarget = returnFocusRef.current;
+      returnFocusRef.current = null;
+      if (!returnFocusTarget) {
+        return;
+      }
+
+      const restoreFocusTimer = window.setTimeout(() => {
+        if (returnFocusTarget.isConnected) {
+          returnFocusTarget.focus();
+        }
+      }, 0);
+
+      return () => window.clearTimeout(restoreFocusTimer);
+    }
+
+    const dialog = dialogRef.current;
+    if (!dialog) {
       return;
     }
+    const modal = dialog;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+    const focusTimer = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+
+    function getFocusableElements() {
+      return Array.from(
+        modal.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+    }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        event.preventDefault();
         closeModal();
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const focusableElements = getFocusableElements();
+      if (!focusableElements.length) {
+        event.preventDefault();
+        modal.focus();
+        return;
+      }
+
+      const firstFocusable = focusableElements[0];
+      const lastFocusable = focusableElements.at(-1);
+      const activeElement = document.activeElement;
+
+      if (!modal.contains(activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? lastFocusable : firstFocusable)?.focus();
+      } else if (event.shiftKey && activeElement === firstFocusable) {
+        event.preventDefault();
+        lastFocusable?.focus();
+      } else if (!event.shiftKey && activeElement === lastFocusable) {
+        event.preventDefault();
+        firstFocusable.focus();
       }
     }
 
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
+      window.clearTimeout(focusTimer);
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
@@ -169,7 +228,7 @@ export function ChampionshipRegistrationModal() {
 
   return (
     <div className="registration-modal-backdrop" onMouseDown={handleBackdropClick}>
-      <div className="registration-modal" role="dialog" aria-modal="true" aria-label="Cadastro completo do piloto">
+      <div ref={dialogRef} className="registration-modal" role="dialog" aria-modal="true" aria-label="Cadastro completo do piloto" tabIndex={-1}>
         <button ref={closeButtonRef} className="registration-modal-close" type="button" onClick={closeModal} aria-label="Fechar inscrição">
           <X size={22} />
         </button>
@@ -459,8 +518,8 @@ export function ChampionshipRegistrationForm() {
         <p>Pré-inscrição não garante vaga automática. A organização confirma bateria, grupo, orientações de lastro e próximos passos pelo WhatsApp.</p>
       </div>
 
-      {error ? <p className="error">{error}</p> : null}
-      {success ? <p className="success">{success}</p> : null}
+      {error ? <p className="error" role="alert" aria-atomic="true">{error}</p> : null}
+      {success ? <p className="success" role="status" aria-live="polite" aria-atomic="true">{success}</p> : null}
       {protocol ? (
         <div className="registration-protocol">
           <span>Protocolo</span>
