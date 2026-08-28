@@ -66,7 +66,7 @@ export default async function CampeonatosPage() {
             <div className="report-section-bar">
               <div>
                 <h2 id="hub-classification-title">Classificação atual</h2>
-                <p>Os 10 primeiros pilotos aparecem abaixo. Cada coluna representa uma bateria publicada; o registro oficial conserva os detalhes de cada lançamento.</p>
+                <p>Os 10 primeiros pilotos aparecem abaixo. A matriz mostra as 10 melhores pontuações regulares de cada piloto, da maior para a menor; baterias posteriores substituem notas menores e entram como descarte.</p>
               </div>
               <div className="report-section-count">
                 <strong>{publicationDate}</strong>

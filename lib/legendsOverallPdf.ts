@@ -10,7 +10,7 @@
 
 import { existsSync, readFileSync } from "fs";
 import path from "path";
-import { compareLegendsHeatOrder, formatLegendsHeatTitle, formatScore, getLegendsHeatNumber } from "./legendsScoring";
+import { formatScore, MAX_VALID_REGULAR_RESULTS } from "./legendsScoring";
 
 const pageWidth = 1491;
 const pageHeight = 1055;
@@ -68,15 +68,15 @@ type PdfImage = {
 
 type OverallRow = LegendsOverallStanding & {
   heatScores: Map<string, LegendsOverallResult>;
+  bestRegularResults: LegendsOverallResult[];
   discardedHeatIds: Set<string>;
   discardedCount: number;
 };
 
 type ScoreColumn = {
   label: string;
-  heatId: string;
-  date: string;
-  title: string;
+  slot?: number;
+  heatId?: string;
   type: "regular" | "super_final";
 };
 
@@ -130,13 +130,15 @@ function buildRows(input: {
   });
 
   const regularHeatIds = new Set(input.heats.filter((heat) => normalizeHeatType(heat.type) === "regular").map((heat) => heat.id));
+  const bestRegularByDriver = new Map<string, LegendsOverallResult[]>();
   const discardedByDriver = new Map<string, Set<string>>();
 
   resultMap.forEach((byHeat, driverKey) => {
     const regularResults = [...byHeat.values()]
-      .filter((result) => regularHeatIds.has(result.heatId))
+      .filter((result) => regularHeatIds.has(result.heatId) && result.score > 0)
       .sort(compareResults);
-    discardedByDriver.set(driverKey, new Set(regularResults.slice(10).map((result) => result.heatId)));
+    bestRegularByDriver.set(driverKey, regularResults.slice(0, MAX_VALID_REGULAR_RESULTS));
+    discardedByDriver.set(driverKey, new Set(regularResults.slice(MAX_VALID_REGULAR_RESULTS).map((result) => result.heatId)));
   });
 
   return input.standings.map((standing) => {
@@ -145,6 +147,7 @@ function buildRows(input: {
     return {
       ...standing,
       heatScores: resultMap.get(driverKey) ?? new Map<string, LegendsOverallResult>(),
+      bestRegularResults: bestRegularByDriver.get(driverKey) ?? [],
       discardedHeatIds,
       discardedCount: standing.discardedRegularResults ?? discardedHeatIds.size,
     };
@@ -175,7 +178,7 @@ function drawOverviewPage(
 ) {
   drawPageShell(commands, hasLogo);
   drawDocumentHeader(commands, input, "CLASSIFICAÇÃO GERAL", "VISÃO OFICIAL / LEITURA RÁPIDA");
-  drawMetricRail(commands, input, rows.length, columns);
+  drawMetricRail(commands, input, rows.length);
   drawPodium(commands, rows);
   drawTimeline(commands, columns);
   drawOverviewRules(commands);
@@ -201,9 +204,13 @@ function drawRankingPage(
   const lastPosition = rows[rows.length - 1]?.position ?? 0;
   const matrixLabel = columns.length ? `${columns[0].label}-${columns[columns.length - 1].label}` : "SEM BATERIAS";
   drawDocumentHeader(commands, input, "MATRIZ DE PONTUAÇÃO", `PILOTOS ${firstPosition}-${lastPosition} / ${matrixLabel}`);
-  drawMatrixLegend(commands, totalRows, input.heats.length > columns.length);
+  drawMatrixLegend(
+    commands,
+    totalRows,
+    input.heats.filter((heat) => normalizeHeatType(heat.type) === "regular").length > MAX_VALID_REGULAR_RESULTS,
+  );
   drawRankingTable(commands, rows, columns);
-  drawFooter(commands, pageNumber, pageCount, "P = ORDEM CRONOLÓGICA / D = RESULTADO RETIDO");
+  drawFooter(commands, pageNumber, pageCount, "P = MELHORES NOTAS / SF = SUP. FINAL");
 }
 
 function drawPageShell(commands: string[], hasLogo: boolean) {
@@ -242,7 +249,6 @@ function drawMetricRail(
   commands: string[],
   input: { heats: LegendsOverallHeat[] },
   driverCount: number,
-  columns: ScoreColumn[],
 ) {
   const x = 42;
   const y = 128;
@@ -251,8 +257,8 @@ function drawMetricRail(
   const metrics = [
     { label: "PILOTOS", value: String(driverCount), note: "na classificação" },
     { label: "PUBLICADAS", value: String(input.heats.length), note: "baterias lançadas" },
-    { label: "REGULARES", value: String(columns.filter((column) => column.type === "regular").length), note: "em ordem cronológica" },
-    { label: "LIMITE", value: "10 + SF", note: "resultados válidos" },
+    { label: "REGULARES", value: String(input.heats.filter((heat) => normalizeHeatType(heat.type) === "regular").length), note: "baterias lançadas" },
+    { label: "LIMITE", value: "10 + SF", note: "melhores notas" },
   ];
   rect(commands, x, y, width, height, colors.surface);
   strokeRect(commands, x, y, width, height, colors.line, 0.8);
@@ -289,8 +295,8 @@ function drawPodium(commands: string[], rows: OverallRow[]) {
 }
 
 function drawTimeline(commands: string[], columns: ScoreColumn[]) {
-  text(commands, "RÉGUA DA TEMPORADA", 42, 386, 10, "F1", colors.orange, 1.8);
-  text(commands, "P = resultado publicado em ordem cronológica; a Super Final entra como SF quando publicada.", 229, 386, 9, "F2", colors.muted);
+  text(commands, "RÉGUA DAS NOTAS", 42, 386, 10, "F1", colors.orange, 1.8);
+  text(commands, "P = melhores pontuações regulares em ordem decrescente; a Super Final entra separadamente.", 229, 386, 9, "F2", colors.muted);
 
   const visibleColumns = columns.slice(0, 14);
   const perRow = 7;
@@ -307,8 +313,7 @@ function drawTimeline(commands: string[], columns: ScoreColumn[]) {
     rect(commands, cellX, cellY, width, 5, column.type === "super_final" ? colors.gold : colors.orange);
     drawPerforations(commands, cellX + 12, cellY + 12, width - 24, colors.line);
     text(commands, column.label, cellX + 13, cellY + 30, 12, "F1", colors.ink);
-    text(commands, column.date, cellX + width - 52, cellY + 30, 8.5, "F1", colors.gold);
-    text(commands, fitText(column.title, width - 26, 8.5, 60), cellX + 13, cellY + 44, 8.5, "F2", colors.muted);
+    text(commands, column.type === "super_final" ? "resultado extra" : "nota válida considerada", cellX + 13, cellY + 44, 8.5, "F2", colors.muted);
   });
 
   if (columns.length > visibleColumns.length) {
@@ -340,7 +345,7 @@ function drawOverviewRules(commands: string[]) {
   drawRuleLine(commands, leftX + 22, y + 225, "8.3", "Diferença superior a 9 s: pontuação mínima de 1,000.");
   drawRuleLine(commands, leftX + 22, y + 259, "8.4", "Até 10 melhores corridas; ausências e DSQ podem ser descartados.");
   drawRuleLine(commands, leftX + 22, y + 293, "8.5", "A Super Final soma uma corrida extra com base de 5,000.");
-  drawRuleLine(commands, leftX + 22, y + 327, "8.6", "O descarte acontece ao longo da competição.");
+  drawRuleLine(commands, leftX + 22, y + 327, "8.6", "Nota posterior melhor substitui a menor; ela vira descarte.");
 
   text(commands, "COMO LER A MATRIZ", rightX + 22, y + 32, 10, "F1", colors.orange, 1.6);
   drawStateKey(commands, rightX + 22, y + 69, colors.gold, "V", "vitória / resultado de 10,000");
@@ -370,12 +375,12 @@ function drawStateKey(commands: string[], x: number, y: number, fill: string, ma
 
 function drawMatrixLegend(commands: string[], totalRows: number, hasMoreColumns: boolean) {
   const y = 128;
-  text(commands, `${totalRows} pilotos / cada linha mantém a pontuação por bateria para conferência.`, 42, y + 15, 9, "F2", colors.muted);
+  text(commands, `${totalRows} pilotos / cada linha mostra as 10 melhores notas regulares em ordem decrescente.`, 42, y + 15, 9, "F2", colors.muted);
   text(commands, "V vitória", 700, y + 15, 8.5, "F1", colors.gold);
   text(commands, "D retido", 794, y + 15, 8.5, "F1", colors.discardText);
   text(commands, "- sem resultado", 892, y + 15, 8.5, "F1", colors.muted);
   if (hasMoreColumns) {
-    text(commands, "continuação das baterias", 1080, y + 15, 8.5, "F1", colors.orange);
+    text(commands, "descarte após a 10ª nota", 1080, y + 15, 8.5, "F1", colors.orange);
   }
 }
 
@@ -412,8 +417,10 @@ function drawRankingTable(commands: string[], rows: OverallRow[], scoreColumns: 
 
     scoreColumns.forEach((column, columnIndex) => {
       const scoreColumn = columns.scores[columnIndex];
-      const result = row.heatScores.get(column.heatId);
-      drawScoreCell(commands, column, result, row.discardedHeatIds.has(column.heatId), scoreColumn.x, top, scoreColumn.w, rowHeight, scoreFontSize);
+      const result = column.type === "super_final"
+        ? column.heatId ? row.heatScores.get(column.heatId) : undefined
+        : row.bestRegularResults[column.slot ?? 0];
+      drawScoreCell(commands, column, result, false, scoreColumn.x, top, scoreColumn.w, rowHeight, scoreFontSize);
     });
 
     rect(commands, columns.total.x, top, columns.total.w, rowHeight, colors.header);
@@ -469,14 +476,13 @@ function drawTableHeaders(commands: string[], columns: ReturnType<typeof tableCo
   centeredText(commands, "VIT.", columns.wins.x + columns.wins.w / 2, y + 38, 7.4, "F1", colors.ink);
   scoreColumns.forEach((column, index) => {
     const scoreColumn = columns.scores[index];
-    const batteryNumber = getLegendsHeatNumber(column.title);
-    const roman = getLegendsRomanNumeral(column.title);
-    const batteryLabel = batteryNumber === null
-      ? column.label
-      : `B${String(batteryNumber).padStart(2, "0")}${roman ? ` / ${roman}` : ""}`;
-    centeredText(commands, batteryLabel, scoreColumn.x + scoreColumn.w / 2, y + 20, 7, "F1", colors.ink);
-    centeredText(commands, column.label, scoreColumn.x + scoreColumn.w / 2, y + 33, 6.5, "F2", colors.muted);
-    centeredText(commands, column.date, scoreColumn.x + scoreColumn.w / 2, y + 47, 7, "F2", column.type === "super_final" ? colors.gold : colors.muted);
+    if (column.type === "super_final") {
+      centeredText(commands, "SUPER", scoreColumn.x + scoreColumn.w / 2, y + 25, 6.8, "F1", colors.gold);
+      centeredText(commands, "FINAL", scoreColumn.x + scoreColumn.w / 2, y + 42, 6.8, "F1", colors.gold);
+    } else {
+      centeredText(commands, "PONTUAÇÃO", scoreColumn.x + scoreColumn.w / 2, y + 25, 6.4, "F1", colors.ink);
+      centeredText(commands, String((column.slot ?? index) + 1), scoreColumn.x + scoreColumn.w / 2, y + 43, 8, "F1", colors.ink);
+    }
   });
   centeredText(commands, "TOTAL", columns.total.x + columns.total.w / 2, y + 38, 8, "F1", colors.gold);
 }
@@ -656,35 +662,15 @@ function normalizeHeatType(value: string): "regular" | "super_final" {
 }
 
 function buildScoreColumns(heats: LegendsOverallHeat[]): ScoreColumn[] {
-  const orderedHeats = [...heats].sort(compareLegendsHeatOrder);
-  const regularColumns = orderedHeats
-    .filter((heat) => normalizeHeatType(heat.type) === "regular")
-    .map((heat, index) => ({
-      label: `P${String(index + 1).padStart(2, "0")}`,
-      heatId: heat.id,
-      date: formatDateShort(heat.date),
-      title: formatLegendsHeatTitle(index + 1),
-      type: "regular" as const,
-    }));
-  const superFinalColumns = orderedHeats
-    .filter((heat) => normalizeHeatType(heat.type) === "super_final")
-    .map((heat) => ({
-      label: "SF",
-      heatId: heat.id,
-      date: formatDateShort(heat.date),
-      title: heat.title,
-      type: "super_final" as const,
-    }));
-  return [...regularColumns, ...superFinalColumns];
-}
-
-function getLegendsRomanNumeral(title: string) {
-  return title.match(/Legends\s+([IVXLCDM]+)/i)?.[1]?.toUpperCase() ?? null;
-}
-
-function formatDateShort(value: string): string {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  return match ? `${match[3]}/${match[2]}` : value.slice(0, 5);
+  const regularColumns = Array.from({ length: MAX_VALID_REGULAR_RESULTS }, (_, index) => ({
+    label: `Pontuação ${index + 1}`,
+    slot: index,
+    type: "regular" as const,
+  }));
+  const superFinal = heats.find((heat) => normalizeHeatType(heat.type) === "super_final");
+  return superFinal
+    ? [...regularColumns, { label: "SF", heatId: superFinal.id, type: "super_final" as const }]
+    : regularColumns;
 }
 
 function chunk<T>(values: T[], size: number): T[][] {

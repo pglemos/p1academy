@@ -735,7 +735,7 @@
 }
 
 .report-classification-table {
-  width: max(100%, 2040px);
+  width: max(100%, 1372px);
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
@@ -780,8 +780,8 @@
 
 .report-classification-table thead .report-table-columns th,
 .report-classification-table td.report-score-cell {
-  width: 76px;
-  min-width: 76px;
+  width: 72px;
+  min-width: 72px;
 }
 
 .report-classification-table thead .report-table-columns th span,
@@ -841,8 +841,8 @@
 
 .report-classification-table th.report-super-final-head,
 .report-classification-table td.is-super-final {
-  width: 76px;
-  min-width: 76px;
+  width: 72px;
+  min-width: 72px;
 }
 
 .report-classification-table th.report-total-head,
@@ -1665,7 +1665,7 @@ p.report-audit-detail {
   }
 
   .report-classification-table {
-    width: max(100%, 2000px);
+    width: max(100%, 1372px);
   }
 
   .report-register-hint {
@@ -1764,7 +1764,7 @@ p.report-audit-detail {
   }
 
   .report-classification-table {
-    width: max(100%, 2000px);
+    width: max(100%, 1372px);
   }
 
   .report-classification-table th.report-sticky-rank,
@@ -1798,8 +1798,8 @@ p.report-audit-detail {
 
   .report-classification-table thead .report-table-columns th,
   .report-classification-table td.report-score-cell {
-    width: 76px;
-    min-width: 76px;
+    width: 72px;
+    min-width: 72px;
   }
 
   .report-driver-value strong {

@@ -68,7 +68,7 @@ export type StandingRow = {
 const REGULAR_BASE_SCORE = 10;
 const SUPER_FINAL_BASE_SCORE = 5;
 const MIN_SCORE_AFTER_NINE_SECONDS = 1;
-const MAX_VALID_REGULAR_RESULTS = 10;
+export const MAX_VALID_REGULAR_RESULTS = 10;
 
 export function parseTimingValueToMs(value: string): number | null {
   const input = value.trim().replace(",", ".");

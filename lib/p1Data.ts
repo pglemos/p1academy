@@ -5,7 +5,7 @@ import {
   legendsRankingPreview,
   legendsResultsPreview,
 } from "@/data/legends";
-import { compareLegendsHeatOrder, formatLegendsHeatTitle, formatScore, formatTimingValue, slugifyDriverKey } from "@/lib/legendsScoring";
+import { compareLegendsHeatOrder, formatLegendsHeatTitle, formatScore, formatTimingValue, MAX_VALID_REGULAR_RESULTS, slugifyDriverKey } from "@/lib/legendsScoring";
 import { getPublicSupabaseClient, hasPublicSupabaseEnv } from "@/lib/p1Supabase";
 import type {
   P1CalendarMonth,
@@ -283,6 +283,7 @@ function getStaticLegendsData(): P1PublicData {
         participationCount: Number.parseInt(row.valid, 10) || 0,
         discarded: 0,
         wins: 0,
+        bestScoreHeatIds: [],
         cells: {},
       })),
     },
@@ -385,7 +386,8 @@ function buildClassification(
     const regularResults = [...byHeat.values()]
       .filter((result) => !isSuperFinalHeatType(heatById.get(result.heat_id)?.type) && result.status === "ok" && Number(result.score) > 0)
       .sort((a, b) => comparePublishedResults(a, b, heatById));
-    const discardedHeatIds = new Set(regularResults.slice(10).map((result) => result.heat_id));
+    const bestRegularResults = regularResults.slice(0, MAX_VALID_REGULAR_RESULTS);
+    const discardedHeatIds = new Set(regularResults.slice(MAX_VALID_REGULAR_RESULTS).map((result) => result.heat_id));
     const cells = Object.fromEntries(orderedHeats.map((heat) => [heat.id, toClassificationCell(byHeat.get(heat.id), discardedHeatIds)]));
     const participationCount = [...byHeat.keys()].filter((heatId) => !isSuperFinalHeatType(heatById.get(heatId)?.type)).length;
 
@@ -400,6 +402,7 @@ function buildClassification(
       participationCount,
       discarded: Number(standing.discarded_regular_results),
       wins: Number(standing.wins),
+      bestScoreHeatIds: bestRegularResults.map((result) => result.heat_id),
       cells,
     };
   });

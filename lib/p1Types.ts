@@ -84,6 +84,7 @@ export type P1ClassificationRow = {
   participationCount: number;
   discarded: number;
   wins: number;
+  bestScoreHeatIds: string[];
   cells: Record<string, P1ClassificationCell>;
 };
 

@@ -37,7 +37,7 @@ export default async function LegendsPontuacaoPage() {
         <ReportTitleBand
           eyebrow={`${publicData.championship.edition} · categoria única · temporada ${publicData.championship.season}`}
           title="Classificação geral"
-          description="Tabela oficial por bateria, com pontuação, vitórias, resultados retidos e total de cada piloto."
+          description="Tabela oficial com as 10 melhores pontuações regulares, vitórias, descartes e total de cada piloto."
           resultCount={resultCount}
           resultNote={`${completeResultCount} completas`}
           pilotCount={pilotCount}
@@ -56,7 +56,7 @@ export default async function LegendsPontuacaoPage() {
           <div className="report-section-bar">
             <div>
               <h2 id="score-matrix-title">Matriz de pontuação</h2>
-              <p>Cada coluna representa uma bateria publicada, em ordem cronológica. No celular, use a leitura rápida ou deslize horizontalmente para conferir a matriz.</p>
+              <p>As colunas mostram as 10 melhores pontuações regulares de cada piloto, em ordem decrescente. Uma pontuação melhor em bateria posterior substitui a menor nota considerada; no celular, use a leitura rápida ou deslize horizontalmente.</p>
             </div>
             <div className="report-section-count">
               <strong>{regularHeatCount} baterias regulares</strong>
@@ -74,7 +74,7 @@ export default async function LegendsPontuacaoPage() {
           <div className="report-section-bar">
             <div>
               <h2>Como ler a folha</h2>
-              <p>O total é a soma dos melhores resultados regulares dentro do limite do regulamento, mais a Super Final quando publicada.</p>
+              <p>O total é a soma das 10 melhores pontuações regulares. Quando uma bateria posterior supera uma nota já considerada, a menor sai do cálculo e passa a descarte; a Super Final soma à parte quando publicada.</p>
             </div>
           </div>
           <ReportFormula validResults={publicData.championship.validResults} rulesPdf={publicData.championship.rulesPdf} />
