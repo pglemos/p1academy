@@ -10,7 +10,6 @@ import {
   ShieldCheck,
   Sparkles,
   Trophy,
-  Video,
 } from "lucide-react";
 export { latestPosts, posts } from "./news";
 
@@ -31,7 +30,6 @@ export const navItems = [
   { href: "/regulamentos", label: "Regulamentos" },
   { href: "/patrocinadores", label: "Patrocinadores" },
   { href: "/noticias", label: "Notícias" },
-  { href: "/wallpapers", label: "Wallpapers" },
   { href: "/sobre", label: "Sobre" },
   { href: "/contato", label: "Contato" },
 ];
@@ -68,14 +66,6 @@ export const quickAccess = [
     icon: ShieldCheck,
     label: "Técnica aplicada",
     image: "/images/academy-coaching.png",
-  },
-  {
-    href: "/videos",
-    title: "Vídeos onboard",
-    text: "Biblioteca de onboard, voltas lançadas, referências visuais e estudo de traçado.",
-    icon: Video,
-    label: "Análise visual",
-    image: "/images/hero-kart-night.png",
   },
   {
     href: "/recordes",

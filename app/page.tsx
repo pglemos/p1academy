@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarCheck, Flag, Play, Trophy } from "lucide-react";
+import { ArrowRight, CalendarCheck, Flag, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { BookingForm } from "@/components/BookingForm";
@@ -38,7 +38,7 @@ export default function Home() {
             </div>
           </Reveal>
 
-          <Reveal className="hero-panel" aria-label="Vídeo placeholder premium de kart">
+          <Reveal className="hero-panel" aria-label="Painel premium de kart">
             <Image className="hero-brand-mark" src="/brand/p1-mark-yellow.png" alt="" width={170} height={170} />
             <Image
               className="hero-photo"
@@ -61,9 +61,6 @@ export default function Home() {
                   Pressão <b>Grid</b>
                 </span>
               </div>
-              <Link className="btn ghost" href="/videos">
-                <Play size={18} /> Ver vídeos
-              </Link>
             </div>
           </Reveal>
         </div>
