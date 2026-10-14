@@ -1,14 +1,11 @@
 import {
-  legendsCalendarSummary,
   legendsCompetition,
-  legendsOfficialCalendar,
   legendsRankingPreview,
   legendsResultsPreview,
 } from "@/data/legends";
 import { compareLegendsHeatOrder, formatLegendsHeatTitle, formatScore, formatTimingValue, MAX_VALID_REGULAR_RESULTS, slugifyDriverKey } from "@/lib/legendsScoring";
 import { getPublicSupabaseClient, hasPublicSupabaseEnv } from "@/lib/p1Supabase";
 import type {
-  P1CalendarMonth,
   P1Classification,
   P1ClassificationCell,
   P1ClassificationHeat,
@@ -37,23 +34,7 @@ type ChampionshipRow = {
   super_final_duration: string | null;
   seats: string | null;
   valid_results: string | null;
-  expected_stages: string | null;
   rules_pdf: string | null;
-  calendar_pdf: string | null;
-  version: string | null;
-  version_date: string | null;
-  settings: Record<string, unknown> | null;
-};
-
-type StageRow = {
-  id: string;
-  stage_code: string;
-  race_number: number;
-  scheduled_date: string;
-  scheduled_time: string;
-  weekday: string;
-  month_name: string;
-  status: string;
 };
 
 type StandingRow = {
@@ -108,19 +89,13 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
       return getStaticLegendsData();
     }
 
-    const [stagesResponse, standingsResponse, heatsResponse, driverLevelsResponse] = await Promise.all([
+    const [standingsResponse, heatsResponse, driverLevelsResponse] = await Promise.all([
       supabase
-        .from("p1_stages")
-        .select("id, stage_code, race_number, scheduled_date, scheduled_time, weekday, month_name, status")
-        .eq("championship_id", championship.id)
-        .order("sort_order", { ascending: true })
-        .returns<StageRow[]>(),
-        supabase
-          .from("p1_public_standings")
-          .select("position, driver_name, total, regular_total, super_final_total, valid_regular_results, discarded_regular_results, wins")
-          .eq("championship_slug", championshipSlug)
-          .order("position", { ascending: true })
-          .returns<StandingRow[]>(),
+        .from("p1_public_standings")
+        .select("position, driver_name, total, regular_total, super_final_total, valid_regular_results, discarded_regular_results, wins")
+        .eq("championship_slug", championshipSlug)
+        .order("position", { ascending: true })
+        .returns<StandingRow[]>(),
       supabase
         .from("p1_heats")
         .select("id, title, heat_date, type, created_at, updated_at")
@@ -138,11 +113,10 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
         .returns<DriverLevelRow[]>(),
     ]);
 
-    if (stagesResponse.error || standingsResponse.error || heatsResponse.error) {
+    if (standingsResponse.error || heatsResponse.error) {
       return getStaticLegendsData();
     }
 
-    const stages = stagesResponse.data ?? [];
     const standings = standingsResponse.data ?? [];
     const heats = heatsResponse.data ?? [];
     const levelByDriver = new Map(
@@ -189,22 +163,8 @@ export async function getLegendsPublicData(): Promise<P1PublicData> {
         superFinalDuration: championship.super_final_duration ?? legendsCompetition.superFinalDuration,
         seats: championship.seats ?? legendsCompetition.seats,
         validResults: championship.valid_results ?? legendsCompetition.validResults,
-        expectedStages: championship.expected_stages ?? legendsCompetition.expectedStages,
         rulesPdf: championship.rules_pdf ?? "/regulamentos/regulamento-legends-kart-series-2026.pdf",
-        calendarPdf: championship.calendar_pdf ?? "/regulamentos/calendario-legends-kart-series-2026.pdf",
-        version: championship.version ?? legendsCompetition.version,
-        versionDate: formatDateBr(championship.version_date) || legendsCompetition.versionDate,
-        settings: championship.settings ?? {},
       },
-      calendarSummary: {
-        totalRaces: Number(championship.settings?.totalRaces ?? stages.length ?? legendsCalendarSummary.totalRaces),
-        months: String(championship.settings?.months ?? legendsCalendarSummary.months),
-        firstRace: String(championship.settings?.firstRace ?? legendsCalendarSummary.firstRace),
-        finalRace: String(championship.settings?.finalRace ?? legendsCalendarSummary.finalRace),
-        weekdayWindows: String(championship.settings?.weekdayWindows ?? legendsCalendarSummary.weekdayWindows),
-        saturdayWindow: String(championship.settings?.saturdayWindow ?? legendsCalendarSummary.saturdayWindow),
-      },
-      calendarMonths: groupStagesByMonth(stages),
       ranking: standings.map((row) => ({
         position: String(row.position).padStart(2, "0"),
         driver: row.driver_name,
@@ -259,15 +219,8 @@ function getStaticLegendsData(): P1PublicData {
       superFinalDuration: legendsCompetition.superFinalDuration,
       seats: legendsCompetition.seats,
       validResults: legendsCompetition.validResults,
-      expectedStages: legendsCompetition.expectedStages,
       rulesPdf: "/regulamentos/regulamento-legends-kart-series-2026.pdf",
-      calendarPdf: "/regulamentos/calendario-legends-kart-series-2026.pdf",
-      version: legendsCompetition.version,
-      versionDate: legendsCompetition.versionDate,
-      settings: {},
     },
-    calendarSummary: legendsCalendarSummary,
-    calendarMonths: legendsOfficialCalendar,
     ranking: legendsRankingPreview,
     results: legendsResultsPreview.map((result) => ({ ...result, complete: true })),
     classification: {
@@ -288,26 +241,6 @@ function getStaticLegendsData(): P1PublicData {
       })),
     },
   };
-}
-
-function groupStagesByMonth(stages: StageRow[]): P1CalendarMonth[] {
-  const byMonth = new Map<string, P1CalendarMonth>();
-
-  stages.forEach((stage) => {
-    const month = byMonth.get(stage.month_name) ?? { month: stage.month_name, races: [] };
-    month.races.push({
-      id: stage.id,
-      code: stage.stage_code,
-      race: stage.race_number,
-      date: formatDateBr(stage.scheduled_date),
-      day: stage.weekday,
-      time: stage.scheduled_time.slice(0, 5),
-      status: stage.status,
-    });
-    byMonth.set(stage.month_name, month);
-  });
-
-  return Array.from(byMonth.values());
 }
 
 async function loadPublishedResults(heats: HeatRow[]): Promise<HeatResultRow[]> {

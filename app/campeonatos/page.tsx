@@ -88,7 +88,7 @@ export default async function CampeonatosPage() {
             <div className="report-section-bar">
               <div>
                 <h2>Documentos oficiais</h2>
-                <p>Fontes públicas para conferir regras, agenda e classificação sem perder o contexto da edição.</p>
+                <p>Fontes públicas para conferir regras e classificação sem perder o contexto da edição.</p>
               </div>
             </div>
             <div className="report-document-links">
@@ -97,15 +97,10 @@ export default async function CampeonatosPage() {
                 <strong>Classificação geral</strong>
                 <small>{pilotCount} pilotos · {resultCount} baterias lançadas</small>
               </a>
-              <a className="report-document-link" href={championship.calendarPdf} target="_blank" rel="noreferrer">
-                <span>02</span>
-                <strong>Calendário oficial</strong>
-                <small>{publicData.calendarSummary.totalRaces} corridas entre {publicData.calendarSummary.firstRace} e {publicData.calendarSummary.finalRace}</small>
-              </a>
               <a className="report-document-link" href={championship.rulesPdf} target="_blank" rel="noreferrer">
-                <span>03</span>
+                <span>02</span>
                 <strong>Regulamento</strong>
-                <small>{championship.version} · publicado em {championship.versionDate}</small>
+                <small>Documento oficial da temporada</small>
               </a>
             </div>
           </section>

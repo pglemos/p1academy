@@ -16,27 +16,7 @@ export type P1Championship = {
   superFinalDuration: string;
   seats: string;
   validResults: string;
-  expectedStages: string;
   rulesPdf: string;
-  calendarPdf: string;
-  version: string;
-  versionDate: string;
-  settings: Record<string, unknown>;
-};
-
-export type P1CalendarRace = {
-  id?: string;
-  code?: string;
-  race: number;
-  date: string;
-  day: string;
-  time: string;
-  status?: string;
-};
-
-export type P1CalendarMonth = {
-  month: string;
-  races: P1CalendarRace[];
 };
 
 export type P1RankingRow = {
@@ -97,15 +77,6 @@ export type P1PublicData = {
   source: "supabase" | "static";
   lastPublishedAt: string | null;
   championship: P1Championship;
-  calendarSummary: {
-    totalRaces: number;
-    months: string;
-    firstRace: string;
-    finalRace: string;
-    weekdayWindows: string;
-    saturdayWindow: string;
-  };
-  calendarMonths: P1CalendarMonth[];
   ranking: P1RankingRow[];
   results: P1ResultRow[];
   classification: P1Classification;

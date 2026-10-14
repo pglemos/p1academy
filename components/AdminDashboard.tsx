@@ -983,7 +983,6 @@ function DocumentsModule({ heats }: { heats: HeatRow[] }) {
   return (
     <div className="admin-document-stack">
       <div className="admin-document-grid">
-        <a href="/regulamentos/calendario-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={22} /><strong>Calendário oficial</strong><span>PDF Legends 2026</span></a>
         <a href="/regulamentos/regulamento-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={22} /><strong>Regulamento oficial</strong><span>PDF do campeonato</span></a>
         <a href="/api/campeonatos/legends/pdf" target="_blank" rel="noreferrer"><FileText size={22} /><strong>Relatório geral</strong><span>PDF de resultados</span></a>
       </div>
@@ -1075,7 +1074,6 @@ function SystemModule({
       <div className="admin-system-block">
         <h3>Documentos oficiais</h3>
         <div className="admin-document-grid compact">
-          <a href="/regulamentos/calendario-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={20} /><strong>Calendário oficial</strong><span>PDF Legends 2026</span></a>
           <a href="/regulamentos/regulamento-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={20} /><strong>Regulamento oficial</strong><span>PDF do campeonato</span></a>
         </div>
       </div>
@@ -1156,7 +1154,6 @@ function RegistrationDetailPanel({ loading, registration, updateRegistration, sa
           <div className="admin-detail-docs">
             <strong>Documentos oficiais</strong>
             <a href="/regulamentos/regulamento-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={16} /> Regulamento oficial</a>
-            <a href="/regulamentos/calendario-legends-kart-series-2026.pdf" target="_blank" rel="noreferrer"><FileText size={16} /> Calendário oficial</a>
           </div>
         </>
       ) : null}

@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   Award,
   BookOpen,
-  Calendar,
   CheckCircle2,
   Download,
   FileCheck,
@@ -15,7 +14,7 @@ import {
 } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { Lift, Reveal } from "@/components/Motion";
-import { legendsCalendarPdf, legendsCompetition, legendsPdf } from "@/data/legends";
+import { legendsCompetition, legendsPdf } from "@/data/legends";
 
 export const metadata = {
   title: "Regulamento Oficial Legends Kart Series 2026 | P1 Academy",
@@ -91,7 +90,7 @@ export default function RegulamentosPage() {
               <h2>{legendsCompetition.name}</h2>
               <div className="accent-line" />
               <p>
-                {legendsCompetition.version} · {legendsCompetition.edition} · temporada oficial {legendsCompetition.season} no Kartódromo Internacional de Betim.
+                {legendsCompetition.edition} · temporada oficial {legendsCompetition.season} no Kartódromo Internacional de Betim.
               </p>
               <p>
                 Este regulamento vincula todos os pilotos inscritos, organizadores e equipe técnica. A transparência na apuração garante que toda decisão seja fundamentada e auditável.
@@ -106,9 +105,6 @@ export default function RegulamentosPage() {
               <div className="grid-1 gap-12">
                 <a className="btn primary" href={legendsPdf} target="_blank" rel="noreferrer">
                   <Download size={18} /> Baixar Regulamento Esportivo (PDF)
-                </a>
-                <a className="btn secondary" href={legendsCalendarPdf} target="_blank" rel="noreferrer">
-                  <Calendar size={18} /> Baixar Calendário Oficial de Etapas (PDF)
                 </a>
                 <Link className="btn ghost" href="/campeonatos/pontuacao">
                   <Trophy size={18} /> Ver Matriz de Pontuação Ao Vivo
