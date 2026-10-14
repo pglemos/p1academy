@@ -23,7 +23,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://p1academy-alpha.vercel.app"),
+  metadataBase: new URL("https://p1academy.vercel.app"),
   title: {
     default: "P1 Academy | Kart Performance & Legends Kart Series",
     template: "%s | P1 Academy",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    url: "https://p1academy-alpha.vercel.app",
+    url: "https://p1academy.vercel.app",
     siteName: "P1 Academy",
     title: "P1 Academy | Kart Performance & Legends Kart Series",
     description:
