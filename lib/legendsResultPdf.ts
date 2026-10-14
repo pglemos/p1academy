@@ -84,7 +84,7 @@ function buildPageContent(
   const ruleY = 24;
   strokeLine(commands, margin, ruleY + 20, pageWidth - margin, ruleY + 20, "#2d2a22", 0.8);
   text(commands, "Pontuacao: base - diferenca em segundos para a melhor volta. Acima de 9s = 1,000 ponto.", margin, ruleY + 4, 8, "F2", "#c9c0a8");
-  text(commands, `Pagina ${page} de ${totalPages}   |   p1academy.vercel.app`, pageWidth - 238, 16, 8, "F2", "#c9c0a8");
+  text(commands, `Pagina ${page} de ${totalPages}   |   p1academy-alpha.vercel.app`, pageWidth - 238, 16, 8, "F2", "#c9c0a8");
 
   return commands.join("\n");
 }
